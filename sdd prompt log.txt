@@ -1,0 +1,30 @@
+/constitution
+This is a capstone project as part of a certificate course in AI and ML.  
+As such, code should be as simple as possible with each step cleary explained.  
+The code must be submitted in the form of Jupyter notebooks.  
+The project is a black box optimisation challenge for which there are 8 separate black box optimisation problems.  
+Each problem should be solved in it's won jupyter notebook, stored in it's own folder withing the ./functions project folder.  
+The folders and ipynb files already exist.  
+The data for each problem is stored in the ./data folder structure, with a individual folder for each problem.
+The initial data provided with the problem is stored in files named initial_inputs.npy and initial_outputs.npy
+Use the Botorch library.
+No unit tests are required
+
+/constitution
+add to the existing constitution that each week, changes to the model, hyperparaters and code should be added to each notebook as a new section with the week number as the title.  Existing code cells should not be replaced.
+
+/specify initial challeng submission - 
+For each problem, load and display the initial inputs and output.
+Based on the problem discription suggest potential hyperparamters that may yeild good results.
+For each problem, construct a bayesian optimisation loop.
+The challenge requires the models to be trained on the initial data, then the next sample point to be proposed. 
+Each week these samples will be submitted and the results returned.  These reults then will be added to the data set and the optimisation executed again, resulting in a new sample point - this process repeats.
+Each model should clearly specify the hyperparameters used, explain why their values have been chosen.
+Each model should provide clear visualisation of the surrogate function in the problem space, and the convergence of the objective
+The input and output dimensions, as well as some background information to each black box is specified in the jupyter notebooks for each problem.  Use these to create appropriate visualisations
+
+/clarify
+
+/plan plan this so that the initial inputs and outputs are processed and each notebook is executed and tested
+
+/specify The number of data points you work with will increase by one each module: starting with ten data points in Module 12, 11 data points in Module 13 and continuing up to 22 data points by the end of Module 24. 

@@ -1,0 +1,70 @@
+# Project Constitution
+
+## Project Overview
+This is a capstone project as part of a certificate course in AI and ML, focused on solving 8 separate black box optimization problems.
+
+## Core Principles
+
+### Code Requirements
+- Code should be **as simple as possible** with each step clearly explained
+- All code must be submitted in the form of **Jupyter notebooks**
+- No unit tests are required
+
+### Project Structure
+- 8 separate black box optimization problems (f1-f8)
+- Each problem solved in its own Jupyter notebook
+- Each notebook stored in its own folder within `./functions` project folder
+- Folders and .ipynb files already exist
+
+### Data Organization
+- Data for each problem stored in `./data` folder structure
+- Individual folder for each problem (f1-f8)
+- Initial data files:
+  - `initial_inputs.npy`
+  - `initial_outputs.npy`
+- Updated data files (added weekly):
+  - `updated_inputs - Week X.npy`
+  - `updated_outputs - Week X.npy`
+
+## Optimization Methodology
+
+### Library and Framework
+- Use the **BoTorch library**
+- Gaussian Processes as the surrogate model
+- Expected Improvement as the acquisition function
+- (This may change later based on performance)
+
+### Workflow Process
+1. Train models on initial data
+2. Propose next sample point
+3. Submit samples weekly
+4. Receive results and add to dataset
+5. Re-execute optimization with updated data
+6. Propose new sample point
+7. Repeat process
+
+### Weekly Updates
+- Each week, changes to the model, hyperparameters, and code should be **added to each notebook as a new section**
+- New section title should include the **week number** (e.g., "Week 2", "Week 3")
+- **Existing code cells should NOT be replaced**
+- Each weekly section preserves the evolutionary history of the optimization process
+
+## Documentation Requirements
+
+### Model Specifications
+Each model must clearly specify:
+- **Hyperparameters used**
+- **Explanation of why hyperparameter values were chosen**
+
+### Visualizations
+Each model must provide clear visualizations of:
+- **Surrogate function** in the problem space
+- **Convergence of the objective** function
+
+### Problem Information
+- Input and output dimensions specified in each notebook
+- Background information for each black box provided
+- Use problem context to create appropriate visualizations
+
+## Optimization Goals
+All problems are **maximization** tasks.

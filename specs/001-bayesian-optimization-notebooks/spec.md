@@ -14,6 +14,8 @@
 - Q: Convergence stagnation response when EI drops to near-zero? → A: Document EI value with interpretation (e.g., "Low EI suggests convergence"), defer alternative acquisition functions to future weeks if stagnation actually occurs
 - Q: Evaluation budget constraint per problem? → A: 13 total evaluations (one point submitted per module from Module 12-24) beyond initial 10 samples (Module 12), resulting in 23 total observations by Module 24. Data grows: 10 points (Module 12), 11 points (Module 13), up to 22 points (Module 24)
 - Q: Convergence success threshold - global maximum or just improvement? → A: Meaningful improvement required over initial best value. **Quantitative guideline: ≥5% improvement over initial best value OR EI > 1e-6 (indicating non-trivial exploration potential)** qualifies as successful optimization. Success ultimately judged holistically based on convergence trends, problem difficulty, and evaluation budget constraints.
+- Q: Input bounds constraint? → A: All inputs must be in range [0, 0.999999] per submission format; coordinates clamped to this range before output
+- Q: Acquisition function comparison vs single function? → A: Commit to Expected Improvement (EI) throughout; alternatives (UCB, PI) deferred to future modules if EI underperforms
 
 ## User Scenarios & Testing *(mandatory)*
 
@@ -87,12 +89,12 @@ As a data scientist analyzing optimization progress, I need visualizations tailo
 - **FR-001**: System MUST load initial_inputs.npy and initial_outputs.npy from `../../data/f{N}/` directory for each problem f1-f8
 - **FR-002**: System MUST train a BoTorch SingleTaskGP Gaussian Process model on loaded data with automatic output standardization
 - **FR-003**: System MUST optimize Expected Improvement acquisition function using `NUM_RESTARTS=10-30` (scaled by problem dimensionality) and `RAW_SAMPLES=512-4096` (scaled by problem dimensionality) to propose next sample point. See plan.md Hyperparameter Justifications section for dimension-specific rationale.
-- **FR-004**: System MUST validate next_point coordinates fall within problem bounds: [0,1] for 2D problems (f1-f2), [min(X)-0.1*range, max(X)+0.1*range] per dimension for higher-D problems (f3-f8) where range=max(X)-min(X)
+- **FR-004**: System MUST validate next_point coordinates fall within required bounds [0, 0.999999] for all dimensions and clamp values if necessary
 - **FR-005**: System MUST display learned GP hyperparameters including noise variance and lengthscales with conditional check for outputscale
 - **FR-006**: System MUST generate surrogate function visualizations showing GP mean prediction and uncertainty across input space
 - **FR-007**: System MUST generate acquisition function visualization showing Expected Improvement heatmap with observed points and proposed next point marked
 - **FR-008**: System MUST generate convergence plot tracking best observed value over iterations
-- **FR-009**: System MUST print next submission point coordinates in format `[x1, x2, ..., xD]` for easy copy-paste
+- **FR-009**: System MUST print next submission point coordinates in required format `x1-x2-...-xn` where each xᵢ begins with 0 and has exactly 6 decimal places (e.g., `0.123456-0.654321` for 2D)
 - **FR-010**: Each module iteration MUST add a new markdown section titled "Module N" with cells for loading updated data and re-executing BO workflow
 - **FR-011**: Cells from previous modules MUST NOT be modified or deleted when adding new module sections
 - **FR-012**: System MUST handle problems across dimensionalities: 2D (f1-f2), 3D (f3), 4D (f4), 5D (f5), 6D (f6), 7D (f7), 8D (f8)
@@ -154,7 +156,7 @@ As a data scientist analyzing optimization progress, I need visualizations tailo
 
 - **Kernel**: Matern 5/2 (BoTorch default for SingleTaskGP) - assumes 2-times differentiable functions
 - **Acquisition**: Expected Improvement (EI) - balances exploitation of best known region vs exploration of uncertain areas
-- **Bounds**: [0, 1] for standardized 2D problems (f1-f2), [min(X)-0.1*range, max(X)+0.1*range] per dimension for higher-D problems (f3-f8) to allow slight exploration beyond observed data
+- **Bounds**: [0, 0.999999] for all dimensions across all problems (f1-f8) per submission format requirements
 - **Optimization**: L-BFGS-B via BoTorch's `optimize_acqf` with multiple random restarts
 
 ### Known Issues & Fixes Applied
@@ -186,4 +188,4 @@ As a data scientist analyzing optimization progress, I need visualizations tailo
 
 ## Open Questions / Needs Clarification
 
-- Should notebooks include comparison of multiple acquisition functions, or commit to Expected Improvement throughout?
+None - all critical decisions resolved. Alternative acquisition functions (UCB, PI) deferred to future modules if EI underperforms (see Out of Scope).

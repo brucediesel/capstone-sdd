@@ -28,3 +28,9 @@ The input and output dimensions, as well as some background information to each 
 /plan plan this so that the initial inputs and outputs are processed and each notebook is executed and tested
 
 /specify The number of data points you work with will increase by one each module: starting with ten data points in Module 12, 11 data points in Module 13 and continuing up to 22 data points by the end of Module 24. 
+Each query must follow this format: x1-x2-x3-...-xn, where each xᵢ must begin with 0 and is specified to six decimal places decimal places (for example, 0.123456-0.654321 for a 2D function).
+Provide the next query for each function in this format
+
+/specify all inputs should be in the range 0 to 0.999999
+
+/specify change the source data files to "updated_inputs - Week 4.npy" and "updated_outputs - Week 4.npy" for all 8 functions, using the corresponding data file folder for each function

@@ -4,7 +4,7 @@
 
 ## Summary
 
-Implement and validate Bayesian Optimization solutions for 8 black box optimization problems (f1-f8) using BoTorch with Gaussian Process surrogates and Expected Improvement acquisition. Each problem solved in its own Jupyter notebook with clear hyperparameter documentation, surrogate visualizations, and weekly iteration support. Target: 15-week optimization campaign with one evaluation per week per problem.
+Implement and validate Bayesian Optimization solutions for 8 black box optimization problems (f1-f8) using BoTorch with Gaussian Process surrogates and Expected Improvement acquisition. Each problem solved in its own Jupyter notebook with clear hyperparameter documentation, surrogate visualizations, and weekly iteration support. Target: 13-module optimization campaign (Modules 12-24) with one evaluation per module per problem.
 
 ## Technical Context
 
@@ -31,13 +31,13 @@ Implement and validate Bayesian Optimization solutions for 8 black box optimizat
 **Constraints**: 
 - Code must be "as simple as possible" (per CONSTITUTION)
 - Each step clearly explained via markdown cells
-- No modification of previous week's code cells (append-only weekly sections)
-- 15 total evaluations budget per problem (one per week)
+- No modification of previous module's code cells (append-only module sections)
+- 13 total evaluations budget per problem (one per module, Modules 12-24)
 
 **Scale/Scope**: 
 - 8 problems (f1-f8) spanning 2D to 8D dimensionality
 - 10 initial samples per problem
-- 15 weekly iterations = 25 total observations per problem by end
+- 13 module iterations (Modules 12-24) = 23 total observations per problem by end
 - ~10-20 code cells per notebook + markdown documentation
 
 ## Constitution Check

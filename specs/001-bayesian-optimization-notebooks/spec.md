@@ -17,6 +17,14 @@
 - Q: Input bounds constraint? → A: All inputs must be in range [0, 0.999999] per submission format; coordinates clamped to this range before output
 - Q: Acquisition function comparison vs single function? → A: Commit to Expected Improvement (EI) throughout; alternatives (UCB, PI) deferred to future modules if EI underperforms
 
+### Session 2026-02-14
+
+- Q: Naming convention for submission labels in results processing notebook (Module N vs Week N vs Submission N)? → A: Use "Week N" to match existing file naming conventions (updated_inputs - Week X.npy, text files named week X)
+- Q: How should the results notebook handle unparseable or malformed text file records? → A: Fail fast — raise an error immediately if any record can't be parsed, requiring manual fix before re-running
+- Q: What level of acceptance criteria for the results processing notebook? → A: Standard — add a new User Story 5 with 3–4 acceptance scenarios covering parsing, saving, display, and convergence
+- Q: Should the spec document the actual per-function initial sample counts? → A: Yes — update the Problem entity to list per-function initial counts (f1=10, f2=10, f3=15, f4=30, f5=20, f6=20, f7=30, f8=40)
+- Q: Should the notebook guard against accidental overwrite of a higher-week .npy file? → A: Warn and confirm — if updated files already exist, display a warning and prompt the user to confirm overwrite
+
 ## User Scenarios & Testing *(mandatory)*
 
 ### User Story 1 - Initial BO Implementation & Validation (Priority: P1)
@@ -34,7 +42,7 @@ As a data scientist working on the capstone project, I need to implement and val
 3. **Given** optimized acquisition function, **When** acquisition visualization cell executes, **Then** Expected Improvement heatmap is displayed showing why the next point was selected
 4. **Given** initial data with best observed value, **When** progress tracking cell executes, **Then** convergence plot displays best value over iterations and prints next submission coordinates
 
-### User Story 2 - Module-by-Module Iterative Updates (Priority: P2)
+### User Story 2 - Week-by-Week Iterative Updates (Priority: P2)
 
 As a data scientist receiving new evaluation results each module, I need to add updated data to each problem, re-run optimization in new notebook sections, and generate the next submission without losing historical code.
 
@@ -44,7 +52,7 @@ As a data scientist receiving new evaluation results each module, I need to add 
 
 **Acceptance Scenarios**:
 
-1. **Given** existing notebook with Module 12 code, **When** Module 13 section is added below with updated data loading, **Then** old cells remain unchanged, new cells load combined initial+updated data, GP retrains on expanded dataset, and new next_point is proposed
+1. **Given** existing notebook with initial BO code, **When** a "Week N" section is added below with updated data loading, **Then** old cells remain unchanged, new cells load combined initial+updated data, GP retrains on expanded dataset, and new next_point is proposed
 2. **Given** updated data with more samples, **When** progress plot is regenerated in new module section, **Then** convergence curve shows improvement across iterations including new observations
 
 ### User Story 3 - Hyperparameter Documentation & Justification (Priority: P1)
@@ -81,6 +89,24 @@ As a data scientist analyzing optimization progress, I need visualizations tailo
 - **Kernel structure variations**: How to handle BoTorch SingleTaskGP using RBFKernel without explicit ScaleKernel wrapper? Hyperparameter display code must check `hasattr(gp_model.covar_module, 'outputscale')` before accessing.
 - **Boundary constraints**: What if acquisition optimization proposes points outside [0,1] bounds? BoTorch's `optimize_acqf` respects bounds parameter but should validate next_point before submission.
 - **Convergence stagnation**: What if Expected Improvement drops to near-zero after several weeks? Document EI value with interpretation (e.g., "EI=1e-7 suggests strong convergence, exploration exhausted") in output, defer switching to alternative acquisition functions (UCB, PI) to future weekly sections if needed.
+- **Multi-line text file records**: Results text files (especially f8's 8D arrays) may wrap across multiple physical lines. Parser must handle bracket-depth grouping rather than naïve line-by-line splitting. Raise an error immediately if a record fails to parse.
+- **Out-of-range input values**: Historical submissions may contain values of exactly 0.0 or 1.0 (violating the [0, 0.999999] constraint). Parser should warn on these but not block processing since they are already-submitted historical data.
+- **Accidental overwrite of later-week files**: If the user runs the notebook for week 4 after already having generated week 5 files, the week 4 files would be smaller. The notebook must detect existing files and prompt for overwrite confirmation.
+
+### User Story 5 - Weekly Results Processing & Data Pipeline (Priority: P1)
+
+As a data scientist receiving weekly black box evaluation results, I need to convert the returned text-format results into structured `.npy` files, update each function's dataset, and visualise convergence to assess optimisation progress before running the next BO iteration.
+
+**Why this priority**: Without this data pipeline, updated results cannot be fed back into the BO notebooks. Blocks the iterative weekly workflow (User Story 2).
+
+**Independent Test**: Place `inputs - week 5.txt` and `outputs - week 5.txt` in `data/results/`, run the results processing notebook with week=5, and verify `.npy` files are created for all 8 functions with correct cumulative data, tables display correctly, and convergence plots render.
+
+**Acceptance Scenarios**:
+
+1. **Given** text files `inputs - week X.txt` and `outputs - week X.txt` in `data/results/`, **When** the notebook is run with week number X entered at the prompt, **Then** the parser correctly extracts 8 arrays per submission line (handling multi-line wrapping for high-dimensional functions), and raises an error if any record fails to parse
+2. **Given** parsed weekly submissions and existing `initial_inputs.npy`/`initial_outputs.npy`, **When** the save step executes, **Then** cumulative `.npy` files are written to each `data/f{N}/` folder as `updated_inputs - Week X.npy` and `updated_outputs - Week X.npy` with shape `(initial_count + num_submissions, input_dims)` for inputs and `(initial_count + num_submissions,)` for outputs
+3. **Given** saved cumulative data, **When** the tabular display step executes, **Then** a DataFrame is shown per function with columns for each input dimension and the output, rows labeled as "Initial" or "Week N", and all 8 functions are displayed
+4. **Given** cumulative output data per function, **When** the convergence plot step executes, **Then** a 2×4 grid of plots is rendered showing observed values (initial vs BO submissions), the running maximum (best found so far), and a visual boundary between initial and submitted data points
 
 ## Requirements *(mandatory)*
 
@@ -95,9 +121,13 @@ As a data scientist analyzing optimization progress, I need visualizations tailo
 - **FR-007**: System MUST generate acquisition function visualization showing Expected Improvement heatmap with observed points and proposed next point marked
 - **FR-008**: System MUST generate convergence plot tracking best observed value over iterations
 - **FR-009**: System MUST print next submission point coordinates in required format `x1-x2-...-xn` where each xᵢ begins with 0 and has exactly 6 decimal places (e.g., `0.123456-0.654321` for 2D)
-- **FR-010**: Each module iteration MUST add a new markdown section titled "Module N" with cells for loading updated data and re-executing BO workflow
+- **FR-010**: Each weekly iteration MUST add a new markdown section titled "Week N" with cells for loading updated data and re-executing BO workflow
 - **FR-011**: Cells from previous modules MUST NOT be modified or deleted when adding new module sections
-- **FR-012**: System MUST handle problems across dimensionalities: 2D (f1-f2), 3D (f3), 4D (f4), 5D (f5), 6D (f6), 7D (f7), 8D (f8)
+- **FR-012**: System MUST handle problems across dimensionalities: 2D (f1-f2), 3D (f3), 4D (f4-f5), 5D (f6), 6D (f7), 8D (f8)
+- **FR-013**: Results processing notebook MUST parse text files `inputs - week X.txt` and `outputs - week X.txt` from `data/results/`, handling multi-line array wrapping (bracket-depth grouping), and raise an error immediately if any record fails to parse
+- **FR-014**: Results processing notebook MUST create cumulative `.npy` files combining initial data with all parsed submissions, saved as `updated_inputs - Week X.npy` and `updated_outputs - Week X.npy` in each function's `data/f{N}/` folder. If target files already exist, MUST warn the user and prompt for confirmation before overwriting
+- **FR-015**: Results processing notebook MUST display updated inputs and outputs in tabular form per function, with rows labeled "Initial" or "Week N" per the file naming convention
+- **FR-016**: Results processing notebook MUST generate a 2×4 convergence plot grid showing the running maximum (best found) for each function, with initial and BO-submitted data points visually distinguished
 
 ### Non-Functional Requirements
 
@@ -111,7 +141,7 @@ As a data scientist analyzing optimization progress, I need visualizations tailo
 ### Key Entities *(include if feature involves data)*
 
 - **Problem**: Represents one of 8 black box optimization challenges (f1-f8)
-  - Attributes: problem ID (f1-f8), input dimensionality (2-8D), initial sample count (10), evaluation budget (13 additional evaluations), timeline (Modules 12-24, 13 modules total), background context (e.g., "radiation source detection")
+  - Attributes: problem ID (f1-f8), input dimensionality (2-8D), initial sample count (varies per function: f1=10, f2=10, f3=15, f4=30, f5=20, f6=20, f7=30, f8=40), evaluation budget (13 additional evaluations), timeline (Modules 12-24, 13 modules total), background context (e.g., "radiation source detection")
   - Relationships: has associated initial and updated datasets, has one notebook, belongs to maximization task category
 
 - **Dataset**: Collection of input-output samples for a problem
@@ -149,21 +179,22 @@ As a data scientist analyzing optimization progress, I need visualizations tailo
 
 - Inputs: NumPy arrays shape `(N_samples, D_dimensions)`, float64
 - Outputs: NumPy arrays shape `(N_samples,)` or `(N_samples, 1)`, float64
-- File naming: `{initial|updated}_inputs.npy`, `{initial|updated}_outputs.npy` (note: existing data uses "Week N" naming, new data will follow module naming)
+- File naming: `{initial|updated}_inputs.npy`, `{initial|updated}_outputs.npy` with updated files using "Week N" naming convention (e.g., `updated_inputs - Week 3.npy`)
 - Directory structure: `./data/f{1-8}/` with subdirectories for each problem
 
 ### Optimization Configuration
 
 - **Kernel**: Matern 5/2 (BoTorch default for SingleTaskGP) - assumes 2-times differentiable functions
 - **Acquisition**: Expected Improvement (EI) - balances exploitation of best known region vs exploration of uncertain areas
-- **Bounds**: [0, 0.999999] for all dimensions across all problems (f1-f8) per submission format requirements
+- **BO Search Bounds**: f1-f2 use fixed [0, 1] per dimension; f3-f8 use data-driven bounds with 10% margin (`min(X) - 0.1*range` to `max(X) + 0.1*range` per dimension) — see plan.md Bounds Strategy
+- **Submission Clamp**: All proposed coordinates clamped to [0, 0.999999] before formatting output (FR-004)
 - **Optimization**: L-BFGS-B via BoTorch's `optimize_acqf` with multiple random restarts
 
 ### Known Issues & Fixes Applied
 
 - **Issue**: AttributeError when accessing `gp_model.covar_module.outputscale` - BoTorch's SingleTaskGP may use RBFKernel (Matern) without ScaleKernel wrapper
 - **Fix**: Conditional check `if hasattr(gp_model.covar_module, 'outputscale')` before accessing, fallback to base_kernel.lengthscale
-- **Status**: Fixed in f1/f1.ipynb, needs to be applied to f2-f8
+- **Status**: Fixed in f1–f4 notebooks. Pending for: f6, f7, f8 (base_kernel access in visualization cells)
 
 ## Out of Scope
 
@@ -188,4 +219,4 @@ As a data scientist analyzing optimization progress, I need visualizations tailo
 
 ## Open Questions / Needs Clarification
 
-None - all critical decisions resolved. Alternative acquisition functions (UCB, PI) deferred to future modules if EI underperforms (see Out of Scope).
+None - all critical decisions resolved including results processing notebook requirements (Session 2026-02-14). Alternative acquisition functions (UCB, PI) deferred to future modules if EI underperforms (see Out of Scope).

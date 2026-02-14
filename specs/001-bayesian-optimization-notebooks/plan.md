@@ -36,8 +36,8 @@ Implement and validate Bayesian Optimization solutions for 8 black box optimizat
 
 **Scale/Scope**: 
 - 8 problems (f1-f8) spanning 2D to 8D dimensionality
-- 10 initial samples per problem
-- 13 module iterations (Modules 12-24) = 23 total observations per problem by end
+- Initial samples vary per function: f1=10, f2=10, f3=15, f4=30, f5=20, f6=20, f7=30, f8=40
+- 13 weekly iterations (Weeks 1–13) = initial_count + 13 total observations per problem by end
 - ~10-20 code cells per notebook + markdown documentation
 
 ## Constitution Check
@@ -84,11 +84,11 @@ capstone-sdd/
 │   ├── f4/
 │   │   └── f4.ipynb                    # 4D warehouse params (COMPLETE - TESTED)
 │   ├── f5/
-│   │   └── f5.ipynb                    # 5D (PENDING TEST)
+│   │   └── f5.ipynb                    # 4D chemical process (PENDING TEST)
 │   ├── f6/
-│   │   └── f6.ipynb                    # 6D (NEEDS FIX - base_kernel access)
+│   │   └── f6.ipynb                    # 5D cake recipe (NEEDS FIX - base_kernel access)
 │   ├── f7/
-│   │   └── f7.ipynb                    # 7D (NEEDS FIX - base_kernel access)
+│   │   └── f7.ipynb                    # 6D ML model (NEEDS FIX - base_kernel access)
 │   └── f8/
 │       └── f8.ipynb                    # 8D hyperparameter tuning (NEEDS FIX - base_kernel access)
 └── .specify/                            # SpecKit metadata (EXISTING)
@@ -183,14 +183,14 @@ BOUNDS = torch.tensor([x_min, x_max], dtype=torch.float64)
 
 **NUM_RESTARTS**:
 - f1-f2 (2D): 10 restarts (low-dimensional, fast optimization)
-- f3-f4 (3-4D): 15-20 restarts (moderate dimensionality)
-- f5-f8 (5-8D): 20-30 restarts (high-dimensional, more local optima)
+- f3-f5 (3-4D): 15-20 restarts (moderate dimensionality)
+- f6-f8 (5-8D): 20-30 restarts (high-dimensional, more local optima)
 - **Rationale**: Balances optimization quality vs compute time; more restarts for higher-D acquisition surfaces
 
 **RAW_SAMPLES**:
 - f1-f2 (2D): 512 samples (adequate coverage of 2D EI surface)
-- f3-f4 (3-4D): 1024 samples (denser sampling for moderate-D)
-- f5-f8 (5-8D): 2048-4096 samples (curse of dimensionality requires more initial candidates)
+- f3-f5 (3-4D): 1024 samples (denser sampling for moderate-D)
+- f6-f8 (5-8D): 2048-4096 samples (curse of dimensionality requires more initial candidates)
 - **Rationale**: Sobol sampling of acquisition function before gradient-based refinement; scales exponentially with dimension to maintain coverage
 
 ## Known Issues & Fixes Applied

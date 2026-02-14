@@ -29,10 +29,10 @@ This is a capstone project as part of a certificate course in AI and ML, focused
 ## Optimization Methodology
 
 ### Library and Framework
-- Use the **BoTorch library**
-- Gaussian Processes as the surrogate model
-- Expected Improvement as the acquisition function
-- (This may change later based on performance)
+- Use the **BoTorch library** as the default for Gaussian Process surrogates
+- Surrogate models are chosen per function based on problem characteristics (e.g., GP, polynomial response surface, tree-based ensembles, neural networks)
+- Acquisition functions are chosen per surrogate type (e.g., Expected Improvement for GP, Upper Confidence Bound for non-GP surrogates)
+- Additional libraries: **scikit-learn** (polynomial, Random Forest, Gradient Boost), **PyTorch** (neural network surrogates)
 
 ### Workflow Process
 1. Train models on initial data

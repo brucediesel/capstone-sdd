@@ -42,12 +42,12 @@ As a data scientist working on the radiation detection problem (f1), I need to r
 
 **Why this priority**: f1 is 2D and simplest to implement/visualize. Demonstrates polynomial modelling fundamentals.
 
-**Independent Test**: Execute the new "Week 5" section in f1.ipynb end-to-end using Week 5 data. Verify the polynomial model fits, coefficients are displayed, UCB acquisition proposes a valid next point within [0, 0.999999], and visualizations render.
+**Independent Test**: Execute the new "Week 5" section in f1.ipynb end-to-end using Week 5 data. Verify the polynomial model fits, coefficients are displayed, UCB acquisition proposes a valid next point within [0, 1.0], and visualizations render.
 
 **Acceptance Scenarios**:
 
 1. **Given** Week 5 cumulative data for f1 (15 samples × 2D), **When** the polynomial response surface cell executes, **Then** a second-degree polynomial (quadratic) is fitted using all 15 data points, the model coefficients and R² score are displayed, and the fitted surface is visualized as a contour plot
-2. **Given** fitted polynomial model, **When** the UCB acquisition cell executes, **Then** the acquisition function evaluates the polynomial on a dense grid of candidates, adds an exploration bonus based on distance from observed points, and proposes the next sample point with coordinates within [0, 0.999999]
+2. **Given** fitted polynomial model, **When** the UCB acquisition cell executes, **Then** the acquisition function evaluates the polynomial on a dense grid of candidates, adds an exploration bonus based on distance from observed points, and proposes the next sample point with coordinates within [0, 1.0]
 3. **Given** the proposed next point, **When** the convergence plot cell executes, **Then** a convergence plot shows the running maximum over all 15 observations including BO-submitted points, and the next submission point is formatted as `x1-x2` with 6 decimal places
 
 ### User Story 2 — Random Forest Surrogate for f2/f3 (Priority: P1)
@@ -96,7 +96,7 @@ As a data scientist working on the cake recipe (f6, 5D), ML hyperparameter tunin
    - Loss function (MSE)
    - Training loss curve is plotted showing convergence
 
-2. **Given** trained NN model, **When** the UCB acquisition cell executes, **Then** uncertainty is estimated via MC Dropout (training-mode forward passes) or an ensemble of NNs with different initializations, mean and std are computed from multiple forward passes, UCB formula `μ(x) + κ·σ(x)` is applied on random candidates, and the best point is proposed within [0, 0.999999]
+2. **Given** trained NN model, **When** the UCB acquisition cell executes, **Then** uncertainty is estimated via MC Dropout (training-mode forward passes) or an ensemble of NNs with different initializations, mean and std are computed from multiple forward passes, UCB formula `μ(x) + κ·σ(x)` is applied on random candidates, and the best point is proposed within [0, 1.0]
 
 3. **Given** the proposed next point for each function, **When** convergence cells execute, **Then** convergence plot shows running maximum over all observations, input gradient magnitude (avg |∂ŷ/∂xᵢ|) is computed to identify the top 2 most important dimensions, surrogate predictions are visualized via 2D slice plots for those dimensions, and the next submission point is formatted correctly
 
@@ -134,7 +134,7 @@ As a data scientist working on the cake recipe (f6, 5D), ML hyperparameter tunin
   - 3D (f3): 2D slice plot fixing least-important dimension at best observed value
   - 4D+ (f4–f8): pairwise 2D slice plots for top 2 most important input dimensions (RF/GBM: `feature_importances_`; NN: input gradient magnitude avg |∂ŷ/∂xᵢ|)
 - **FR-009**: Each notebook MUST generate a convergence plot showing the running maximum (best found) over all observations (initial + weekly submissions)
-- **FR-010**: Each notebook MUST display the proposed next sample point in submission format `x1-x2-...-xn` with 6 decimal places, clamped to [0, 0.999999]
+- **FR-010**: Each notebook MUST display the proposed next sample point in submission format `x1-x2-...-xn` with 6 decimal places, clamped to [0, 1.0]
 - **FR-011**: Each notebook MUST load Week 5 cumulative data from `../../data/f{N}/updated_inputs - Week 5.npy` and `../../data/f{N}/updated_outputs - Week 5.npy`
 - **FR-012**: All hyperparameters MUST include text justifications explaining why values were chosen, including dimension-specific rationale where applicable
 - **FR-013**: The CONSTITUTION.md MUST be updated to reflect that surrogate models may differ per function and are chosen based on problem characteristics
@@ -172,7 +172,7 @@ As a data scientist working on the cake recipe (f6, 5D), ML hyperparameter tunin
   - Feature importance: input gradient magnitude — avg |∂ŷ/∂xᵢ| over training points (for slice plot dimension selection)
 
 - **UCBAcquisition** (all notebooks):
-  - Attributes: κ (per-model exploration parameter), n_candidates (20,000 random points, fixed for all models), bounds [0, 0.999999]^D
+  - Attributes: κ (per-model exploration parameter), n_candidates (20,000 random points, fixed for all models), bounds [0, 1.0]^D
   - Formula: `UCB(x) = μ(x) + κ·σ(x)` — maximize to find next sample point
   - κ is tuned per model type to account for different uncertainty scales (distance-based vs tree variance vs ensemble std vs MC Dropout std). Each notebook documents its κ choice with justification. Higher κ → more exploratory, lower κ → more exploitative.
 
@@ -202,7 +202,7 @@ Since non-GP models don't integrate with BoTorch's `optimize_acqf`, the acquisit
 
 ```python
 # Generate random candidates within bounds (fixed 20,000 for all models)
-candidates = np.random.uniform(0, 0.999999, size=(20000, D))
+candidates = np.random.uniform(0, 1.0, size=(20000, D))
 
 # Get mean prediction and uncertainty from surrogate
 mean = model.predict(candidates)       # RF/GBM: .predict()
@@ -244,7 +244,7 @@ next_point = candidates[np.argmax(ucb)]
 - All 8 notebooks execute their Week 5 sections without errors
 - Each notebook uses the specified alternative surrogate model (polynomial/RF/GBM/NN)
 - Every hyperparameter has a documented justification in markdown
-- UCB acquisition proposes valid next points within [0, 0.999999] for all dimensions
+- UCB acquisition proposes valid next points within [0, 1.0] for all dimensions
 - Surrogate visualizations render appropriately for each dimensionality
 - Convergence plots show running maximum over all observations
 - Submission format `x1-x2-...-xn` with 6 decimal places is produced for each function

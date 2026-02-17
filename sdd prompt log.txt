@@ -49,3 +49,15 @@ Provide the next query for each function in this format
  - for f2, f3, f4, f5 replace the gaussian process with random forest and gradient boost, provide an appropriate acquisition function with hyperparamters clearly explained
  - for f6, f7, f8 replace the gaussian process surrogate function with neural networks clearly specifying hyperparameters in terms of number of hidden layers and nodes providing an appropriate acquisition function
  - add new sections to the notebooks that take week 5 data and propose a next location to sample, providing convergence plots, and surrogate function plots
+
+ /specify
+ - change validation of data in inputs and outputs to include values from 0.0 to 1.0
+
+ /specify
+ - start a new branch called "003-week6-focus_on_exploitation"
+ - start new sections in all notebooks for week 6 submission
+ - use the same surrogates and acquisition functions as week 5
+ - use the same vidualization as week 5
+ - adjust f1 acquisition function hyperparameters to focus on exploration
+ - adjust f2 to f8 acquisition functions to focus on exploitation
+ - process the outputs of week 6 submissions and propose a next location to sample providing the same visualization as week 5

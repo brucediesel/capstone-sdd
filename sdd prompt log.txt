@@ -1,0 +1,51 @@
+/constitution
+This is a capstone project as part of a certificate course in AI and ML.  
+As such, code should be as simple as possible with each step cleary explained.  
+The code must be submitted in the form of Jupyter notebooks.  
+The project is a black box optimisation challenge for which there are 8 separate black box optimisation problems.  
+Each problem should be solved in it's won jupyter notebook, stored in it's own folder withing the ./functions project folder.  
+The folders and ipynb files already exist.  
+The data for each problem is stored in the ./data folder structure, with a individual folder for each problem.
+The initial data provided with the problem is stored in files named initial_inputs.npy and initial_outputs.npy
+Use the Botorch library.
+No unit tests are required
+
+/constitution
+add to the existing constitution that each week, changes to the model, hyperparaters and code should be added to each notebook as a new section with the week number as the title.  Existing code cells should not be replaced.
+
+/specify initial challeng submission - 
+For each problem, load and display the initial inputs and output.
+Based on the problem discription suggest potential hyperparamters that may yeild good results.
+For each problem, construct a bayesian optimisation loop.
+The challenge requires the models to be trained on the initial data, then the next sample point to be proposed. 
+Each week these samples will be submitted and the results returned.  These reults then will be added to the data set and the optimisation executed again, resulting in a new sample point - this process repeats.
+Each model should clearly specify the hyperparameters used, explain why their values have been chosen.
+Each model should provide clear visualisation of the surrogate function in the problem space, and the convergence of the objective
+The input and output dimensions, as well as some background information to each black box is specified in the jupyter notebooks for each problem.  Use these to create appropriate visualisations
+
+/clarify
+
+/plan plan this so that the initial inputs and outputs are processed and each notebook is executed and tested
+
+/specify The number of data points you work with will increase by one each module: starting with ten data points in Module 12, 11 data points in Module 13 and continuing up to 22 data points by the end of Module 24. 
+Each query must follow this format: x1-x2-x3-...-xn, where each xᵢ must begin with 0 and is specified to six decimal places decimal places (for example, 0.123456-0.654321 for a 2D function).
+Provide the next query for each function in this format
+
+/specify all inputs should be in the range 0 to 0.999999
+
+/specify change the source data files to "updated_inputs - Week 4.npy" and "updated_outputs - Week 4.npy" for all 8 functions, using the corresponding data file folder for each function
+
+/specify 
+- create a new python notebook in the functions/results folder to perform the following:
+ - prompt for the week number to process
+ - read the inputs and the outputs from the black box samples from the data/results directory in text files named "inputs - week X.txt" and "outputs - week X.txt" where X is the number of the weeks submission.
+ - These files contain the full set of inputs and outputs for all the functions 1 - 8
+ - create the npy files in the same format as the current files, putting the inputs and outputs in the appropriate data folders, naming them "updated_inputs - Week X.npy" and "updated_outputs - Week X.npy"
+ - display the updated inputs and outputs in tabular form and provide a convergence graph for the outputs.
+
+ /specify
+ - create a new code brach for a new submission - week 5
+ - for f1 change the surrogate function to a polynomial response surface (quadratic) as a surrgate function, clearly showing the hyperparameters that can be modified.  Provide the approporate acquistion function, again providing the hyperparamters with clear explanations
+ - for f2, f3, f4, f5 replace the gaussian process with random forest and gradient boost, provide an appropriate acquisition function with hyperparamters clearly explained
+ - for f6, f7, f8 replace the gaussian process surrogate function with neural networks clearly specifying hyperparameters in terms of number of hidden layers and nodes providing an appropriate acquisition function
+ - add new sections to the notebooks that take week 5 data and propose a next location to sample, providing convergence plots, and surrogate function plots

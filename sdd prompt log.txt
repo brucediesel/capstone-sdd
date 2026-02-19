@@ -34,3 +34,11 @@ Provide the next query for each function in this format
 /specify all inputs should be in the range 0 to 0.999999
 
 /specify change the source data files to "updated_inputs - Week 4.npy" and "updated_outputs - Week 4.npy" for all 8 functions, using the corresponding data file folder for each function
+
+/specify 
+- create a new python notebook in the functions/results folder to perform the following:
+ - prompt for the week number to process
+ - read the inputs and the outputs from the black box samples from the data/results directory in text files named "inputs - week X.txt" and "outputs - week X.txt" where X is the number of the weeks submission.
+ - These files contain the full set of inputs and outputs for all the functions 1 - 8
+ - create the npy files in the same format as the current files, putting the inputs and outputs in the appropriate data folders, naming them "updated_inputs - Week X.npy" and "updated_outputs - Week X.npy"
+ - display the updated inputs and outputs in tabular form and provide a convergence graph for the outputs.

@@ -41,4 +41,27 @@ Provide the next query for each function in this format
  - read the inputs and the outputs from the black box samples from the data/results directory in text files named "inputs - week X.txt" and "outputs - week X.txt" where X is the number of the weeks submission.
  - These files contain the full set of inputs and outputs for all the functions 1 - 8
  - create the npy files in the same format as the current files, putting the inputs and outputs in the appropriate data folders, naming them "updated_inputs - Week X.npy" and "updated_outputs - Week X.npy"
+<<<<<<< HEAD
  - display the updated inputs and outputs in tabular form and provide a convergence graph for the outputs.
+=======
+ - display the updated inputs and outputs in tabular form and provide a convergence graph for the outputs.
+
+ /specify
+ - create a new code brach for a new submission - week 5
+ - for f1 change the surrogate function to a polynomial response surface (quadratic) as a surrgate function, clearly showing the hyperparameters that can be modified.  Provide the approporate acquistion function, again providing the hyperparamters with clear explanations
+ - for f2, f3, f4, f5 replace the gaussian process with random forest and gradient boost, provide an appropriate acquisition function with hyperparamters clearly explained
+ - for f6, f7, f8 replace the gaussian process surrogate function with neural networks clearly specifying hyperparameters in terms of number of hidden layers and nodes providing an appropriate acquisition function
+ - add new sections to the notebooks that take week 5 data and propose a next location to sample, providing convergence plots, and surrogate function plots
+
+ /specify
+ - change validation of data in inputs and outputs to include values from 0.0 to 1.0
+
+ /specify
+ - start a new branch called "003-week6-focus_on_exploitation"
+ - start new sections in all notebooks for week 6 submission
+ - use the same surrogates and acquisition functions as week 5
+ - use the same vidualization as week 5
+ - adjust f1 acquisition function hyperparameters to focus on exploration
+ - adjust f2 to f8 acquisition functions to focus on exploitation
+ - process the outputs of week 6 submissions and propose a next location to sample providing the same visualization as week 5
+>>>>>>> 003-week6-focus-on-exploitation

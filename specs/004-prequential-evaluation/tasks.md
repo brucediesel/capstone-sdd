@@ -206,3 +206,107 @@ Task T013-T014: "Verify BART default evaluation (cells 19-23)"
 - "Verify" tasks mean: review the existing auto-generated code, fix any issues found, and confirm correct execution
 - The notebook already has 36 cells with mostly correct structure — this is a fix-and-validate workflow, not a build-from-scratch workflow
 - Commit after each phase for clean git history
+
+
+---
+
+# F2 Tasks: Prequential Evaluation — GP vs BART vs Random Forest
+
+**Input**: spec.md (F2 section), plan.md (F2 section)
+**Target file**: `functions/f2/preq-eval-f2.ipynb` (NEW — create from scratch)
+
+## Format: `[ID] [P?] [Story] Description`
+
+- **[P]**: Can run in parallel
+- All paths relative to repository root
+
+---
+
+## Phase F2-1: Setup (Create Notebook Foundation)
+
+**Purpose**: Create the notebook file with imports, data loading, and shared utility functions
+
+- [x] T-F2-001 Create `functions/f2/preq-eval-f2.ipynb` with title markdown cell (F2 overview: 2D input, maximise, noisy log-likelihood, 3 surrogates, 30 configs) and evaluation metrics markdown cell
+- [x] T-F2-002 Add imports cell: numpy, torch, matplotlib, pandas, warnings, botorch/gpytorch (SingleTaskGP, kernels, likelihood, constraints), pymc, pymc_bart, sklearn (RandomForestRegressor). Set seeds.
+- [x] T-F2-003 Add data loading cell: `WEEK = 6`, load from `../../data/f2/updated_inputs - Week {WEEK}.npy` and outputs, set `N_INIT = 10`, print data summary (FR-F2-001, FR-F2-002)
+- [x] T-F2-004 Add `compute_metrics()` function cell — same as F1: MAE, NLP (clipped std), 95% Coverage (FR-F2-004)
+- [x] T-F2-005 Add `plot_prequential_results()` function cell — same as F1: 3-panel (predictions vs actuals, absolute error, NLP per step) (FR-F2-013)
+
+**Checkpoint**: Notebook has 10 cells (5 md + 5 code), imports work, data loads correctly
+
+---
+
+## Phase F2-2: GP Evaluation (User Stories F2-1, F2-2)
+
+**Purpose**: Implement GP default and HP optimisation sections
+
+- [x] T-F2-006 Add `gp_prequential_evaluation()` function (default GP with Matern 5/2) — same as F1 (FR-F2-005, FR-F2-003)
+- [x] T-F2-007 Add GP default execution cell and visualisation cell with `plot_prequential_results()` (FR-F2-013)
+- [x] T-F2-008 Add `gp_prequential_with_config()` function with kernel switching, log-transform option, noise constraint — same as F1 (FR-F2-005, FR-F2-009)
+- [x] T-F2-009 Add 10 GP `hp_configs` list and HP optimisation loop cell (FR-F2-008, FR-F2-009)
+- [x] T-F2-010 Add best GP selection cell — select by lowest NLP, display DataFrame
+
+**Checkpoint**: GP section complete — 10 configs evaluated with metrics and plots
+
+---
+
+## Phase F2-3: BART Evaluation (User Stories F2-3, F2-4)
+
+**Purpose**: Implement BART default and HP optimisation sections
+
+- [x] T-F2-011 Add `bart_prequential_evaluation()` function — same as F1 (FR-F2-006, FR-F2-003)
+- [x] T-F2-012 Add BART default execution cell and visualisation cell (FR-F2-013)
+- [x] T-F2-013 Add 10 `bart_configs` list and HP optimisation loop cell (FR-F2-008, FR-F2-010)
+- [x] T-F2-014 Add best BART selection cell — select by lowest NLP, display DataFrame
+
+**Checkpoint**: BART section complete — 10 configs evaluated with metrics and plots
+
+---
+
+## Phase F2-4: Random Forest Evaluation (User Stories F2-5, F2-6) — NEW
+
+**Purpose**: Implement RF default and HP optimisation sections (new for F2)
+
+- [x] T-F2-015 Add `rf_prequential_evaluation()` function — train RF on training set, predict test point, uncertainty via individual tree predictions (tree_preds.mean, tree_preds.std). Print step-by-step results. (FR-F2-007, FR-F2-003)
+- [x] T-F2-016 Add RF default execution cell (n_estimators=100, max_depth=None, min_samples_leaf=1) and visualisation cell (FR-F2-013)
+- [x] T-F2-017 Add `rf_prequential_with_config()` function — accepts config dict with n_estimators, max_depth, min_samples_leaf, bootstrap. Returns metrics dict. (FR-F2-007, FR-F2-011)
+- [x] T-F2-018 Add 10 `rf_configs` list and HP optimisation loop cell (FR-F2-008, FR-F2-011)
+- [x] T-F2-019 Add best RF selection cell — select by lowest NLP, display DataFrame
+
+**Checkpoint**: RF section complete — 10 configs evaluated with metrics and plots
+
+---
+
+## Phase F2-5: 3-Way Comparison (User Story F2-7)
+
+**Purpose**: Compare best GP vs best BART vs best RF and rank all 30 configurations
+
+- [x] T-F2-020 Add 3-way comparison table cell — best GP, best BART, best RF side-by-side with metric winners (FR-F2-012)
+- [x] T-F2-021 Add 3-panel bar chart cell — MAE, NLP, Coverage with 3 bars per metric (FR-F2-013)
+- [x] T-F2-022 Add sensitivity horizontal bar chart cell — all 30 configs grouped by model type (FR-F2-013)
+- [x] T-F2-023 Add full ranked table cell — combine all 30 configs, sort by NLP, 1-based rank (FR-F2-014)
+- [x] T-F2-024 Add conclusions markdown cell — key findings, best model for F2, implications
+
+**Checkpoint**: Full notebook complete with 3-way comparison and 30-row ranked table
+
+---
+
+## Phase F2-6: Polish & Validation
+
+**Purpose**: End-to-end validation
+
+- [x] T-F2-025 Run all cells of `functions/f2/preq-eval-f2.ipynb` top-to-bottom and verify no errors (SC-F2-001)
+- [x] T-F2-026 Verify 30 configs × 6 predictions each = 180 total predictions (SC-F2-002)
+- [x] T-F2-027 Verify all visualisations are clear and labelled (SC-F2-005)
+- [x] T-F2-028 Verify each code step has a preceding markdown explanation (SC-F2-006)
+
+---
+
+## Dependencies & Execution Order (F2)
+
+- **Phase F2-1** (Setup): No dependencies — start here
+- **Phase F2-2** (GP): Depends on Phase F2-1
+- **Phase F2-3** (BART): Depends on Phase F2-1; can run in parallel with Phase F2-2
+- **Phase F2-4** (RF): Depends on Phase F2-1; can run in parallel with Phases F2-2 and F2-3
+- **Phase F2-5** (Comparison): Depends on Phases F2-2, F2-3, and F2-4
+- **Phase F2-6** (Polish): Depends on all phases

@@ -61,3 +61,27 @@ Provide the next query for each function in this format
  - adjust f1 acquisition function hyperparameters to focus on exploration
  - adjust f2 to f8 acquisition functions to focus on exploitation
  - process the outputs of week 6 submissions and propose a next location to sample providing the same visualization as week 5
+
+# waiting for submission 7 results - perform Prequential Evaluation on different surrogates to assess prediction performance now we have some data - start with f1
+ /specify
+ - create a new notebook in the functions/f1 folder named "preq-eval-f1.ipynb"
+ - This notebook is used to perform Prequential Evaluation of Surrogate performance starting only with F1
+ - The goal is to identify the best surrogate model, and hyperparameters for each function in the challenge
+ - start with function 1
+ - For each surrogate model, train the model with the initial 10 inputs and outputs, with initial best guess of hyperparameters for the type of function
+ - then for each of the remaining samples, predict the output for the sample, and calcaluate the error between the prediction and the sample.  retrain the model and repeat the process untill all predictions and actual results have been evaluated.  Provide an overall error metrics, including MAE, NLP and coverage of 95% interval
+ - Optimise the hyperparameters for 10 iterations
+ - Perform this optimisation for Gaussian Processes and BART
+ - compare the results of the two types of surrogate model
+
+/specify
+- extend the 004-prequential-evaluation specification, using the same code branch
+- create a new notebook in the functions/f2 folder named "preq-eval-f2.ipynb"
+ - This notebook is used to perform Prequential Evaluation of Surrogate performance starting only with F2
+ - The goal is to identify the best surrogate model, and hyperparameters for each function in the challenge
+ - For each surrogate model, train the model with the initial 10 inputs and outputs, with initial best guess of hyperparameters for the type of function
+ - then for each of the remaining samples, predict the output for the sample, and calcaluate the error between the prediction and the sample.  retrain the model and repeat the process untill all predictions and actual results have been evaluated.  Provide an overall error metrics, including MAE, NLP and coverage of 95% interval
+ - Optimise the hyperparameters for 10 iterations
+ - Perform this optimisation for Gaussian Processes, BART, and Random Forest
+ - compare the results of the three types of surrogate model
+ 

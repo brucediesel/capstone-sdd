@@ -231,3 +231,196 @@ data/
 - Keep log-transform as GP config option even though F2 likely doesn't need it
 - Same prequential protocol as F1 (train on first 10, predict steps 11–16)
 - Ranking by NLP (lower is better), same as F1
+
+---
+
+# Implementation Plan: F3 — Prequential Evaluation (GP vs BART vs Random Forest)
+
+**Date**: 2026-02-20 | **Spec**: [spec.md](spec.md) (F3 section)
+
+## Summary
+
+Create a new notebook `functions/f3/preq-eval-f3.ipynb` from scratch (based on the F2 notebook pattern) that performs prequential one-step-ahead evaluation of three surrogate model families on Function 3 (drug discovery — minimise adverse reactions from 3 compounds, 3D input). The notebook includes GP (BoTorch), BART (PyMC-BART), and Random Forest (scikit-learn) with **15 configurations each** (45 total), plus a three-way comparison.
+
+## Technical Context (F3)
+
+**Language/Version**: Python 3.14.2 (pyenv sdd-dev)
+**Primary Dependencies**: BoTorch/GPyTorch (GP), PyMC + PyMC-BART (BART), scikit-learn (RF), numpy, pandas, matplotlib
+**Storage**: `.npy` files in `data/f3/`
+**Testing**: No unit tests required (per CONSTITUTION) — manual notebook execution validates
+**Target Platform**: Jupyter Notebooks
+**Project Type**: Single project — 1 new Jupyter notebook
+**Performance Goals**: Full notebook executes in <15 minutes (45 configs, BART MCMC is bottleneck)
+**Scale/Scope**: 1 notebook, ~46 cells (23 markdown + 23 code)
+
+## Constitution Check (F3)
+
+| Constitution Principle | Status | Notes |
+|----------------------|--------|-------|
+| Code as simple as possible | ✅ PASS | Each step has a markdown explanation cell |
+| All code in Jupyter notebooks | ✅ PASS | Single .ipynb file |
+| No unit tests required | ✅ PASS | N/A |
+| 8 separate problems, each in own notebook | ✅ PASS | Notebook in `functions/f3/` |
+| Data in `./data` folder structure | ✅ PASS | Loads from `data/f3/` |
+| Use BoTorch library | ✅ PASS | GP via BoTorch SingleTaskGP |
+| scikit-learn for RF | ✅ PASS | RF via RandomForestRegressor |
+| Hyperparameters documented | ✅ PASS | 15 GP + 15 BART + 15 RF configs with labels |
+| Visualisations provided | ✅ PASS | 3-panel plots + bar charts + ranked table |
+
+**Gate Result**: ✅ ALL PASS
+
+## Project Structure (F3)
+
+### Source Code
+
+```text
+functions/
+└── f3/
+    ├── f3.ipynb               # Existing BO notebook (not modified)
+    └── preq-eval-f3.ipynb     # NEW — prequential evaluation notebook
+
+data/
+└── f3/
+    ├── updated_inputs - Week 6.npy    # Already exists (16×3)
+    └── updated_outputs - Week 6.npy   # Already exists (16,)
+```
+
+## Key Differences from F2
+
+| Aspect | F2 | F3 |
+|--------|----|----|
+| Input dimensions | 2 | **3** (compound concentrations) |
+| Problem domain | Log-likelihood | **Drug discovery** (adverse reactions) |
+| HP configs per family | 10 | **15** |
+| Total configurations | 30 | **45** |
+| GP kernels | Matérn 5/2, RBF | Matérn 5/2, **Matérn 3/2**, RBF |
+| BART max draws | 500 | **1000** |
+| RF max_depth options | None, 5, 10 | None, **3**, 5, 10 |
+
+## Steps (F3)
+
+1. **Create notebook** with all cells following the F2 pattern, adapted for F3
+2. **Adapt data loading** for F3 paths (3D inputs, `../../data/f3/`)
+3. **Enhance GP configs** — add Matérn 3/2 kernel (less smooth, suits drug response) for 15 configurations
+4. **Enhance BART configs** — add draws=1000 for posterior convergence assessment, for 15 configurations
+5. **Enhance RF configs** — add max_depth=3 and min_samples_leaf=3 for small-data 3D regime, for 15 configurations
+6. **Build 3-way comparison** of best GP vs BART vs RF by NLP
+7. **Build 45-row ranked table** sorted by NLP
+8. **Run and validate** — all cells execute without errors
+
+## Verification (F3)
+
+- **SC-F3-001**: All cells execute without errors
+- **SC-F3-002**: 6 one-step-ahead predictions per config (45 configs × 6 = 270 total predictions)
+- **SC-F3-003**: Final 3-way comparison identifies best surrogate for F3
+- **SC-F3-004**: All three metrics (MAE, NLP, Coverage) reported for every configuration
+- **SC-F3-005**: Visualisations clear, labelled
+- **SC-F3-006**: Code is simple, each step explained
+
+## Decisions (F3)
+
+- Build new notebook from scratch following F2 pattern
+- Add Matérn 3/2 kernel to GP configs for less-smooth drug response surfaces
+- Increase to 15 HP configurations per model (as specified)
+- Include BART draws=1000 to test whether more MCMC samples improve calibration
+- Include RF max_depth=3 and min_samples_leaf=3 for regularisation in small 3D datasets
+- Ranking by NLP (lower is better), consistent with F1/F2
+
+---
+
+# Implementation Plan: F4 — Prequential Evaluation (Single Fidelity GP vs Multi Fidelity GP)
+
+**Date**: 2026-02-20 | **Spec**: [spec.md](spec.md) (F4 section)
+
+## Summary
+
+Create a new notebook `functions/f4/preq-eval-f4.ipynb` from scratch that performs prequential one-step-ahead evaluation of two GP surrogate families and Gradient Boosted Trees on Function 4 (warehouse product placement, 4D input, 30 initial points). The notebook includes Single Fidelity GP (BoTorch `SingleTaskGP`), Multi Fidelity GP (BoTorch `SingleTaskMultiFidelityGP` with autoregressive/co-kriging kernel), and Gradient Boosted Trees (scikit-learn `GradientBoostingRegressor`) with **15 configurations each** (45 total), plus a three-way comparison.
+
+## Technical Context (F4)
+
+**Language/Version**: Python 3.14.2 (pyenv sdd-dev)
+**Primary Dependencies**: BoTorch/GPyTorch (SF-GP and MF-GP), scikit-learn (GBT), numpy, pandas, matplotlib
+**Storage**: `.npy` files in `data/f4/`
+**Testing**: No unit tests required (per CONSTITUTION) — manual notebook execution validates
+**Target Platform**: Jupyter Notebooks
+**Project Type**: Single project — 1 new Jupyter notebook
+**Performance Goals**: Full notebook executes in <15 minutes (45 configs, GBT quantile regression adds moderate overhead)
+**Scale/Scope**: 1 notebook, ~52 cells (26 markdown + 26 code)
+
+## Constitution Check (F4)
+
+| Constitution Principle | Status | Notes |
+|----------------------|--------|-------|
+| Code as simple as possible | ✅ PASS | Each step has a markdown explanation cell |
+| All code in Jupyter notebooks | ✅ PASS | Single .ipynb file |
+| No unit tests required | ✅ PASS | N/A |
+| 8 separate problems, each in own notebook | ✅ PASS | Notebook in `functions/f4/` |
+| Data in `./data` folder structure | ✅ PASS | Loads from `data/f4/` |
+| Use BoTorch library | ✅ PASS | SF-GP via SingleTaskGP, MF-GP via SingleTaskMultiFidelityGP |
+| scikit-learn for GBT | ✅ PASS | GBT via GradientBoostingRegressor |
+| Hyperparameters documented | ✅ PASS | 15 SF-GP + 15 MF-GP + 15 GBT configs with labels |
+| Visualisations provided | ✅ PASS | 3-panel plots + bar charts + ranked table |
+
+**Gate Result**: ✅ ALL PASS
+
+## Project Structure (F4)
+
+### Source Code
+
+```text
+functions/
+└── f4/
+    ├── f4.ipynb               # Existing BO notebook (not modified)
+    └── preq-eval-f4.ipynb     # NEW — prequential evaluation notebook
+
+data/
+└── f4/
+    ├── updated_inputs - Week 6.npy    # Already exists (36×4)
+    └── updated_outputs - Week 6.npy   # Already exists (36,)
+```
+
+## Key Differences from F3
+
+| Aspect | F3 | F4 |
+|--------|----|----|
+| Input dimensions | 3 | **4** (warehouse parameters) |
+| Problem domain | Drug discovery | **Warehouse product placement** |
+| Initial samples | 10 | **30** |
+| Total samples | 16 | **36** |
+| Surrogate families | GP, BART, RF | **Single Fidelity GP, Multi Fidelity GP, GBT** |
+| HP configs per family | 15 | **15** |
+| Total configurations | 45 | **45** |
+| Output range | Moderate | **Wide negative (-32.6 to 0.5)** |
+
+## Steps (F4)
+
+1. **Create notebook** with all cells following the F3 pattern, adapted for F4
+2. **Adapt data loading** for F4 paths (4D inputs, `../../data/f4/`, N_INIT=30)
+3. **Implement SF-GP** — reuse GP pattern from F3, add output standardisation option for wide-range outputs
+4. **Implement MF-GP** — use BoTorch `SingleTaskMultiFidelityGP` with synthetic fidelity column, vary kernel and fidelity structure
+5. **Implement GBT** — use scikit-learn `GradientBoostingRegressor` with quantile regression for uncertainty estimation
+6. **Build 15 SF-GP configs** — kernel × transform × noise bounds
+7. **Build 15 MF-GP configs** — kernel × fidelity structure × transform × noise bounds
+8. **Build 15 GBT configs** — n_estimators × learning_rate × max_depth × subsample
+9. **Build 3-way comparison** of best SF-GP vs best MF-GP vs best GBT by NLP
+10. **Build 45-row ranked table** sorted by NLP
+11. **Run and validate** — all cells execute without errors
+
+## Verification (F4)
+
+- **SC-F4-001**: All cells execute without errors
+- **SC-F4-002**: 6 one-step-ahead predictions per config (45 configs × 6 = 270 total predictions)
+- **SC-F4-003**: Final 3-way comparison identifies best surrogate for F4
+- **SC-F4-004**: All three metrics (MAE, NLP, Coverage) reported for every configuration
+- **SC-F4-005**: Visualisations clear, labelled
+- **SC-F4-006**: Code is simple, each step explained
+
+## Decisions (F4)
+
+- Build new notebook from scratch following F3 pattern
+- Use BoTorch `SingleTaskMultiFidelityGP` for MF-GP with synthetic fidelity dimension
+- Use scikit-learn `GradientBoostingRegressor` for GBT with quantile regression for uncertainty
+- Include output standardisation as a config option (important for wide output range)
+- Include log-transform as a config option for SF-GP (outputs span orders of magnitude)
+- N_INIT = 30 (F4 starts with 30 initial samples, unlike F1–F3 which use 10)
+- Ranking by NLP (lower is better), consistent with F1–F3

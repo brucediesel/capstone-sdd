@@ -379,3 +379,387 @@ data/f2/updated_outputs - Week 6.npy ──┤
                                         ▼
                               Tables + Visualisations
 ````
+
+---
+
+# Function 3: Prequential Evaluation — GP vs BART vs Random Forest
+
+## Overview (F3)
+
+Create a new Jupyter notebook (`functions/f3/preq-eval-f3.ipynb`) that performs **prequential (one-step-ahead) evaluation** of surrogate model predictive performance for the drug discovery problem (Function 3).
+
+The evaluation follows the same prequential protocol as F1/F2: train on the initial 10 data points, predict the next observation one step ahead, record the error, retrain, and repeat until all 16 available points have been processed (6 evaluation steps).
+
+**Three** surrogate families are compared:
+1. **Gaussian Process** (via BoTorch/GPyTorch)
+2. **BART — Bayesian Additive Regression Trees** (via PyMC-BART)
+3. **Random Forest** (via scikit-learn)
+
+For each surrogate family, hyperparameters are optimised over **15 configurations** (45 total), and the best configuration of each family is compared in a three-way comparison.
+
+### Function 3 Context
+
+| Property | Value |
+|----------|-------|
+| Problem | Drug discovery — minimise adverse reactions from 3 compounds |
+| Input dimensions | 3 |
+| Output dimensions | 1 |
+| Objective | Maximise (transformed: negative of side effects) |
+| Input range | [0, 1] |
+| Output characteristics | Number of adverse reactions (transformed); moderate range |
+| Initial samples | 10 |
+| Total samples (Week 6) | 16 |
+| Evaluation steps | 6 one-step-ahead predictions |
+
+### Key Differences from F2
+
+| Aspect | F2 | F3 |
+|--------|----|----|
+| Input dimensions | 2 | **3** |
+| Problem domain | Log-likelihood estimation | **Drug discovery** |
+| HP configs per family | 10 | **15** |
+| Total configurations | 30 | **45** |
+| GP kernels tested | Matérn 5/2, RBF | Matérn 5/2, **Matérn 3/2**, RBF |
+
+## User Scenarios & Testing (F3)
+
+### User Story F3-1 — Run GP Prequential Evaluation on F3 (Priority: P1)
+
+As a student, I want to train a GP on the initial 10 F3 data points (3D compound concentrations), then sequentially predict each of the 6 remaining observations one step ahead, recording MAE, NLP, and 95% coverage, so that I can assess GP predictive quality on the 3D drug discovery problem.
+
+**Independent Test**: Run GP section cells. Verify 6 predictions with metrics and 3-panel plots.
+
+---
+
+### User Story F3-2 — Optimise GP Hyperparameters on F3 (Priority: P1)
+
+As a student, I want to evaluate 15 GP configurations for F3 (including Matérn 3/2 for potentially less-smooth drug response surfaces), so that I can identify the best-calibrated GP.
+
+**Independent Test**: Run GP HP cells. Verify 15-row results DataFrame.
+
+---
+
+### User Story F3-3 — Run BART Prequential Evaluation on F3 (Priority: P1)
+
+As a student, I want to train BART on the initial 10 F3 data points and perform the same evaluation, so that BART provides a second surrogate baseline that can naturally capture compound interactions.
+
+**Independent Test**: Run BART section cells. Verify 6 predictions with metrics and plots.
+
+---
+
+### User Story F3-4 — Optimise BART Hyperparameters on F3 (Priority: P1)
+
+As a student, I want to evaluate 15 BART configurations for F3 (including higher MCMC draws of 1000 for convergence assessment).
+
+**Independent Test**: Run BART HP cells. Verify 15-row results DataFrame.
+
+---
+
+### User Story F3-5 — Run Random Forest Prequential Evaluation on F3 (Priority: P1)
+
+As a student, I want to train a Random Forest on the initial 10 F3 data points and perform one-step-ahead evaluation with uncertainty estimates, so that I have a third surrogate to compare.
+
+**Independent Test**: Run RF section cells. Verify 6 predictions with MAE, NLP, Coverage, and plots.
+
+---
+
+### User Story F3-6 — Optimise Random Forest Hyperparameters on F3 (Priority: P1)
+
+As a student, I want to evaluate 15 RF configurations (including shallow trees and higher min_samples_leaf for the small-data 3D regime).
+
+**Independent Test**: Run RF HP cells. Verify 15-row results DataFrame.
+
+---
+
+### User Story F3-7 — Compare GP vs BART vs RF on F3 (Priority: P1)
+
+As a student, I want a three-way comparison of the best GP, best BART, and best RF configurations, with bar charts and a ranked summary table of all 45 configurations, so that I can determine the best surrogate for F3.
+
+**Independent Test**: Run comparison cells. Verify 3-way comparison table, bar charts, and full 45-row ranked table.
+
+---
+
+### Edge Cases (F3)
+
+- 3D input space with only 10 initial points: Curse of dimensionality may affect GP lengthscale estimation. ARD helps by learning per-dimension lengthscales.
+- Drug response surfaces may have discontinuities or flat regions: Matérn 3/2 and tree-based models (BART, RF) may handle these better than smoother kernels.
+- RF uncertainty with shallow trees (`max_depth=3`): May produce more conservative (wider) prediction intervals.
+
+## Requirements (F3)
+
+### Functional Requirements (F3)
+
+- **FR-F3-001**: Notebook MUST define a `WEEK` variable (default `6`) and load data from `../../data/f3/updated_inputs - Week {WEEK}.npy` and `../../data/f3/updated_outputs - Week {WEEK}.npy`.
+- **FR-F3-002**: Notebook MUST use the first 10 data points as the initial training set.
+- **FR-F3-003**: Notebook MUST perform one-step-ahead prequential evaluation (same protocol as F1/F2).
+- **FR-F3-004**: Notebook MUST compute MAE, NLP, and Coverage of 95% prediction interval for each configuration.
+- **FR-F3-005**: Notebook MUST evaluate GP surrogates using BoTorch `SingleTaskGP`.
+- **FR-F3-006**: Notebook MUST evaluate BART surrogates using PyMC-BART.
+- **FR-F3-007**: Notebook MUST evaluate RF surrogates using scikit-learn `RandomForestRegressor`, deriving uncertainty from individual tree predictions.
+- **FR-F3-008**: Notebook MUST optimise hyperparameters for each of the 3 surrogate families across **15 configurations** (45 total).
+- **FR-F3-009**: GP hyperparameters to vary: kernel type (Matérn 5/2, Matérn 3/2, RBF), output log-transform (yes/no), noise lower bound (1e-4, 1e-5, 1e-6).
+- **FR-F3-010**: BART hyperparameters to vary: number of trees (10, 20, 50, 100, 200), MCMC draws (200, 500, 1000), burn-in/tune (100, 200).
+- **FR-F3-011**: RF hyperparameters to vary: n_estimators (50, 100, 200, 500), max_depth (None, 3, 5, 10), min_samples_leaf (1, 2, 3, 5), bootstrap (True/False).
+- **FR-F3-012**: Notebook MUST produce a 3-way comparison of best GP vs best BART vs best RF by NLP.
+- **FR-F3-013**: Notebook MUST produce visualisations: predictions vs actuals with uncertainty, absolute error, NLP per step, and bar-chart comparisons.
+- **FR-F3-014**: Notebook MUST produce a full ranked results table of all 45 configurations sorted by NLP.
+- **FR-F3-015**: Each code step MUST be clearly explained in markdown cells.
+- **FR-F3-016**: Notebook MUST be stored at `functions/f3/preq-eval-f3.ipynb`.
+
+### Key Entities (F3)
+
+- **ARD (Automatic Relevance Determination)**: Per-dimension lengthscales in GP kernels, particularly important for 3D input to learn which compounds matter most.
+- **Matérn 3/2 kernel**: Less smooth than Matérn 5/2; included for F3 because drug response surfaces may not be twice-differentiable.
+
+## Success Criteria (F3)
+
+- **SC-F3-001**: Notebook executes end-to-end without errors.
+- **SC-F3-002**: 6 one-step-ahead predictions for each of the 45 configurations (15 GP + 15 BART + 15 RF).
+- **SC-F3-003**: Final comparison table identifies the best surrogate for F3.
+- **SC-F3-004**: All three metrics reported for every configuration.
+- **SC-F3-005**: Visualisations clear, labelled, capstone-report ready.
+- **SC-F3-006**: Code is simple with each step clearly explained.
+
+## Technical Notes (F3)
+
+### Data Flow (F3)
+
+````
+data/f3/updated_inputs - Week 6.npy  ──┐
+data/f3/updated_outputs - Week 6.npy ──┤
+                                        ▼
+                              Load all 16 points
+                                        │
+                    ┌───────────────────┼───────────────────┐
+                    ▼                   ▼                   ▼
+              GP Evaluation       BART Evaluation      RF Evaluation
+              (15 configs)        (15 configs)         (15 configs)
+                    │                   │                   │
+                    ▼                   ▼                   ▼
+             GP Results DF        BART Results DF     RF Results DF
+                    │                   │                   │
+                    └───────────────────┼───────────────────┘
+                                        ▼
+                           3-way Comparison & Ranking
+                                        │
+                                        ▼
+                              Tables + Visualisations
+````
+
+---
+
+# Function 4: Prequential Evaluation — Single Fidelity GP vs Multi Fidelity GP
+
+## Overview (F4)
+
+Create a new Jupyter notebook (`functions/f4/preq-eval-f4.ipynb`) that performs **prequential (one-step-ahead) evaluation** of surrogate model predictive performance for the warehouse product placement problem (Function 4).
+
+The evaluation follows the same prequential protocol as F1–F3: train on the initial 30 data points, predict the next observation one step ahead, record the error, retrain, and repeat until all 36 available points have been processed (6 evaluation steps).
+
+**Three** surrogate families are compared:
+1. **Single Fidelity GP** (via BoTorch/GPyTorch `SingleTaskGP`)
+2. **Multi Fidelity GP** (via BoTorch `SingleTaskMultiFidelityGP` with an autoregressive co-kriging approach)
+3. **Gradient Boosted Trees (GBT)** (via scikit-learn `GradientBoostingRegressor`)
+
+For each surrogate family, hyperparameters are optimised over **15 configurations** (45 total), and the best configuration of each family is compared in a three-way comparison.
+
+### Function 4 Context
+
+| Property | Value |
+|----------|-------|
+| Problem | Warehouse product placement — optimally placing products across warehouses |
+| Input dimensions | 4 |
+| Output dimensions | 1 |
+| Objective | Maximise |
+| Input range | [0, 1] |
+| Output characteristics | Wide negative range (-32.63 to 0.53); mean ≈ -14.72; std ≈ 8.66; many local optima |
+| Initial samples | 30 |
+| Total samples (Week 6) | 36 |
+| Evaluation steps | 6 one-step-ahead predictions |
+
+### Key Differences from F3
+
+| Aspect | F3 | F4 |
+|--------|----|----|
+| Input dimensions | 3 | **4** |
+| Problem domain | Drug discovery | **Warehouse product placement** |
+| Initial samples | 10 | **30** |
+| Total samples | 16 | **36** |
+| Surrogate families | GP, BART, RF | **Single Fidelity GP, Multi Fidelity GP, GBT** |
+| Total configurations | 45 | **45** (15 SF-GP + 15 MF-GP + 15 GBT) |
+| Output range | Moderate | **Wide negative (-32.6 to 0.5)** |
+
+### Why Multi Fidelity GP for F4
+
+F4 is a warehouse product placement problem with wide output range and many local optima. The Multi Fidelity GP (co-kriging / autoregressive model) treats the dataset as containing multiple fidelity levels, modelling the relationship:
+
+$$f_{\text{high}}(x) = \rho \cdot f_{\text{low}}(x) + \delta(x)$$
+
+For F4, we construct a synthetic fidelity dimension by splitting the training data: the initial 30 points form the "low fidelity" base, and the sequentially acquired points are treated as "high fidelity" observations. This allows the multi fidelity GP to share information across the fidelity levels while modelling systematic differences.
+
+Even when only single-fidelity data is available, the MF-GP can be configured with a single fidelity level, acting as a regularised GP with the autoregressive kernel structure providing an inductive bias.
+
+## User Scenarios & Testing (F4)
+
+### User Story F4-1 — Run Single Fidelity GP Prequential Evaluation on F4 (Priority: P1)
+
+As a student, I want to train a Single Fidelity GP on the initial 30 F4 data points (4D warehouse parameters), then sequentially predict each of the 6 remaining observations one step ahead, recording MAE, NLP, and 95% coverage, so that I can assess standard GP predictive quality on the 4D warehouse problem.
+
+**Independent Test**: Run SF-GP section cells. Verify 6 predictions with metrics and 3-panel plots.
+
+---
+
+### User Story F4-2 — Optimise Single Fidelity GP Hyperparameters on F4 (Priority: P1)
+
+As a student, I want to evaluate 15 SF-GP configurations for F4 (varying kernel type, output transform, and noise constraints for the wide-range outputs), so that I can identify the best-calibrated standard GP.
+
+**Independent Test**: Run SF-GP HP cells. Verify 15-row results DataFrame.
+
+---
+
+### User Story F4-3 — Run Multi Fidelity GP Prequential Evaluation on F4 (Priority: P1)
+
+As a student, I want to train a Multi Fidelity GP on the initial 30 F4 data points using the autoregressive co-kriging approach, then perform one-step-ahead evaluation, so that I can assess whether the MF-GP structure improves predictions.
+
+**Why MF-GP**: The autoregressive kernel structure provides an inductive bias that may improve prediction quality when data points have varying information content (e.g., early vs later observations in the optimisation trajectory).
+
+**Independent Test**: Run MF-GP section cells. Verify 6 predictions with metrics and plots.
+
+---
+
+### User Story F4-4 — Optimise Multi Fidelity GP Hyperparameters on F4 (Priority: P1)
+
+As a student, I want to evaluate 15 MF-GP configurations (varying kernel type, fidelity kernel structure, noise bounds, and output normalisation), so that I can find the best-calibrated MF-GP.
+
+**Independent Test**: Run MF-GP HP cells. Verify 15-row results DataFrame.
+
+---
+
+### User Story F4-5 — Run GBT Prequential Evaluation on F4 (Priority: P1)
+
+As a student, I want to train a Gradient Boosted Trees model on the initial 30 F4 data points and perform one-step-ahead evaluation with uncertainty estimates, so that I have a non-GP surrogate to compare against both GP variants.
+
+**Why GBT**: Gradient Boosted Trees are well-suited to F4's wide output range and 4D input space. GBT can model complex non-linear relationships and is robust to outliers. Uncertainty is estimated via quantile regression (fitting separate models for the 2.5th and 97.5th percentiles).
+
+**Independent Test**: Run GBT section cells. Verify 6 predictions with MAE, NLP, Coverage, and plots.
+
+---
+
+### User Story F4-6 — Optimise GBT Hyperparameters on F4 (Priority: P1)
+
+As a student, I want to evaluate 15 GBT configurations (varying number of estimators, learning rate, max depth, min samples leaf, and subsample fraction), so that I can find the best-calibrated GBT configuration.
+
+**Independent Test**: Run GBT HP cells. Verify 15-row results DataFrame.
+
+---
+
+### User Story F4-7 — Compare SF-GP vs MF-GP vs GBT (Priority: P1)
+
+As a student, I want a three-way comparison of the best SF-GP, best MF-GP, and best GBT configurations, with bar charts and a ranked summary table of all 45 configurations, so that I can determine which surrogate is best for F4.
+
+**Independent Test**: Run comparison cells. Verify 3-way comparison table, bar charts, and full 45-row ranked table.
+
+---
+
+### Edge Cases (F4)
+
+- Wide output range (-32.6 to 0.5): May benefit from output standardisation or log-transform. Include as a configuration option.
+- 30 initial training points in 4D: Relatively well-sampled compared to F1–F3, but lengthscale estimation in 4D still requires ARD.
+- MF-GP fidelity dimension: When all data is at the same fidelity level, the fidelity kernel may degenerate. Configurations should include fallback to a single-fidelity structure.
+- GP fitting with wide output range: The marginal likelihood optimisation may converge to poor local optima. Include output normalisation as a configuration option.
+- GBT uncertainty: Quantile regression provides asymmetric prediction intervals. NLP computation uses the average of upper and lower half-widths as the standard deviation estimate.
+- GBT with few estimators (<50): May underfit the 4D problem. Include larger numbers as well.
+
+## Requirements (F4)
+
+### Functional Requirements (F4)
+
+- **FR-F4-001**: Notebook MUST define a `WEEK` variable (default `6`) and load data from `../../data/f4/updated_inputs - Week {WEEK}.npy` and `../../data/f4/updated_outputs - Week {WEEK}.npy`.
+- **FR-F4-002**: Notebook MUST use the first 30 data points as the initial training set.
+- **FR-F4-003**: Notebook MUST perform one-step-ahead prequential evaluation (same protocol as F1–F3).
+- **FR-F4-004**: Notebook MUST compute MAE, NLP, and Coverage of 95% prediction interval for each configuration.
+- **FR-F4-005**: Notebook MUST evaluate Single Fidelity GP surrogates using BoTorch `SingleTaskGP`.
+- **FR-F4-006**: Notebook MUST evaluate Multi Fidelity GP surrogates using BoTorch with an autoregressive/co-kriging kernel structure (e.g., `SingleTaskMultiFidelityGP` or custom multi-fidelity model).
+- **FR-F4-007**: Notebook MUST optimise hyperparameters for each of the 3 surrogate families across **15 configurations** (45 total).
+- **FR-F4-007b**: Notebook MUST evaluate GBT surrogates using scikit-learn `GradientBoostingRegressor`, deriving uncertainty from quantile regression (fitting separate models for upper/lower prediction intervals).
+- **FR-F4-008**: SF-GP hyperparameters to vary: kernel type (Matérn 5/2, Matérn 3/2, RBF), output transform (raw, standardise, log-transform), noise lower bound (1e-4, 1e-5, 1e-6).
+- **FR-F4-009**: MF-GP hyperparameters to vary: kernel type (Matérn 5/2, Matérn 3/2, RBF), fidelity kernel (linear, exponential decay), output transform (raw, standardise), noise lower bound (1e-4, 1e-5, 1e-6).
+- **FR-F4-009b**: GBT hyperparameters to vary: n_estimators (50, 100, 200, 500), learning_rate (0.01, 0.05, 0.1, 0.2), max_depth (3, 4, 5, 6), min_samples_leaf (1, 2, 5), subsample (0.8, 1.0).
+- **FR-F4-010**: Notebook MUST produce a 3-way comparison of best SF-GP vs best MF-GP vs best GBT by NLP.
+- **FR-F4-011**: Notebook MUST produce visualisations: predictions vs actuals with uncertainty, absolute error per step, NLP per step, and bar-chart comparisons.
+- **FR-F4-012**: Notebook MUST produce a full ranked results table of all 45 configurations sorted by NLP.
+- **FR-F4-013**: Each code step MUST be clearly explained in markdown cells.
+- **FR-F4-014**: Notebook MUST be stored at `functions/f4/preq-eval-f4.ipynb`.
+
+### Key Entities (F4)
+
+- **Single Fidelity GP (SF-GP)**: Standard Gaussian Process via BoTorch `SingleTaskGP`. Treats all observations as having the same information quality.
+- **Multi Fidelity GP (MF-GP)**: Gaussian Process with autoregressive/co-kriging kernel structure. Models correlations between different fidelity levels of observations. Implemented via BoTorch's multi-fidelity GP facilities or a custom autoregressive model.
+- **Fidelity Dimension**: An additional input dimension indicating the fidelity level of each observation. For F4, we construct this synthetically from the data ordering.
+- **ARD (Automatic Relevance Determination)**: Per-dimension lengthscales in GP kernels, important for 4D input to learn which warehouse parameters matter most.
+- **Gradient Boosted Trees (GBT)**: An ensemble of weak decision tree learners trained sequentially, each correcting the errors of the previous. Uncertainty is estimated via quantile regression.
+
+## Success Criteria (F4)
+
+- **SC-F4-001**: Notebook executes end-to-end without errors.
+- **SC-F4-002**: 6 one-step-ahead predictions for each of the 45 configurations (15 SF-GP + 15 MF-GP + 15 GBT).
+- **SC-F4-003**: Final comparison table identifies the best surrogate for F4 across all three families.
+- **SC-F4-004**: All three metrics reported for every configuration.
+- **SC-F4-005**: Visualisations clear, labelled, capstone-report ready.
+- **SC-F4-006**: Code is simple with each step clearly explained.
+
+## Technical Notes (F4)
+
+### Multi Fidelity GP Implementation
+
+The MF-GP uses an autoregressive approach where a synthetic fidelity column is appended to the input features. In the simplest form, this assigns fidelity = 1.0 to all training data (single fidelity), and the `SingleTaskMultiFidelityGP` applies a specialised kernel that decomposes the covariance into a task-kernel (fidelity) component and a spatial kernel component.
+
+For the prequential evaluation, we use a **simplified MF-GP** approach:
+- Append a constant fidelity column (all 1.0) to the training inputs
+- Use `SingleTaskMultiFidelityGP` which applies a `DownsamplingKernel` or linear fidelity kernel
+- The MF-GP's specialised kernel structure provides a different inductive bias than standard `SingleTaskGP`
+
+```python
+from botorch.models import SingleTaskMultiFidelityGP
+from botorch.models.transforms import Standardize, Normalize
+
+# Append fidelity column
+X_train_mf = torch.cat([X_train, torch.ones(n, 1, dtype=torch.float64)], dim=-1)
+X_test_mf = torch.cat([X_test, torch.ones(1, 1, dtype=torch.float64)], dim=-1)
+
+# Build MF-GP (fidelity column is the last dimension)
+model = SingleTaskMultiFidelityGP(
+    X_train_mf, y_train,
+    data_fidelities=[X_train_mf.shape[-1] - 1]  # last column is fidelity
+)
+```
+
+### Additional Library
+
+| Library | Purpose | Install |
+|---------|---------|---------|
+| BoTorch (multi-fidelity) | `SingleTaskMultiFidelityGP`, fidelity kernels | Already available in sdd-dev environment |
+
+### Data Flow (F4)
+
+````
+data/f4/updated_inputs - Week 6.npy  ──┐
+data/f4/updated_outputs - Week 6.npy ──┤
+                                        ▼
+                              Load all 36 points
+                                        │
+                    ┌───────────────────┼───────────────────┐
+                    ▼                   ▼                   ▼
+              SF-GP Evaluation    MF-GP Evaluation     GBT Evaluation
+              (15 configs)        (15 configs)         (15 configs)
+                    │                   │                   │
+                    ▼                   ▼                   ▼
+             SF-GP Results DF    MF-GP Results DF     GBT Results DF
+                    │                   │                   │
+                    └───────────────────┼───────────────────┘
+                                        ▼
+                           3-way Comparison & Ranking
+                                        │
+                                        ▼
+                              Tables + Visualisations
+````

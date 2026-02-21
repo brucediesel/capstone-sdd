@@ -310,3 +310,212 @@ Task T013-T014: "Verify BART default evaluation (cells 19-23)"
 - **Phase F2-4** (RF): Depends on Phase F2-1; can run in parallel with Phases F2-2 and F2-3
 - **Phase F2-5** (Comparison): Depends on Phases F2-2, F2-3, and F2-4
 - **Phase F2-6** (Polish): Depends on all phases
+
+---
+
+# F3 Tasks: Prequential Evaluation — GP vs BART vs Random Forest
+
+**Input**: spec.md (F3 section), plan.md
+**Target file**: `functions/f3/preq-eval-f3.ipynb` (NEW — create from scratch)
+
+## Format: `[ID] [P?] [Story] Description`
+
+- **[P]**: Can run in parallel
+- All paths relative to repository root
+
+---
+
+## Phase F3-1: Setup (Create Notebook Foundation)
+
+**Purpose**: Create the notebook file with imports, data loading, and shared utility functions
+
+- [x] T-F3-001 Create `functions/f3/preq-eval-f3.ipynb` with title markdown cell (F3 overview: 3D drug discovery, maximise transformed output, 3 surrogates, 45 configs) and evaluation metrics markdown cell
+- [x] T-F3-002 Add imports cell: numpy, torch, matplotlib, pandas, warnings, botorch/gpytorch (SingleTaskGP, kernels, likelihood, constraints), pymc, pymc_bart, sklearn (RandomForestRegressor). Set seeds.
+- [x] T-F3-003 Add data loading cell: `WEEK = 6`, load from `../../data/f3/updated_inputs - Week {WEEK}.npy` and outputs, set `N_INIT = 10`, print data summary (FR-F3-001, FR-F3-002)
+- [x] T-F3-004 Add `compute_metrics()` function cell — same as F1/F2: MAE, NLP (clipped std), 95% Coverage (FR-F3-004)
+- [x] T-F3-005 Add `plot_prequential_results()` function cell — same as F1/F2: 3-panel (predictions vs actuals, absolute error, NLP per step), labelled F3 (FR-F3-013)
+
+**Checkpoint**: Notebook has foundation cells, imports work, data loads correctly
+
+---
+
+## Phase F3-2: GP Evaluation (User Stories F3-1, F3-2)
+
+**Purpose**: Implement GP default and HP optimisation (15 configs including Matérn 3/2)
+
+- [x] T-F3-006 Add `gp_prequential_evaluation()` function (default GP with Matern 5/2, ARD for 3 dims) (FR-F3-005, FR-F3-003)
+- [x] T-F3-007 Add GP default execution cell and visualisation cell with `plot_prequential_results()` (FR-F3-013)
+- [x] T-F3-008 Add `gp_prequential_with_config()` function with kernel switching (Matern 5/2, Matern 3/2, RBF), log-transform option, noise constraint (FR-F3-005, FR-F3-009)
+- [x] T-F3-009 Add 15 GP `hp_configs` list — 3 kernels × {raw, log} × 3 noise bounds = 18, select 15 best combinations (FR-F3-008, FR-F3-009)
+- [x] T-F3-010 Add GP HP optimisation loop cell and best GP selection cell (FR-F3-008)
+
+**Checkpoint**: GP section complete — 15 configs evaluated with metrics and plots
+
+---
+
+## Phase F3-3: BART Evaluation (User Stories F3-3, F3-4)
+
+**Purpose**: Implement BART default and HP optimisation (15 configs including higher draws)
+
+- [x] T-F3-011 Add `bart_prequential_evaluation()` function — PyMC-BART with `pm.Data`, posterior predictive sampling (FR-F3-006, FR-F3-003)
+- [x] T-F3-012 Add BART default execution cell and visualisation cell (FR-F3-013)
+- [x] T-F3-013 Add 15 `bart_configs` list — m (10,20,50,100,200) × draws (200,500,1000) × tune (100,200), select 15 (FR-F3-008, FR-F3-010)
+- [x] T-F3-014 Add BART HP optimisation loop cell and best BART selection cell
+
+**Checkpoint**: BART section complete — 15 configs evaluated with metrics and plots
+
+---
+
+## Phase F3-4: Random Forest Evaluation (User Stories F3-5, F3-6)
+
+**Purpose**: Implement RF default and HP optimisation (15 configs with shallow trees for small-data 3D)
+
+- [x] T-F3-015 Add `rf_prequential_evaluation()` function — uncertainty via individual tree predictions (FR-F3-007, FR-F3-003)
+- [x] T-F3-016 Add RF default execution cell and visualisation cell (FR-F3-013)
+- [x] T-F3-017 Add `rf_prequential_with_config()` function accepting config dict (FR-F3-007, FR-F3-011)
+- [x] T-F3-018 Add 15 `rf_configs` list — n_estimators (50,100,200,500) × max_depth (None,3,5,10) × min_samples_leaf (1,2,3,5) × bootstrap, select 15 (FR-F3-008, FR-F3-011)
+- [x] T-F3-019 Add RF HP optimisation loop cell and best RF selection cell
+
+**Checkpoint**: RF section complete — 15 configs evaluated with metrics and plots
+
+---
+
+## Phase F3-5: 3-Way Comparison (User Story F3-7)
+
+**Purpose**: Compare best GP vs best BART vs best RF and rank all 45 configurations
+
+- [x] T-F3-020 Add 3-way comparison table cell — best GP, best BART, best RF side-by-side with metric winners (FR-F3-012)
+- [x] T-F3-021 Add 3-panel bar chart cell — MAE, NLP, Coverage with 3 bars per metric (FR-F3-013)
+- [x] T-F3-022 Add sensitivity horizontal bar chart cell — all 45 configs grouped by model type (FR-F3-013)
+- [x] T-F3-023 Add full ranked table cell — combine all 45 configs, sort by NLP, 1-based rank (FR-F3-014)
+- [x] T-F3-024 Add conclusions markdown cell — key findings, best model for F3, implications for 3D drug discovery (FR-F3-015)
+
+**Checkpoint**: Full notebook complete with 3-way comparison and 45-row ranked table
+
+---
+
+## Phase F3-6: Polish & Validation
+
+**Purpose**: End-to-end validation
+
+- [x] T-F3-025 Run all cells of `functions/f3/preq-eval-f3.ipynb` top-to-bottom and verify no errors (SC-F3-001)
+- [x] T-F3-026 Verify 45 configs × 6 predictions each = 270 total predictions (SC-F3-002)
+- [x] T-F3-027 Verify all visualisations are clear and labelled (SC-F3-005)
+- [x] T-F3-028 Verify each code step has a preceding markdown explanation (SC-F3-006)
+
+---
+
+## Dependencies & Execution Order (F3)
+
+- **Phase F3-1** (Setup): No dependencies — start here
+- **Phase F3-2** (GP): Depends on Phase F3-1
+- **Phase F3-3** (BART): Depends on Phase F3-1; can run in parallel with Phase F3-2
+- **Phase F3-4** (RF): Depends on Phase F3-1; can run in parallel with Phases F3-2 and F3-3
+- **Phase F3-5** (Comparison): Depends on Phases F3-2, F3-3, and F3-4
+- **Phase F3-6** (Polish): Depends on all phases
+
+---
+
+# F4 Tasks: Prequential Evaluation — Single Fidelity GP vs Multi Fidelity GP
+
+**Input**: spec.md (F4 section), plan.md (F4 section)
+**Target file**: `functions/f4/preq-eval-f4.ipynb` (NEW — create from scratch)
+
+## Format: `[ID] [P?] [Story] Description`
+
+- **[P]**: Can run in parallel
+- All paths relative to repository root
+
+---
+
+## Phase F4-1: Setup (Create Notebook Foundation)
+
+**Purpose**: Create the notebook file with imports, data loading, and shared utility functions
+
+- [x] T-F4-001 Create `functions/f4/preq-eval-f4.ipynb` with title markdown cell (F4 overview: 4D warehouse product placement, maximise, 2 GP families, 30 configs) and evaluation metrics markdown cell
+- [x] T-F4-002 Add imports cell: numpy, torch, matplotlib, pandas, warnings, botorch/gpytorch (SingleTaskGP, SingleTaskMultiFidelityGP, kernels, likelihood, constraints, transforms). Set seeds.
+- [x] T-F4-003 Add data loading cell: `WEEK = 6`, load from `../../data/f4/updated_inputs - Week {WEEK}.npy` and outputs, set `N_INIT = 30`, print data summary (FR-F4-001, FR-F4-002)
+- [x] T-F4-004 Add `compute_metrics()` function cell — same as F1–F3: MAE, NLP (clipped std), 95% Coverage (FR-F4-004)
+- [x] T-F4-005 Add `plot_prequential_results()` function cell — same as F1–F3: 3-panel (predictions vs actuals, absolute error, NLP per step), labelled F4 (FR-F4-011)
+
+**Checkpoint**: Notebook has foundation cells, imports work, data loads correctly
+
+---
+
+## Phase F4-2: Single Fidelity GP Evaluation (User Stories F4-1, F4-2)
+
+**Purpose**: Implement SF-GP default and HP optimisation (15 configs)
+
+- [x] T-F4-006 Add `sfgp_prequential_evaluation()` function (default SF-GP with Matern 5/2, ARD for 4 dims) (FR-F4-005, FR-F4-003)
+- [x] T-F4-007 Add SF-GP default execution cell and visualisation cell with `plot_prequential_results()` (FR-F4-011)
+- [x] T-F4-008 Add `sfgp_prequential_with_config()` function with kernel switching (Matern 5/2, Matern 3/2, RBF), output transform options (raw, standardise, log-transform), noise constraint (FR-F4-005, FR-F4-008)
+- [x] T-F4-009 Add 15 SF-GP `sfgp_configs` list — kernels × transforms × noise bounds = 15 selected combinations (FR-F4-007, FR-F4-008)
+- [x] T-F4-010 Add SF-GP HP optimisation loop cell and best SF-GP selection cell (FR-F4-007)
+
+**Checkpoint**: SF-GP section complete — 15 configs evaluated with metrics and plots
+
+---
+
+## Phase F4-3: Multi Fidelity GP Evaluation (User Stories F4-3, F4-4)
+
+**Purpose**: Implement MF-GP with autoregressive/co-kriging kernel and HP optimisation (15 configs)
+
+- [x] T-F4-011 Add `mfgp_prequential_evaluation()` function — BoTorch `SingleTaskMultiFidelityGP` with synthetic fidelity column, default Matern 5/2 (FR-F4-006, FR-F4-003)
+- [x] T-F4-012 Add MF-GP default execution cell and visualisation cell (FR-F4-011)
+- [x] T-F4-013 Add `mfgp_prequential_with_config()` function with kernel switching, output transform, noise constraint, fidelity options (FR-F4-006, FR-F4-009)
+- [x] T-F4-014 Add 15 MF-GP `mfgp_configs` list — kernels × fidelity × transforms × noise bounds = 15 selected combinations (FR-F4-007, FR-F4-009)
+- [x] T-F4-015 Add MF-GP HP optimisation loop cell and best MF-GP selection cell (FR-F4-007)
+
+**Checkpoint**: MF-GP section complete — 15 configs evaluated with metrics and plots
+
+---
+
+## Phase F4-3b: Gradient Boosted Trees Evaluation (User Stories F4-5, F4-6) — NEW
+
+**Purpose**: Implement GBT default and HP optimisation (15 configs) using quantile regression for uncertainty
+
+- [x] T-F4-025 Add `sklearn.ensemble.GradientBoostingRegressor` import to imports cell of `functions/f4/preq-eval-f4.ipynb` (FR-F4-007b)
+- [x] T-F4-026 Add GBT section markdown cell explaining GBT as a third surrogate, quantile regression uncertainty, and hyperparameters
+- [x] T-F4-027 Add `gbt_prequential_evaluation()` function — train 3 GBT models (mean via `ls`, lower/upper quantiles via `quantile` loss). Predict mean, derive std from quantile spread. Print step-by-step results. (FR-F4-007b, FR-F4-003)
+- [x] T-F4-028 Add GBT default execution cell (n_estimators=100, learning_rate=0.1, max_depth=3, min_samples_leaf=2, subsample=0.8) and visualisation cell (FR-F4-011)
+- [x] T-F4-029 Add `gbt_prequential_with_config()` function — accepts config dict with n_estimators, learning_rate, max_depth, min_samples_leaf, subsample. Returns metrics dict. (FR-F4-007b, FR-F4-009b)
+- [x] T-F4-030 Add 15 `gbt_configs` list — n_estimators × learning_rate × max_depth × subsample, select 15 combinations (FR-F4-007, FR-F4-009b)
+- [x] T-F4-031 Add GBT HP optimisation loop cell and best GBT selection cell (FR-F4-007)
+
+**Checkpoint**: GBT section complete — 15 configs evaluated with metrics and plots
+
+---
+
+## Phase F4-4: 3-Way Comparison (User Story F4-7)
+
+**Purpose**: Compare best SF-GP vs best MF-GP vs best GBT and rank all 45 configurations
+
+- [x] T-F4-016 Update comparison table cell — best SF-GP, best MF-GP, best GBT side-by-side with metric winners (FR-F4-010) — expand from 2-way to 3-way
+- [x] T-F4-017 Update bar chart cell — MAE, NLP, Coverage with 3 bars per metric (FR-F4-011)
+- [x] T-F4-018 Update sensitivity horizontal bar chart cell — all 45 configs grouped by model type (FR-F4-011)
+- [x] T-F4-019 Update full ranked table cell — combine all 45 configs, sort by NLP, 1-based rank (FR-F4-012)
+- [x] T-F4-020 Update conclusions markdown cell — key findings including GBT, best model for F4 across all three families (FR-F4-013)
+
+**Checkpoint**: Full notebook complete with 3-way comparison and 45-row ranked table
+
+---
+
+## Phase F4-5: Polish & Validation
+
+**Purpose**: End-to-end validation
+
+- [x] T-F4-021 Run all cells of `functions/f4/preq-eval-f4.ipynb` top-to-bottom and verify no errors (SC-F4-001)
+- [x] T-F4-022 Verify 45 configs × 6 predictions each = 270 total predictions (SC-F4-002)
+- [x] T-F4-023 Verify all visualisations are clear and labelled (SC-F4-005)
+- [x] T-F4-024 Verify each code step has a preceding markdown explanation (SC-F4-006)
+
+---
+
+## Dependencies & Execution Order (F4)
+
+- **Phase F4-1** (Setup): No dependencies — start here
+- **Phase F4-2** (SF-GP): Depends on Phase F4-1
+- **Phase F4-3** (MF-GP): Depends on Phase F4-1; can run in parallel with Phase F4-2
+- **Phase F4-3b** (GBT): Depends on Phase F4-1; can run in parallel with Phases F4-2 and F4-3
+- **Phase F4-4** (Comparison): Depends on Phases F4-2, F4-3, and F4-3b
+- **Phase F4-5** (Polish): Depends on all phases

@@ -763,3 +763,168 @@ data/f4/updated_outputs - Week 6.npy ──┤
                                         ▼
                               Tables + Visualisations
 ````
+
+---
+
+# Function 5: Prequential Evaluation — GP Hyperparameter Optimisation
+
+## Overview (F5)
+
+Create a new Jupyter notebook (`functions/f5/preq-eval-f5.ipynb`) that performs **prequential (one-step-ahead) evaluation** of Gaussian Process surrogate model hyperparameters for the chemical process yield optimisation problem (Function 5).
+
+Unlike F1–F4 which compared multiple surrogate families, F5 focuses on **optimising GP hyperparameters only**, using a specific starting configuration and varying key hyperparameters across 10 configurations to identify the best GP setup for this 4D unimodal function.
+
+The evaluation follows the same prequential protocol: train on the initial 20 data points, predict the next observation one step ahead, record the error, retrain, and repeat until all 26 available points have been processed (6 evaluation steps).
+
+### Function 5 Context
+
+| Property | Value |
+|----------|-------|
+| Problem | Chemical process yield optimisation — maximise yield from 4 chemical inputs |
+| Input dimensions | 4 |
+| Output dimensions | 1 |
+| Objective | Maximise |
+| Input range | [0, 1] |
+| Output characteristics | Typically unimodal; wide range (0.11 to 3331.80); mean ≈ 558.78; std ≈ 902.73 |
+| Initial samples | 20 |
+| Total samples (Week 6) | 26 |
+| Evaluation steps | 6 one-step-ahead predictions |
+
+### Starting GP Configuration
+
+The GP starting configuration is specifically tailored for F5's characteristics:
+
+- **Kernel**: Matérn 5/2 with ARD (smooth chemical response surface)
+- **Mean function**: Constant prior
+- **Likelihood**: Gaussian
+- **Output transformation**: Standardise yields (z-score) — critical given the wide output range (0.11 to 3331.80)
+- **Hyperparameter priors / initialisation**:
+  - Lengthscales (ℓ₁..ℓ₄): Initialise around 0.2–0.3 (inputs scaled to [0,1])
+  - Signal variance σ²_f: Initialised to Var(y)
+  - Noise variance σ²_n: Initialised to (0.02–0.05)·Var(y)
+  - Jitter: 1e-6
+  - Optimisation: 10–20 random restarts of MLL (L-BFGS-B)
+
+### Key Differences from F4
+
+| Aspect | F4 | F5 |
+|--------|----|----|
+| Input dimensions | 4 | 4 |
+| Problem domain | Warehouse placement | **Chemical process yield** |
+| Initial samples | 30 | **20** |
+| Total samples | 36 | **26** |
+| Surrogate families | SF-GP, MF-GP, GBT | **GP only** (hyperparameter optimisation focus) |
+| HP configs | 45 (15 per family) | **10** (GP configurations) |
+| Output range | -32.6 to 0.5 | **0.11 to 3331.80** (very wide positive) |
+| Function type | Many local optima | **Unimodal** |
+
+## User Scenarios & Testing (F5)
+
+### User Story F5-1 — Run GP Prequential with Starting Configuration (Priority: P1) 🎯 MVP
+
+As a student, I want to train a GP on the initial 20 F5 data points using the specified starting configuration (Matérn 5/2, ARD, z-score standardisation, specific hyperparameter initialisation), then sequentially predict each of the 6 remaining observations one step ahead, recording MAE, NLP, and 95% coverage, so that I can establish a baseline GP performance for F5.
+
+**Independent Test**: Run cells 1–13 of the notebook. Verify 6 predictions with metrics and 3-panel plots.
+
+---
+
+### User Story F5-2 — Optimise GP Hyperparameters (Priority: P1)
+
+As a student, I want to evaluate 10 GP configurations varying kernel type, output transform, noise initialisation, and lengthscale initialisation, so that I can identify the GP configuration with the best predictive calibration for F5.
+
+**Why HP optimisation**: The extremely wide output range (0.11 to 3331.80) and unimodal structure of F5 mean that the GP's output normalisation and noise handling are critical. The 10 configurations systematically explore these dimensions.
+
+**Independent Test**: Run cells 14–17. Verify 10-row results DataFrame with MAE, NLP, and Coverage.
+
+---
+
+### User Story F5-3 — Compare and Select Best Configuration (Priority: P1)
+
+As a student, I want a ranked summary of all 10 GP configurations with sensitivity visualisations, so that I can determine the best GP setup for F5 and understand which hyperparameters matter most.
+
+**Independent Test**: Run cells 18–24. Verify sensitivity bar charts, ranked table, and conclusions.
+
+---
+
+### Edge Cases (F5)
+
+- Very wide output range (0.11 to 3331.80): z-score standardisation is critical. Log-transform may also be important given the range spans orders of magnitude.
+- Unimodal function: Matérn 5/2 (smooth) should be well-suited, but RBF may also work well.
+- 20 initial points in 4D: Relatively well-sampled for a unimodal function. Lengthscale estimation should be feasible.
+- GP fitting with very large output values: Without standardisation, the MLL optimisation may struggle. Initialising noise variance proportional to Var(y) helps.
+
+## Requirements (F5)
+
+### Functional Requirements (F5)
+
+- **FR-F5-001**: Notebook MUST define a `WEEK` variable (default `6`) and load data from `../../data/f5/updated_inputs - Week {WEEK}.npy` and `../../data/f5/updated_outputs - Week {WEEK}.npy`.
+- **FR-F5-002**: Notebook MUST use the first 20 data points as the initial training set.
+- **FR-F5-003**: Notebook MUST perform one-step-ahead prequential evaluation (same protocol as F1–F4).
+- **FR-F5-004**: Notebook MUST compute MAE, NLP, and Coverage of 95% prediction interval for each configuration.
+- **FR-F5-005**: Notebook MUST evaluate GP surrogates using BoTorch `SingleTaskGP` with the specified starting configuration (Matérn 5/2, ARD, z-score standardisation).
+- **FR-F5-006**: Notebook MUST initialise GP hyperparameters as specified: lengthscales 0.2–0.3, signal variance = Var(y), noise variance = 0.02–0.05 · Var(y), jitter = 1e-6.
+- **FR-F5-007**: Notebook MUST use 10–20 random restarts of MLL optimisation (L-BFGS-B) for hyperparameter fitting.
+- **FR-F5-008**: Notebook MUST optimise GP hyperparameters across 10 configurations.
+- **FR-F5-009**: GP hyperparameters to vary: kernel type (Matérn 5/2, Matérn 3/2, RBF), output transform (z-score, log, raw), noise initialisation (0.02·Var(y), 0.05·Var(y)), lengthscale initialisation (0.2, 0.3).
+- **FR-F5-010**: Notebook MUST produce a ranked results table of all 10 configurations sorted by NLP.
+- **FR-F5-011**: Notebook MUST produce visualisations: predictions vs actuals with uncertainty, absolute error per step, NLP per step, and sensitivity bar charts.
+- **FR-F5-012**: Each code step MUST be clearly explained in markdown cells.
+- **FR-F5-013**: Notebook MUST be stored at `functions/f5/preq-eval-f5.ipynb`.
+
+### Key Entities (F5)
+
+- **Z-score standardisation**: Output transform $(y - \mu) / \sigma$ where $\mu$ and $\sigma$ are computed from the training set. Critical for F5's wide output range.
+- **Lengthscale initialisation**: Starting values for the GP lengthscale parameters, set between 0.2–0.3 for inputs in [0,1]. Affects convergence of MLL optimisation.
+- **Signal variance initialisation**: Starting value for the GP output scale, set to Var(y) to match the data scale.
+- **Noise variance initialisation**: Starting value for observation noise, set to 2–5% of Var(y) to reflect that chemical yield measurements have some noise but the signal is strong.
+- **Random restarts**: Multiple L-BFGS-B starts from different initial points to avoid poor local optima in MLL.
+
+## Success Criteria (F5)
+
+- **SC-F5-001**: Notebook executes end-to-end without errors.
+- **SC-F5-002**: 6 one-step-ahead predictions for each of the 10 configurations.
+- **SC-F5-003**: Ranked results table identifies the best GP configuration for F5.
+- **SC-F5-004**: All three metrics (MAE, NLP, Coverage) reported for every configuration.
+- **SC-F5-005**: Visualisations clear, labelled, capstone-report ready.
+- **SC-F5-006**: Code is simple with each step clearly explained.
+- **SC-F5-007**: GP hyperparameter initialisation matches the specified starting configuration.
+
+## Technical Notes (F5)
+
+### GP Hyperparameter Initialisation
+
+```python
+# Initialise lengthscales
+model.covar_module.base_kernel.lengthscale = torch.tensor([[0.25, 0.25, 0.25, 0.25]])
+
+# Initialise outputscale (signal variance)
+model.covar_module.outputscale = torch.tensor(y_train_var)
+
+# Initialise noise
+model.likelihood.noise = torch.tensor(0.03 * y_train_var)
+
+# Add jitter for numerical stability
+gpytorch.settings.cholesky_jitter(float=1e-6, double=1e-6)
+```
+
+### Data Flow (F5)
+
+````
+data/f5/updated_inputs - Week 6.npy  ──┐
+data/f5/updated_outputs - Week 6.npy ──┤
+                                        ▼
+                              Load all 26 points
+                                        │
+                                        ▼
+                              GP Evaluation
+                              (10 configs)
+                                        │
+                                        ▼
+                              GP Results DF
+                                        │
+                                        ▼
+                           Ranking & Sensitivity Analysis
+                                        │
+                                        ▼
+                              Tables + Visualisations
+````

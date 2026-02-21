@@ -519,3 +519,86 @@ Task T013-T014: "Verify BART default evaluation (cells 19-23)"
 - **Phase F4-3b** (GBT): Depends on Phase F4-1; can run in parallel with Phases F4-2 and F4-3
 - **Phase F4-4** (Comparison): Depends on Phases F4-2, F4-3, and F4-3b
 - **Phase F4-5** (Polish): Depends on all phases
+
+---
+
+# F5 Tasks: Prequential Evaluation — GP Hyperparameter Optimisation
+
+**Input**: spec.md (F5 section), plan.md (F5 section)
+**Target file**: `functions/f5/preq-eval-f5.ipynb` (NEW — create from scratch)
+
+## Format: `[ID] [P?] [Story] Description`
+
+- **[P]**: Can run in parallel
+- All paths relative to repository root
+
+---
+
+## Phase F5-1: Setup (Create Notebook Foundation)
+
+**Purpose**: Create the notebook file with imports, data loading, and shared utility functions
+
+- [x] T-F5-001 Create `functions/f5/preq-eval-f5.ipynb` with title markdown cell (F5 overview: 4D chemical yield, unimodal, GP-only, 10 configs) and evaluation metrics markdown cell
+- [x] T-F5-002 Add imports cell: numpy, torch, matplotlib, pandas, warnings, botorch/gpytorch (SingleTaskGP, kernels, likelihood, constraints, transforms). Set seeds.
+- [x] T-F5-003 Add data loading cell: `WEEK = 6`, load from `../../data/f5/updated_inputs - Week {WEEK}.npy` and outputs, set `N_INIT = 20`, print data summary (FR-F5-001, FR-F5-002)
+- [x] T-F5-004 Add `compute_metrics()` function cell — same as F1–F4: MAE, NLP (clipped std), 95% Coverage (FR-F5-004)
+- [x] T-F5-005 Add `plot_prequential_results()` function cell — same as F1–F4: 3-panel (predictions vs actuals, absolute error, NLP per step), labelled F5 (FR-F5-011)
+
+**Checkpoint**: Notebook has foundation cells, imports work, data loads correctly
+
+---
+
+## Phase F5-2: GP Default Evaluation (User Story F5-1) 🎯 MVP
+
+**Purpose**: Implement GP prequential evaluation with specified starting configuration
+
+- [x] T-F5-006 Add `gp_prequential_evaluation()` function with starting config — Matérn 5/2, ARD for 4 dims, z-score standardisation, lengthscales init 0.25, signal var = Var(y), noise = 0.03·Var(y), jitter 1e-6, multi-restart MLL fitting (FR-F5-005, FR-F5-006, FR-F5-007)
+- [x] T-F5-007 Add GP default execution cell and visualisation cell with `plot_prequential_results()` (FR-F5-011)
+
+**Checkpoint**: GP default with starting config runs and visualises correctly
+
+---
+
+## Phase F5-3: GP Hyperparameter Optimisation (User Story F5-2)
+
+**Purpose**: Evaluate 10 GP configurations and identify best by NLP
+
+- [x] T-F5-008 Add `gp_prequential_with_config()` function with configurable kernel, output transform, noise init, lengthscale init, and multi-restart MLL fitting (FR-F5-005, FR-F5-008, FR-F5-009)
+- [x] T-F5-009 Add 10 GP `hp_configs` list covering: kernels (Matérn 5/2, Matérn 3/2, RBF) × output transforms (z-score, log, raw) × noise inits (0.02·Var(y), 0.05·Var(y)) × lengthscale inits (0.2, 0.3) — select 10 combinations (FR-F5-008, FR-F5-009)
+- [x] T-F5-010 Add GP HP optimisation loop cell with try/except for NaN on failure (FR-F5-008)
+- [x] T-F5-011 Add best GP selection cell — select by lowest NLP, display DataFrame (FR-F5-010)
+
+**Checkpoint**: GP HP optimisation produces 10-row ranked results table
+
+---
+
+## Phase F5-4: Sensitivity Analysis & Conclusions (User Story F5-3)
+
+**Purpose**: Visualise sensitivity and rank all 10 configurations
+
+- [x] T-F5-012 Add sensitivity horizontal bar chart cell — all 10 configs, MAE/NLP/Coverage (FR-F5-011)
+- [x] T-F5-013 Add full ranked table cell — all 10 configs sorted by NLP, 1-based rank (FR-F5-010)
+- [x] T-F5-014 Add conclusions markdown cell — key findings, best config for F5, implications (FR-F5-012)
+
+**Checkpoint**: Full notebook complete with sensitivity analysis and ranked table
+
+---
+
+## Phase F5-5: Polish & Validation
+
+**Purpose**: End-to-end validation
+
+- [x] T-F5-015 Run all cells of `functions/f5/preq-eval-f5.ipynb` top-to-bottom and verify no errors (SC-F5-001)
+- [x] T-F5-016 Verify 10 configs × 6 predictions each = 60 total predictions (SC-F5-002)
+- [x] T-F5-017 Verify all visualisations are clear and labelled (SC-F5-005)
+- [x] T-F5-018 Verify each code step has a preceding markdown explanation (SC-F5-006)
+
+---
+
+## Dependencies & Execution Order (F5)
+
+- **Phase F5-1** (Setup): No dependencies — start here
+- **Phase F5-2** (GP Default): Depends on Phase F5-1
+- **Phase F5-3** (GP HP Opt): Depends on Phase F5-2
+- **Phase F5-4** (Sensitivity): Depends on Phase F5-3
+- **Phase F5-5** (Polish): Depends on all phases

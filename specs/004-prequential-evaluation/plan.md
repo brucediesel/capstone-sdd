@@ -547,3 +547,92 @@ data/
 - N_INIT = 20 (F5 starts with 20 initial samples)
 - Ranking by NLP (lower is better), consistent with F1–F4
 - Colours: GP = blue (#2196F3), MFGP = pink (#E91E63), GBT = green (#4CAF50)
+
+---
+
+# F6 Plan: Neural Network Prequential Evaluation — 50 Configurations
+
+Create `functions/f6/preq-eval-f6.ipynb` evaluating 50 Neural Network configurations for Function 6 (5D cake-recipe scoring, 26 samples, N_INIT=20, 6 eval steps, output range [−2.57, −0.22]). Uses MC Dropout for uncertainty. Hyperparameters varied: hidden layers (1–2), nodes per layer (5, 8, 16, 32, 64), learning rate (0.001–0.1). The notebook is NN-only (no GP/GBT/MFGP comparison).
+
+## Technical Context (F6)
+
+- **Python Environment**: Same pyenv `sdd-dev` environment as F1–F5
+- **Dependencies**: numpy, torch (nn, optim), matplotlib, pandas, warnings
+- **No new dependencies** — PyTorch already available from existing F6 BO notebook
+- **Data**: `data/f6/updated_inputs - Week 6.npy` (26×5), `data/f6/updated_outputs - Week 6.npy` (26,)
+
+## Constitution Check (F6)
+
+- Simple code with clear explanations ✓ (each cell preceded by markdown)
+- Jupyter notebook format ✓
+- Stored in `functions/f6/` ✓
+- No unit tests ✓
+
+## Project Structure (F6)
+
+```
+functions/f6/
+├── f6.ipynb               (existing BO notebook)
+└── preq-eval-f6.ipynb     (NEW — prequential evaluation notebook)
+```
+
+## Notebook Cell Structure (F6)
+
+| # | Type | Content |
+|---|------|---------|
+| 1 | md | Title: F6 Prequential Evaluation — NN, 50 configs, MC Dropout |
+| 2 | md | Evaluation Metrics: MAE, NLP, Coverage |
+| 3 | code | Imports: numpy, torch, nn, optim, matplotlib, pandas, warnings |
+| 4 | md | Data Loading |
+| 5 | code | Load F6 data, set N_INIT=20, print summary |
+| 6 | md | Metric function |
+| 7 | code | `compute_metrics()` function |
+| 8 | md | NN Default: starting config (2 layers, 5 nodes, lr=0.01) |
+| 9 | code | `nn_prequential_with_config()` function + default run |
+| 10 | md | Default visualisation Header |
+| 11 | code | Plot prequential results (3-panel: predictions, error, NLP per step) |
+| 12 | md | NN HP Configurations: 50 configs, search space table |
+| 13 | code | Generate 50 `nn_configs` + evaluation loop → `nn_hp_df` |
+| 14 | md | Best NN Configuration |
+| 15 | code | Best selection by NLP, display |
+| 16 | md | Sensitivity Analysis: All 50 Configurations |
+| 17 | code | Horizontal bar charts (NLP, MAE, Coverage) |
+| 18 | md | Full Ranked Results |
+| 19 | code | Ranked table sorted by NLP, 1-based ranking |
+| 20 | md | Conclusions |
+
+**Total**: ~20 cells
+
+## Steps (F6)
+
+1. **Create notebook** with title, imports, data loading, `compute_metrics()`
+2. **Implement `nn_prequential_with_config()`** — builds `FlexibleNN`, trains with Adam, predicts with MC Dropout, returns metrics
+3. **Run default config** — 2 layers, 5 nodes, lr=0.01 — visualise prequential results
+4. **Generate 50 configs** — systematic grid: layers [1,2] × nodes [5,8,16,32,64] × lr [0.001,0.005,0.01,0.05,0.1]
+5. **Evaluate all 50** — loop with try/except, store in `nn_hp_df`
+6. **Select best by NLP** — display best config details
+7. **Sensitivity analysis** — horizontal bar charts for all 50 configs
+8. **Ranked table** — all 50 sorted by NLP, 1-based rank
+9. **Conclusions** — key findings, best architecture, implications for BO
+10. **Run and validate** — all cells execute without errors
+
+## Verification (F6)
+
+- **SC-F6-001**: All cells execute without errors
+- **SC-F6-002**: 6 one-step-ahead predictions per config (50 configs × 6 = 300 total predictions)
+- **SC-F6-003**: Ranked results table identifies best NN configuration
+- **SC-F6-004**: All three metrics (MAE, NLP, Coverage) reported for every configuration
+- **SC-F6-005**: Visualisations clear, labelled
+- **SC-F6-006**: Code is simple, each step explained
+- **SC-F6-007**: Default NN architecture matches spec (2 layers, 5 nodes, lr=0.01)
+
+## Decisions (F6)
+
+- Single surrogate family: NN with MC Dropout — 50 configs (NN-only, no GP/GBT comparison)
+- Configurable architecture: `FlexibleNN(input_dim, n_layers, n_nodes, dropout=0.2)`
+- Uncertainty: MC Dropout with 50 forward passes, std floored at 1e-10
+- Fixed: activation=ReLU, dropout=0.2, epochs=500, MC_samples=50
+- Varied: layers (1–2), nodes (5, 8, 16, 32, 64), lr (0.001, 0.005, 0.01, 0.05, 0.1)
+- N_INIT = 20 (F6 starts with 20 initial samples)
+- Ranking by NLP (lower is better), consistent with F1–F5
+- Colour: NN = orange (#FF9800) — distinct from GP/GBT/MFGP colours

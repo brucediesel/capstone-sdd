@@ -965,3 +965,187 @@ data/f5/updated_outputs - Week 6.npy ──┤
                                 ▼
                       Tables + Visualisations
 ````
+
+---
+
+# Function 6: Neural Network Prequential Evaluation — 50 Hyperparameter Configurations
+
+## Overview (F6)
+
+Evaluate a **Neural Network (NN)** surrogate with **MC Dropout** uncertainty across **50 hyperparameter configurations** for Function 6, a 5D cake-recipe optimisation problem. The goal is to identify the NN architecture and training hyperparameters that produce the best-calibrated surrogate (lowest NLP) for use in the Bayesian Optimisation pipeline.
+
+### Function 6 Context
+
+| Property | Value |
+|----------|-------|
+| **Function** | F6 — Cake recipe scoring (5 ingredient inputs) |
+| **Input dimensions** | 5 (flour, sugar, eggs, butter, milk) |
+| **Output dimensions** | 1 (composite score, negative) |
+| **Objective** | Maximise (bring score closest to 0) |
+| **Input range** | [0, 1] |
+| **Output range** | [−2.571, −0.219] |
+| **Output mean** | −1.316 |
+| **Output std** | 0.546 |
+| **Data source** | `data/f6/updated_inputs - Week 6.npy`, `data/f6/updated_outputs - Week 6.npy` |
+| **Total samples** | 26 (Week 6) |
+| **Initial training** | N_INIT = 20 |
+| **Evaluation steps** | 6 one-step-ahead predictions |
+
+### Starting NN Configuration
+
+Based on the existing F6 notebook (Week 5/6):
+
+| Hyperparameter | Starting Value | Notes |
+|----------------|---------------|-------|
+| **Hidden layers** | 2 | Progressive narrowing |
+| **Nodes per layer** | 5 | Minimal starting architecture per user spec |
+| **Activation** | ReLU | Standard for regression |
+| **Dropout** | 0.2 | Fixed — required for MC Dropout uncertainty |
+| **Learning rate** | 0.01 | Adam optimiser |
+| **Epochs** | 500 | Loss convergence monitored |
+| **MC samples** | 50 | Forward passes for uncertainty estimation |
+| **Input normalisation** | z-score | $(x - \bar{x}) / \sigma_x$ |
+| **Output normalisation** | z-score | $(y - \bar{y}) / \sigma_y$ |
+
+### Hyperparameter Search Space (50 Configs)
+
+The 50 configurations are generated from a structured grid over three axes:
+
+| Axis | Values | Count |
+|------|--------|-------|
+| **Hidden layers** | 1, 2, 3 | 3 |
+| **Nodes per layer** | 5, 8, 16, 32, 64 | 5 |
+| **Learning rate** | 0.001, 0.005, 0.01, 0.05, 0.1 | 5 |
+
+Base grid: layers ∈ {1, 2} × nodes ∈ {5, 8, 16, 32, 64} × lr ∈ {0.001, 0.005, 0.01, 0.05, 0.1} = 50 configs.
+Additionally, 3-layer architectures are explored as supplementary analysis.
+
+**Fixed hyperparameters** (not varied):
+- Activation: ReLU
+- Dropout: 0.2 (required for MC Dropout)
+- Epochs: 500
+- MC samples: 50
+- Input/output normalisation: z-score
+
+### Key Differences from F5
+
+| Aspect | F5 | F6 |
+|--------|----|----|
+| Surrogate families | GP, GBT, MFGP (3 families × 15) | NN only (1 family × 50) |
+| Total configs | 45 | 50 |
+| HP axes | Kernel, transform, noise, lengthscale | Layers, nodes, learning rate |
+| Uncertainty method | Analytic (GP/MFGP), Quantile (GBT) | MC Dropout |
+| Input dims | 4 | 5 |
+| Output nature | Wide range (0.11–3332) | Narrow negative range (−2.57–−0.22) |
+
+## User Scenarios & Testing (F6)
+
+### User Story F6-1: NN Default Evaluation
+**As a** data scientist evaluating surrogate performance for F6,
+**I want** to run prequential evaluation with the starting NN config (2 layers, 5 nodes, lr=0.01),
+**so that** I have a baseline to compare against.
+
+### User Story F6-2: NN Hyperparameter Optimisation
+**As a** data scientist tuning NN architectures,
+**I want** to evaluate 50 NN configurations varying layers, nodes, and learning rate,
+**so that** I can identify the most accurate and well-calibrated NN architecture for F6.
+
+### User Story F6-3: Sensitivity & Ranking
+**As a** researcher analysing the hyperparameter landscape,
+**I want** to see a ranked table and sensitivity visualisation for all 50 configurations,
+**so that** I understand which hyperparameters matter most for F6 performance.
+
+## Requirements (F6)
+
+### Functional Requirements
+
+| ID | Requirement | Stories |
+|----|-------------|---------|
+| FR-F6-001 | Load F6 data from `data/f6/updated_inputs - Week 6.npy` and outputs | F6-1 |
+| FR-F6-002 | Set `N_INIT = 20`, compute 6 evaluation steps | F6-1 |
+| FR-F6-003 | Implement `compute_metrics()` returning MAE, NLP, 95% Coverage | F6-1 |
+| FR-F6-004 | Implement `nn_prequential_with_config()` building a configurable NN (layers, nodes, lr) | F6-2 |
+| FR-F6-005 | NN uses MC Dropout (50 forward passes) for uncertainty estimation | F6-1, F6-2 |
+| FR-F6-006 | NN normalises inputs and outputs via z-score before training | F6-1, F6-2 |
+| FR-F6-007 | NN trains with Adam optimiser for 500 epochs with MSELoss | F6-1, F6-2 |
+| FR-F6-008 | Define 50 NN configurations varying layer count, node count, and learning rate | F6-2 |
+| FR-F6-009 | Evaluate all 50 configs via prequential loop, store results in `nn_hp_df` | F6-2 |
+| FR-F6-010 | Select best configuration by NLP (primary) and MAE (secondary) | F6-2 |
+| FR-F6-011 | Display horizontal sensitivity bar chart for all 50 configs (NLP) | F6-3 |
+| FR-F6-012 | Display full ranked table of all 50 configs sorted by NLP | F6-3 |
+| FR-F6-013 | Visualise default config prequential results (predictions vs actuals, error, NLP per step) | F6-1 |
+
+### Key Entities (F6)
+
+- **NN Config**: dict with `n_layers`, `n_nodes`, `lr`, `label`
+- **Prequential Result**: dict with `predictions`, `actuals`, `stds`, `metrics`
+- **nn_hp_df**: DataFrame with columns `label`, `MAE`, `NLP`, `Coverage_95` (50 rows)
+
+## Success Criteria (F6)
+
+| ID | Criterion |
+|----|-----------|
+| SC-F6-001 | All cells execute without errors |
+| SC-F6-002 | 50 configs × 6 predictions each = 300 total predictions |
+| SC-F6-003 | Ranked results table identifies the best NN configuration |
+| SC-F6-004 | All three metrics (MAE, NLP, Coverage) reported for every configuration |
+| SC-F6-005 | Visualisations clear and labelled |
+| SC-F6-006 | Code simple, each step explained in markdown |
+| SC-F6-007 | NN architecture matches the specified starting config (2 layers, 5 nodes) |
+
+## Technical Notes (F6)
+
+### NN Architecture (Configurable)
+
+```python
+class FlexibleNN(nn.Module):
+    def __init__(self, input_dim, n_layers, n_nodes, dropout=0.2):
+        super().__init__()
+        layers = []
+        prev_dim = input_dim
+        for _ in range(n_layers):
+            layers.extend([nn.Linear(prev_dim, n_nodes), nn.ReLU(), nn.Dropout(dropout)])
+            prev_dim = n_nodes
+        layers.append(nn.Linear(prev_dim, 1))
+        self.net = nn.Sequential(*layers)
+
+    def forward(self, x):
+        return self.net(x)
+```
+
+### MC Dropout Uncertainty
+
+With model in `train()` mode (dropout active), run 50 forward passes per test point:
+- `mean_pred` = mean of 50 predictions (denormalised)
+- `std_pred` = std of 50 predictions (denormalised)
+- Floor std at `max(std, 1e-10)` for numerical stability
+
+### Edge Cases
+
+- **Very small networks** (1 layer, 5 nodes): May underfit, producing high MAE but possibly reasonable NLP
+- **Large networks** (3 layers, 64 nodes): Risk overfitting with only 20 training points; dropout mitigates
+- **Learning rate extremes**: lr=0.1 may cause training instability; lr=0.001 may not converge in 500 epochs
+- **Narrow output range**: F6 outputs span ~2.35 units — z-score normalisation is appropriate
+
+### Data Flow (F6)
+
+````
+data/f6/updated_inputs - Week 6.npy  ──┐
+data/f6/updated_outputs - Week 6.npy ──┤
+                                        ▼
+                              Load all 26 points
+                                        │
+                                        ▼
+                              NN Evaluation
+                              (50 configs)
+                                        │
+                                        ▼
+                              NN Results
+                                        │
+                                        ▼
+                        Ranking & Sensitivity Analysis
+                              (50 configs)
+                                        │
+                                        ▼
+                          Tables + Visualisations
+````

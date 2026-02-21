@@ -634,3 +634,87 @@ Task T013-T014: "Verify BART default evaluation (cells 19-23)"
 - **Phase F5-3c** (MFGP): Depends on Phase F5-1; can run in parallel with Phases F5-2, F5-3, and F5-3b
 - **Phase F5-4** (Comparison): Depends on Phases F5-3, F5-3b, and F5-3c
 - **Phase F5-5** (Polish): Depends on all phases
+
+---
+
+# F6 Tasks: Prequential Evaluation — Neural Network (50 Configurations)
+
+**Input**: spec.md (F6 section), plan.md (F6 section)
+**Target file**: `functions/f6/preq-eval-f6.ipynb` (NEW notebook)
+
+## Format: `[ID] [P?] [Story] Description`
+
+- **[P]**: Can run in parallel
+- All paths relative to repository root
+
+---
+
+## Phase F6-1: Setup (Create Notebook Foundation)
+
+**Purpose**: Create the notebook file with imports, data loading, and shared utility functions
+
+- [x] T-F6-001 Create `functions/f6/preq-eval-f6.ipynb` with title markdown cell (F6 overview: 5D cake recipe, NN with MC Dropout, 50 configs) and evaluation metrics markdown cell
+- [x] T-F6-002 Add imports cell: numpy, torch, torch.nn, torch.optim, matplotlib, pandas, warnings. Set seeds.
+- [x] T-F6-003 Add data loading cell: `WEEK = 6`, load from `../../data/f6/updated_inputs - Week {WEEK}.npy` and outputs, set `N_INIT = 20`, print data summary (FR-F6-001, FR-F6-002)
+- [x] T-F6-004 Add `compute_metrics()` function cell — same as F1–F5: MAE, NLP (clipped std), 95% Coverage (FR-F6-003)
+
+**Checkpoint**: Notebook has foundation cells, imports work, data loads correctly
+
+---
+
+## Phase F6-2: NN Default Evaluation (User Story F6-1) 🎯 MVP
+
+**Purpose**: Implement NN prequential evaluation with starting config and visualise results
+
+- [x] T-F6-005 Add NN default markdown cell — describe starting config (2 layers, 5 nodes, lr=0.01), MC Dropout uncertainty approach
+- [x] T-F6-006 Add `nn_prequential_with_config()` function — builds FlexibleNN(input_dim, n_layers, n_nodes, dropout=0.2), trains with Adam for 500 epochs, predicts with 50 MC forward passes (FR-F6-004, FR-F6-005, FR-F6-006, FR-F6-007)
+- [x] T-F6-007 Run default NN config and print step-by-step results
+- [x] T-F6-008 Add `plot_prequential_results()` function and visualise default config (3-panel: predictions vs actuals, absolute error, NLP per step) (FR-F6-013)
+
+**Checkpoint**: Default NN with starting config runs and visualises correctly
+
+---
+
+## Phase F6-3: NN Hyperparameter Optimisation (User Story F6-2)
+
+**Purpose**: Evaluate 50 NN configurations and identify best by NLP
+
+- [x] T-F6-009 Add HP search markdown cell — describe the 50-config grid: layers [1,2] × nodes [5,8,16,32,64] × lr [0.001,0.005,0.01,0.05,0.1]
+- [x] T-F6-010 Add 50 `nn_configs` list — generate systematically with descriptive labels (FR-F6-008)
+- [x] T-F6-011 Add NN HP optimisation loop cell with try/except for NaN on failure — store results in `nn_hp_df` (FR-F6-009)
+- [x] T-F6-012 Add best NN selection cell — select by lowest NLP, display DataFrame (FR-F6-010)
+
+**Checkpoint**: NN HP optimisation produces 50-row ranked results table
+
+---
+
+## Phase F6-4: Sensitivity & Ranking (User Story F6-3)
+
+**Purpose**: Visualise and rank all 50 configurations
+
+- [x] T-F6-013 Add sensitivity horizontal bar chart cell — all 50 configs, NLP + MAE + Coverage subplots (FR-F6-011)
+- [x] T-F6-014 Add full ranked table cell — all 50 configs sorted by NLP, 1-based rank (FR-F6-012)
+- [x] T-F6-015 Add conclusions markdown cell — key findings, best architecture, implications for BO
+
+**Checkpoint**: Full notebook complete with 50-row ranked table and sensitivity visualisations
+
+---
+
+## Phase F6-5: Polish & Validation
+
+**Purpose**: End-to-end validation
+
+- [x] T-F6-016 Run all cells of `functions/f6/preq-eval-f6.ipynb` top-to-bottom and verify no errors (SC-F6-001)
+- [x] T-F6-017 Verify 50 configs × 6 predictions each = 300 total predictions (SC-F6-002)
+- [x] T-F6-018 Verify all visualisations are clear and labelled (SC-F6-005)
+- [x] T-F6-019 Verify each code step has a preceding markdown explanation (SC-F6-006)
+
+---
+
+## Dependencies & Execution Order (F6)
+
+- **Phase F6-1** (Setup): No dependencies — start here
+- **Phase F6-2** (NN Default): Depends on Phase F6-1
+- **Phase F6-3** (NN HP Opt): Depends on Phase F6-2
+- **Phase F6-4** (Sensitivity): Depends on Phase F6-3
+- **Phase F6-5** (Polish): Depends on all phases

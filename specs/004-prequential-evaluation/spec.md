@@ -766,15 +766,18 @@ data/f4/updated_outputs - Week 6.npy ──┤
 
 ---
 
-# Function 5: Prequential Evaluation — GP Hyperparameter Optimisation
+# Function 5: Prequential Evaluation — GP, GBT & MFGP Comparison
 
 ## Overview (F5)
 
-Create a new Jupyter notebook (`functions/f5/preq-eval-f5.ipynb`) that performs **prequential (one-step-ahead) evaluation** of Gaussian Process surrogate model hyperparameters for the chemical process yield optimisation problem (Function 5).
+Create / extend the Jupyter notebook (`functions/f5/preq-eval-f5.ipynb`) that performs **prequential (one-step-ahead) evaluation** of surrogate model predictive performance for the chemical process yield optimisation problem (Function 5).
 
-Unlike F1–F4 which compared multiple surrogate families, F5 focuses on **optimising GP hyperparameters only**, using a specific starting configuration and varying key hyperparameters across 10 configurations to identify the best GP setup for this 4D unimodal function.
+Three surrogate families are compared:
+1. **Gaussian Process (GP)** — 15 configurations varying kernel, output transform, noise, and lengthscale
+2. **Gradient Boosted Trees (GBT)** — 15 configurations varying n_estimators, learning rate, max depth, min_samples_leaf, and subsample
+3. **Multi-Fidelity GP (MFGP)** — 15 configurations varying Matérn smoothness, fidelity kernel type, output transform, and noise lower bound
 
-The evaluation follows the same prequential protocol: train on the initial 20 data points, predict the next observation one step ahead, record the error, retrain, and repeat until all 26 available points have been processed (6 evaluation steps).
+The evaluation follows the same prequential protocol: train on the initial 20 data points, predict the next observation one step ahead, record the error, retrain, and repeat until all 26 available points have been processed (6 evaluation steps). A total of **45 configurations** (15 per family) are evaluated and ranked.
 
 ### Function 5 Context
 
@@ -813,8 +816,8 @@ The GP starting configuration is specifically tailored for F5's characteristics:
 | Problem domain | Warehouse placement | **Chemical process yield** |
 | Initial samples | 30 | **20** |
 | Total samples | 36 | **26** |
-| Surrogate families | SF-GP, MF-GP, GBT | **GP only** (hyperparameter optimisation focus) |
-| HP configs | 45 (15 per family) | **10** (GP configurations) |
+| Surrogate families | SF-GP, MF-GP, GBT | **GP, GBT, MFGP** |
+| HP configs | 45 (15 per family) | **45** (15 per family) |
 | Output range | -32.6 to 0.5 | **0.11 to 3331.80** (very wide positive) |
 | Function type | Many local optima | **Unimodal** |
 
@@ -830,17 +833,37 @@ As a student, I want to train a GP on the initial 20 F5 data points using the sp
 
 ### User Story F5-2 — Optimise GP Hyperparameters (Priority: P1)
 
-As a student, I want to evaluate 10 GP configurations varying kernel type, output transform, noise initialisation, and lengthscale initialisation, so that I can identify the GP configuration with the best predictive calibration for F5.
+As a student, I want to evaluate 15 GP configurations varying kernel type, output transform, noise initialisation, and lengthscale initialisation, so that I can identify the GP configuration with the best predictive calibration for F5.
 
-**Why HP optimisation**: The extremely wide output range (0.11 to 3331.80) and unimodal structure of F5 mean that the GP's output normalisation and noise handling are critical. The 10 configurations systematically explore these dimensions.
+**Why HP optimisation**: The extremely wide output range (0.11 to 3331.80) and unimodal structure of F5 mean that the GP's output normalisation and noise handling are critical. The 15 configurations systematically explore these dimensions.
 
-**Independent Test**: Run cells 14–17. Verify 10-row results DataFrame with MAE, NLP, and Coverage.
+**Independent Test**: Run cells 14–17. Verify 15-row results DataFrame with MAE, NLP, and Coverage.
+
+---
+
+### User Story F5-4 — Run GBT Prequential Evaluation (Priority: P1)
+
+As a student, I want to evaluate 15 Gradient Boosted Tree configurations varying n_estimators, learning rate, max depth, min_samples_leaf, and subsample, so that I can assess whether GBT provides competitive predictive performance compared to GP on F5's wide-range chemical yield data.
+
+**Why GBT**: GBT is a non-parametric ensemble method that doesn't assume a smooth function. For wide-range outputs, GBT's quantile regression can provide well-calibrated uncertainty estimates.
+
+**Independent Test**: Run GBT cells. Verify 15-row results DataFrame with MAE, NLP, and Coverage.
+
+---
+
+### User Story F5-5 — Run MFGP Prequential Evaluation (Priority: P1)
+
+As a student, I want to evaluate 15 Multi-Fidelity GP configurations varying Matérn smoothness (nu), fidelity kernel type (linear truncated vs exponential decay), output transform, and noise lower bound, so that I can assess MFGP as an alternative GP-based surrogate for F5.
+
+**Why MFGP**: MFGP can capture additional structure through its fidelity kernel. For a unimodal 4D function with wide output range, the fidelity kernel and output standardisation choices may significantly impact predictive quality.
+
+**Independent Test**: Run MFGP cells. Verify 15-row results DataFrame with MAE, NLP, and Coverage.
 
 ---
 
 ### User Story F5-3 — Compare and Select Best Configuration (Priority: P1)
 
-As a student, I want a ranked summary of all 10 GP configurations with sensitivity visualisations, so that I can determine the best GP setup for F5 and understand which hyperparameters matter most.
+As a student, I want a side-by-side comparison of the best GP, best GBT, and best MFGP configurations with bar charts and a ranked summary table of all 45 configurations, so that I can determine which surrogate family is best for F5 and understand which hyperparameters matter most.
 
 **Independent Test**: Run cells 18–24. Verify sensitivity bar charts, ranked table, and conclusions.
 
@@ -848,10 +871,13 @@ As a student, I want a ranked summary of all 10 GP configurations with sensitivi
 
 ### Edge Cases (F5)
 
-- Very wide output range (0.11 to 3331.80): z-score standardisation is critical. Log-transform may also be important given the range spans orders of magnitude.
-- Unimodal function: Matérn 5/2 (smooth) should be well-suited, but RBF may also work well.
+- Very wide output range (0.11 to 3331.80): z-score standardisation is critical for GP/MFGP. Log-transform may also be important given the range spans orders of magnitude.
+- Unimodal function: Matérn 5/2 (smooth) should be well-suited for GP, but RBF may also work well.
 - 20 initial points in 4D: Relatively well-sampled for a unimodal function. Lengthscale estimation should be feasible.
-- GP fitting with very large output values: Without standardisation, the MLL optimisation may struggle. Initialising noise variance proportional to Var(y) helps.
+- GP fitting with very large output values: Without standardisation, the MLL optimisation may struggle.
+- GBT with small data: Only 20–25 training points — GBT may overfit with deep trees or large ensembles. min_samples_leaf regularisation critical.
+- MFGP with constant fidelity: All data is at the same fidelity level (1.0). The fidelity kernel may not add useful information, potentially making MFGP equivalent to or worse than standard GP.
+- GBT quantile uncertainty: GBT uncertainty comes from quantile regression, which may be poorly calibrated with small data.
 
 ## Requirements (F5)
 
@@ -864,12 +890,16 @@ As a student, I want a ranked summary of all 10 GP configurations with sensitivi
 - **FR-F5-005**: Notebook MUST evaluate GP surrogates using BoTorch `SingleTaskGP` with the specified starting configuration (Matérn 5/2, ARD, z-score standardisation).
 - **FR-F5-006**: Notebook MUST initialise GP hyperparameters as specified: lengthscales 0.2–0.3, signal variance = Var(y), noise variance = 0.02–0.05 · Var(y), jitter = 1e-6.
 - **FR-F5-007**: Notebook MUST use 10–20 random restarts of MLL optimisation (L-BFGS-B) for hyperparameter fitting.
-- **FR-F5-008**: Notebook MUST optimise GP hyperparameters across 10 configurations.
+- **FR-F5-008**: Notebook MUST optimise GP hyperparameters across 15 configurations.
 - **FR-F5-009**: GP hyperparameters to vary: kernel type (Matérn 5/2, Matérn 3/2, RBF), output transform (z-score, log, raw), noise initialisation (0.02·Var(y), 0.05·Var(y)), lengthscale initialisation (0.2, 0.3).
-- **FR-F5-010**: Notebook MUST produce a ranked results table of all 10 configurations sorted by NLP.
+- **FR-F5-010**: Notebook MUST produce a ranked results table of all 45 configurations sorted by NLP.
 - **FR-F5-011**: Notebook MUST produce visualisations: predictions vs actuals with uncertainty, absolute error per step, NLP per step, and sensitivity bar charts.
 - **FR-F5-012**: Each code step MUST be clearly explained in markdown cells.
 - **FR-F5-013**: Notebook MUST be stored at `functions/f5/preq-eval-f5.ipynb`.
+- **FR-F5-014**: Notebook MUST evaluate GBT (Gradient Boosted Trees) surrogates using `sklearn.ensemble.GradientBoostingRegressor` with quantile regression for uncertainty. 15 GBT configurations varying n_estimators, learning_rate, max_depth, min_samples_leaf, subsample.
+- **FR-F5-015**: Notebook MUST evaluate MFGP (Multi-Fidelity GP) surrogates using BoTorch `SingleTaskMultiFidelityGP`. 15 MFGP configurations varying nu (2.5, 1.5), linear_truncated (True/False), output_transform (raw, standardise), noise_lb.
+- **FR-F5-016**: Notebook MUST produce a 3-way comparison table of the best GP vs best GBT vs best MFGP configurations, identifying the metric winner for MAE, NLP, and Coverage.
+- **FR-F5-017**: Notebook MUST produce sensitivity bar charts for all 45 configurations colour-coded by model family (GP blue, MFGP pink, GBT green).
 
 ### Key Entities (F5)
 
@@ -882,12 +912,14 @@ As a student, I want a ranked summary of all 10 GP configurations with sensitivi
 ## Success Criteria (F5)
 
 - **SC-F5-001**: Notebook executes end-to-end without errors.
-- **SC-F5-002**: 6 one-step-ahead predictions for each of the 10 configurations.
-- **SC-F5-003**: Ranked results table identifies the best GP configuration for F5.
+- **SC-F5-002**: 6 one-step-ahead predictions for each of the 45 configurations (15 GP + 15 GBT + 15 MFGP = 270 total predictions).
+- **SC-F5-003**: Ranked results table identifies the best configuration overall and per family for F5.
 - **SC-F5-004**: All three metrics (MAE, NLP, Coverage) reported for every configuration.
 - **SC-F5-005**: Visualisations clear, labelled, capstone-report ready.
 - **SC-F5-006**: Code is simple with each step clearly explained.
 - **SC-F5-007**: GP hyperparameter initialisation matches the specified starting configuration.
+- **SC-F5-008**: 3-way comparison table shows best GP vs best GBT vs best MFGP with metric winners.
+- **SC-F5-009**: Sensitivity bar charts colour-coded by model family (45 bars).
 
 ## Technical Notes (F5)
 
@@ -915,16 +947,21 @@ data/f5/updated_outputs - Week 6.npy ──┤
                                         ▼
                               Load all 26 points
                                         │
-                                        ▼
-                              GP Evaluation
-                              (10 configs)
-                                        │
-                                        ▼
-                              GP Results DF
-                                        │
-                                        ▼
-                           Ranking & Sensitivity Analysis
-                                        │
-                                        ▼
-                              Tables + Visualisations
+                        ┌───────────────┼────────────────┐
+                        ▼               ▼                ▼
+                  GP Evaluation   GBT Evaluation   MFGP Evaluation
+                  (15 configs)    (15 configs)     (15 configs)
+                        │               │                │
+                        ▼               ▼                ▼
+                   GP Results      GBT Results     MFGP Results
+                        │               │                │
+                        └───────┬───────┘────────────────┘
+                                ▼
+                     3-Way Best-of-Family Comparison
+                                │
+                                ▼
+                   Ranking & Sensitivity Analysis (45 configs)
+                                │
+                                ▼
+                      Tables + Visualisations
 ````

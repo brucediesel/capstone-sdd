@@ -427,24 +427,24 @@ data/
 
 ---
 
-# Implementation Plan: F5 — Prequential Evaluation (GP Hyperparameter Optimisation)
+# Implementation Plan: F5 — Prequential Evaluation (GP, GBT & MFGP Comparison)
 
 **Date**: 2026-02-21 | **Spec**: [spec.md](spec.md) (F5 section)
 
 ## Summary
 
-Create a new notebook `functions/f5/preq-eval-f5.ipynb` from scratch that performs prequential one-step-ahead evaluation of GP hyperparameters on Function 5 (chemical process yield optimisation, 4D input, 20 initial points). Unlike F1–F4 which compared multiple surrogate families, F5 focuses on **GP-only hyperparameter optimisation** with a specific starting configuration (Matérn 5/2, ARD, z-score standardisation, tailored initialisations). The notebook evaluates **10 GP configurations** and identifies the best setup.
+Extend the notebook `functions/f5/preq-eval-f5.ipynb` to perform prequential one-step-ahead evaluation of three surrogate families on Function 5 (chemical process yield optimisation, 4D input, 20 initial points). The notebook evaluates **15 GP configurations**, **15 GBT configurations**, and **15 MFGP configurations** (45 total), then performs a 3-way comparison to identify the best surrogate for F5.
 
 ## Technical Context (F5)
 
 **Language/Version**: Python 3.14.2 (pyenv sdd-dev)
-**Primary Dependencies**: BoTorch/GPyTorch (GP), numpy, pandas, matplotlib
+**Primary Dependencies**: BoTorch/GPyTorch (GP, MFGP), scikit-learn (GBT), numpy, pandas, matplotlib
 **Storage**: `.npy` files in `data/f5/`
 **Testing**: No unit tests required (per CONSTITUTION) — manual notebook execution validates
 **Target Platform**: Jupyter Notebooks
-**Project Type**: Single project — 1 new Jupyter notebook
-**Performance Goals**: Full notebook executes in <5 minutes (10 GP configs, no BART/RF overhead)
-**Scale/Scope**: 1 notebook, ~24 cells (12 markdown + 12 code)
+**Project Type**: Single project — 1 Jupyter notebook (extend existing)
+**Performance Goals**: Full notebook executes in <10 minutes (45 configs across 3 families)
+**Scale/Scope**: 1 notebook, ~36 cells (16 markdown + 20 code)
 
 ## Constitution Check (F5)
 
@@ -455,9 +455,9 @@ Create a new notebook `functions/f5/preq-eval-f5.ipynb` from scratch that perfor
 | No unit tests required | ✅ PASS | N/A |
 | 8 separate problems, each in own notebook | ✅ PASS | Notebook in `functions/f5/` |
 | Data in `./data` folder structure | ✅ PASS | Loads from `data/f5/` |
-| Use BoTorch library | ✅ PASS | GP via BoTorch SingleTaskGP |
-| Hyperparameters documented | ✅ PASS | 10 GP configs with detailed initialisations |
-| Visualisations provided | ✅ PASS | 3-panel plots + sensitivity charts + ranked table |
+| Use BoTorch library | ✅ PASS | GP via BoTorch SingleTaskGP, MFGP via SingleTaskMultiFidelityGP |
+| Hyperparameters documented | ✅ PASS | 45 configs (15 per family) with detailed docs |
+| Visualisations provided | ✅ PASS | 3-panel plots + sensitivity charts + ranked table + 3-way comparison |
 
 **Gate Result**: ✅ ALL PASS
 
@@ -481,9 +481,9 @@ data/
 
 | Cell | Type | Content |
 |------|------|---------|
-| 1 | md | Title & overview (F5, 4D, chemical yield, GP-only, 10 configs) |
+| 1 | md | Title & overview (F5, 4D, chemical yield, GP + GBT + MFGP, 45 configs) |
 | 2 | md | Evaluation metrics (MAE, NLP, Coverage) |
-| 3 | code | Imports (BoTorch, GPyTorch, numpy, pandas, matplotlib) |
+| 3 | code | Imports (BoTorch, GPyTorch, sklearn, numpy, pandas, matplotlib) |
 | 4 | md | Step 1: Load Data |
 | 5 | code | Load F5 data, WEEK=6, N_INIT=20 |
 | 6 | md | Step 2: Evaluation Metrics |
@@ -494,42 +494,56 @@ data/
 | 11 | code | Execute GP with starting config |
 | 12 | md | GP Default Visualisation |
 | 13 | code | `plot_prequential_results()` + plot GP default |
-| 14 | md | Step 4: GP HP Optimisation (10 configs) |
-| 15 | code | `gp_prequential_with_config()` + hp_configs + run all |
+| 14 | md | Step 4: GP HP Optimisation (15 configs) |
+| 15 | code | `gp_prequential_with_config()` + 15 hp_configs + run all |
 | 16 | md | Best GP Configuration |
 | 17 | code | Select best GP by NLP |
-| 18 | md | Step 5: Sensitivity Analysis |
-| 19 | code | Sensitivity horizontal bar charts (all 10 configs) |
-| 20 | md | Full Results Table |
-| 21 | code | Ranked table of all 10 configs sorted by NLP |
-| 22 | md | Conclusions |
+| 18 | md | Step 5: GBT Prequential Evaluation (15 configs) |
+| 19 | code | `gbt_prequential_with_config()` + 15 gbt_configs + run all |
+| 20 | md | Best GBT Configuration |
+| 21 | code | Select best GBT by NLP |
+| 22 | md | Step 6: MFGP Prequential Evaluation (15 configs) |
+| 23 | code | `mfgp_prequential_with_config()` + 15 mfgp_configs + run all |
+| 24 | md | Best MFGP Configuration |
+| 25 | code | Select best MFGP by NLP |
+| 26 | md | Step 7: 3-Way Comparison (GP vs GBT vs MFGP) |
+| 27 | code | Comparison table + bar chart (best-of-family) |
+| 28 | md | Step 8: Sensitivity Analysis (all 45 configs) |
+| 29 | code | Sensitivity horizontal bar charts — all 45 configs colour-coded |
+| 30 | md | Full Results Table |
+| 31 | code | Ranked table of all 45 configs sorted by NLP |
+| 32 | md | Conclusions |
 
 ## Steps (F5)
 
-1. **Create notebook** with all cells following the F4 GP pattern, adapted for F5
-2. **Adapt data loading** for F5 paths (4D inputs, `../../data/f5/`, N_INIT=20)
-3. **Implement GP starting config** — Matérn 5/2, ARD, z-score, specific initialisations (lengthscales 0.2–0.3, signal var = Var(y), noise = 0.03·Var(y), jitter 1e-6, 10–20 random restarts)
-4. **Build 10 GP configurations** — vary kernel, output transform, noise init, lengthscale init
-5. **Implement HP optimisation loop** — evaluate all 10 configs
-6. **Build sensitivity analysis** — horizontal bar charts showing HP impact
-7. **Build ranked table** — 10 rows sorted by NLP
-8. **Run and validate** — all cells execute without errors
+1. **Update imports** to add sklearn.ensemble.GradientBoostingRegressor and SingleTaskMultiFidelityGP
+2. **Expand GP configs** from 10 to 15 configurations (add 5 more combinations)
+3. **Add GBT section** — `gbt_prequential_with_config()` + 15 configs + evaluation loop + best selection
+4. **Add MFGP section** — `mfgp_prequential_with_config()` + 15 configs + evaluation loop + best selection
+5. **Add 3-way comparison** — best GP vs best GBT vs best MFGP comparison table and bar charts
+6. **Update sensitivity analysis** — horizontal bar charts with all 45 configs colour-coded by model family
+7. **Update ranked table** — all 45 configs sorted by NLP with 1-based ranking
+8. **Update conclusions** — 3-way comparison findings, best model for F5
+9. **Run and validate** — all cells execute without errors
 
 ## Verification (F5)
 
 - **SC-F5-001**: All cells execute without errors
-- **SC-F5-002**: 6 one-step-ahead predictions per config (10 configs × 6 = 60 total predictions)
-- **SC-F5-003**: Ranked results table identifies best GP configuration for F5
+- **SC-F5-002**: 6 one-step-ahead predictions per config (45 configs × 6 = 270 total predictions)
+- **SC-F5-003**: Ranked results table identifies best configuration overall and per family
 - **SC-F5-004**: All three metrics (MAE, NLP, Coverage) reported for every configuration
 - **SC-F5-005**: Visualisations clear, labelled
 - **SC-F5-006**: Code is simple, each step explained
 - **SC-F5-007**: GP hyperparameter initialisation matches the specified starting config
+- **SC-F5-008**: 3-way comparison table shows best-of-family with metric winners
+- **SC-F5-009**: Sensitivity bar charts colour-coded by model family (45 bars)
 
 ## Decisions (F5)
 
-- GP-only evaluation (no BART, RF, or GBT) — focuses on hyperparameter optimisation for one surrogate family
-- Starting configuration: Matérn 5/2, ARD, z-score standardisation, specific initialisations
-- 10 HP configurations (as specified)
+- Three surrogate families: GP, GBT, MFGP — 15 configs each = 45 total (consistent with F4)
+- GP starting configuration: Matérn 5/2, ARD, z-score standardisation, specific initialisations
+- GBT uncertainty via quantile regression (same pattern as F4)
+- MFGP with constant fidelity column = 1.0 (same pattern as F4)
 - N_INIT = 20 (F5 starts with 20 initial samples)
 - Ranking by NLP (lower is better), consistent with F1–F4
-- Z-score standardisation as default (critical for F5's wide output range 0.11 to 3331.80)
+- Colours: GP = blue (#2196F3), MFGP = pink (#E91E63), GBT = green (#4CAF50)

@@ -522,10 +522,10 @@ Task T013-T014: "Verify BART default evaluation (cells 19-23)"
 
 ---
 
-# F5 Tasks: Prequential Evaluation — GP Hyperparameter Optimisation
+# F5 Tasks: Prequential Evaluation — GP, GBT & MFGP Comparison
 
 **Input**: spec.md (F5 section), plan.md (F5 section)
-**Target file**: `functions/f5/preq-eval-f5.ipynb` (NEW — create from scratch)
+**Target file**: `functions/f5/preq-eval-f5.ipynb` (EXTEND existing notebook)
 
 ## Format: `[ID] [P?] [Story] Description`
 
@@ -538,7 +538,7 @@ Task T013-T014: "Verify BART default evaluation (cells 19-23)"
 
 **Purpose**: Create the notebook file with imports, data loading, and shared utility functions
 
-- [x] T-F5-001 Create `functions/f5/preq-eval-f5.ipynb` with title markdown cell (F5 overview: 4D chemical yield, unimodal, GP-only, 10 configs) and evaluation metrics markdown cell
+- [x] T-F5-001 Create `functions/f5/preq-eval-f5.ipynb` with title markdown cell (F5 overview: 4D chemical yield, unimodal, GP + GBT + MFGP, 45 configs) and evaluation metrics markdown cell
 - [x] T-F5-002 Add imports cell: numpy, torch, matplotlib, pandas, warnings, botorch/gpytorch (SingleTaskGP, kernels, likelihood, constraints, transforms). Set seeds.
 - [x] T-F5-003 Add data loading cell: `WEEK = 6`, load from `../../data/f5/updated_inputs - Week {WEEK}.npy` and outputs, set `N_INIT = 20`, print data summary (FR-F5-001, FR-F5-002)
 - [x] T-F5-004 Add `compute_metrics()` function cell — same as F1–F4: MAE, NLP (clipped std), 95% Coverage (FR-F5-004)
@@ -561,26 +561,56 @@ Task T013-T014: "Verify BART default evaluation (cells 19-23)"
 
 ## Phase F5-3: GP Hyperparameter Optimisation (User Story F5-2)
 
-**Purpose**: Evaluate 10 GP configurations and identify best by NLP
+**Purpose**: Evaluate 15 GP configurations and identify best by NLP
 
 - [x] T-F5-008 Add `gp_prequential_with_config()` function with configurable kernel, output transform, noise init, lengthscale init, and multi-restart MLL fitting (FR-F5-005, FR-F5-008, FR-F5-009)
-- [x] T-F5-009 Add 10 GP `hp_configs` list covering: kernels (Matérn 5/2, Matérn 3/2, RBF) × output transforms (z-score, log, raw) × noise inits (0.02·Var(y), 0.05·Var(y)) × lengthscale inits (0.2, 0.3) — select 10 combinations (FR-F5-008, FR-F5-009)
-- [x] T-F5-010 Add GP HP optimisation loop cell with try/except for NaN on failure (FR-F5-008)
-- [x] T-F5-011 Add best GP selection cell — select by lowest NLP, display DataFrame (FR-F5-010)
+- [x] T-F5-009 Expand GP `hp_configs` from 10 to 15 configurations: add 5 more combos of kernels (Matérn 5/2, Matérn 3/2, RBF) × output transforms (z-score, log, raw) × noise inits × lengthscale inits (FR-F5-008, FR-F5-009)
+- [x] T-F5-010 GP HP optimisation loop cell with try/except for NaN on failure (FR-F5-008)
+- [x] T-F5-011 Best GP selection cell — select by lowest NLP, display DataFrame (FR-F5-010)
 
-**Checkpoint**: GP HP optimisation produces 10-row ranked results table
+**Checkpoint**: GP HP optimisation produces 15-row ranked results table
 
 ---
 
-## Phase F5-4: Sensitivity Analysis & Conclusions (User Story F5-3)
+## Phase F5-3b: GBT Prequential Evaluation (User Story F5-4)
 
-**Purpose**: Visualise sensitivity and rank all 10 configurations
+**Purpose**: Evaluate 15 GBT configurations and identify best by NLP
 
-- [x] T-F5-012 Add sensitivity horizontal bar chart cell — all 10 configs, MAE/NLP/Coverage (FR-F5-011)
-- [x] T-F5-013 Add full ranked table cell — all 10 configs sorted by NLP, 1-based rank (FR-F5-010)
-- [x] T-F5-014 Add conclusions markdown cell — key findings, best config for F5, implications (FR-F5-012)
+- [x] T-F5-019 Add GBT markdown explanation cell — describe GBT approach, quantile regression for uncertainty, HP axes (n_estimators, learning_rate, max_depth, min_samples_leaf, subsample)
+- [x] T-F5-020 Add `gbt_prequential_with_config()` function — fits mean + lower/upper quantile GBT models per step, estimates std from quantile spread (FR-F5-014)
+- [x] T-F5-021 Add 15 `gbt_configs` list — vary n_estimators (50–500), learning_rate (0.01–0.2), max_depth (3–6), min_samples_leaf (1–5), subsample (0.8–1.0) (FR-F5-014)
+- [x] T-F5-022 Add GBT HP optimisation loop cell with try/except — store results in `gbt_hp_df` (FR-F5-014)
+- [x] T-F5-023 Add best GBT selection cell — select by lowest NLP, display DataFrame
 
-**Checkpoint**: Full notebook complete with sensitivity analysis and ranked table
+**Checkpoint**: GBT section complete — 15 configs evaluated with metrics
+
+---
+
+## Phase F5-3c: MFGP Prequential Evaluation (User Story F5-5)
+
+**Purpose**: Evaluate 15 MFGP configurations and identify best by NLP
+
+- [x] T-F5-024 Add MFGP markdown explanation cell — describe Multi-Fidelity GP, fidelity column, LinearTruncated vs ExponentialDecay kernel, HP axes (FR-F5-015)
+- [x] T-F5-025 Add `mfgp_prequential_with_config()` function — appends fidelity=1.0 column, builds SingleTaskMultiFidelityGP, varies nu/linear_truncated/output_transform/noise_lb (FR-F5-015)
+- [x] T-F5-026 Add 15 `mfgp_configs` list — vary nu (2.5, 1.5), linear_truncated (True/False), output_transform (raw, standardise), noise_lb (1e-4, 1e-5, 1e-6) (FR-F5-015)
+- [x] T-F5-027 Add MFGP HP optimisation loop cell with try/except — store results in `mfgp_hp_df` (FR-F5-015)
+- [x] T-F5-028 Add best MFGP selection cell — select by lowest NLP, display DataFrame
+
+**Checkpoint**: MFGP section complete — 15 configs evaluated with metrics
+
+---
+
+## Phase F5-4: 3-Way Comparison & Sensitivity (User Stories F5-3, F5-4, F5-5)
+
+**Purpose**: Compare best GP vs best GBT vs best MFGP and rank all 45 configurations
+
+- [x] T-F5-029 Add 3-way comparison markdown cell
+- [x] T-F5-030 Add comparison code cell — best GP vs best GBT vs best MFGP side-by-side, identify metric winners for MAE, NLP, Coverage (FR-F5-016)
+- [x] T-F5-031 Update sensitivity horizontal bar chart cell — all 45 configs, colour-coded by family (GP=blue, MFGP=pink, GBT=green) (FR-F5-017)
+- [x] T-F5-032 Update full ranked table cell — combine all 45 configs, sort by NLP, 1-based rank (FR-F5-010)
+- [x] T-F5-033 Update conclusions markdown cell — key findings including 3-way comparison, best model for F5 across all families
+
+**Checkpoint**: Full notebook complete with 3-way comparison and 45-row ranked table
 
 ---
 
@@ -588,10 +618,10 @@ Task T013-T014: "Verify BART default evaluation (cells 19-23)"
 
 **Purpose**: End-to-end validation
 
-- [x] T-F5-015 Run all cells of `functions/f5/preq-eval-f5.ipynb` top-to-bottom and verify no errors (SC-F5-001)
-- [x] T-F5-016 Verify 10 configs × 6 predictions each = 60 total predictions (SC-F5-002)
-- [x] T-F5-017 Verify all visualisations are clear and labelled (SC-F5-005)
-- [x] T-F5-018 Verify each code step has a preceding markdown explanation (SC-F5-006)
+- [x] T-F5-034 Run all cells of `functions/f5/preq-eval-f5.ipynb` top-to-bottom and verify no errors (SC-F5-001)
+- [x] T-F5-035 Verify 45 configs × 6 predictions each = 270 total predictions (SC-F5-002)
+- [x] T-F5-036 Verify all visualisations are clear and labelled (SC-F5-005)
+- [x] T-F5-037 Verify each code step has a preceding markdown explanation (SC-F5-006)
 
 ---
 
@@ -600,5 +630,7 @@ Task T013-T014: "Verify BART default evaluation (cells 19-23)"
 - **Phase F5-1** (Setup): No dependencies — start here
 - **Phase F5-2** (GP Default): Depends on Phase F5-1
 - **Phase F5-3** (GP HP Opt): Depends on Phase F5-2
-- **Phase F5-4** (Sensitivity): Depends on Phase F5-3
+- **Phase F5-3b** (GBT): Depends on Phase F5-1; can run in parallel with Phases F5-2 and F5-3
+- **Phase F5-3c** (MFGP): Depends on Phase F5-1; can run in parallel with Phases F5-2, F5-3, and F5-3b
+- **Phase F5-4** (Comparison): Depends on Phases F5-3, F5-3b, and F5-3c
 - **Phase F5-5** (Polish): Depends on all phases

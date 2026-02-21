@@ -595,44 +595,67 @@ functions/f6/
 | 13 | code | Generate 50 `nn_configs` + evaluation loop → `nn_hp_df` |
 | 14 | md | Best NN Configuration |
 | 15 | code | Best selection by NLP, display |
-| 16 | md | Sensitivity Analysis: All 50 Configurations |
-| 17 | code | Horizontal bar charts (NLP, MAE, Coverage) |
-| 18 | md | Full Ranked Results |
-| 19 | code | Ranked table sorted by NLP, 1-based ranking |
-| 20 | md | Conclusions |
+| 16 | md | MFGP Approach: architecture, fidelity column, 50-config search space |
+| 17 | code | MFGP imports + `mfgp_prequential_with_config()` function |
+| 18 | md | MFGP HP Configurations: 50 configs |
+| 19 | code | Generate 50 `mfgp_configs` + evaluation loop → `mfgp_hp_df` |
+| 20 | md | Best MFGP Configuration |
+| 21 | code | Best MFGP selection by NLP, display |
+| 22 | md | 2-Way Comparison: Best NN vs Best MFGP |
+| 23 | code | Comparison table + bar chart (3 metrics side-by-side) |
+| 24 | md | Best Model Visualisation |
+| 25 | code | Re-run overall winner → 3-panel prequential plot |
+| 26 | md | Sensitivity Analysis: All 100 Configurations |
+| 27 | code | Horizontal bar charts (NLP, MAE, Coverage) — NN orange, MFGP pink |
+| 28 | md | Full Ranked Results |
+| 29 | code | Combined ranked table (100 configs) sorted by NLP, 1-based ranking |
+| 30 | md | Conclusions |
 
-**Total**: ~20 cells
+**Total**: ~30 cells
 
 ## Steps (F6)
 
 1. **Create notebook** with title, imports, data loading, `compute_metrics()`
 2. **Implement `nn_prequential_with_config()`** — builds `FlexibleNN`, trains with Adam, predicts with MC Dropout, returns metrics
 3. **Run default config** — 2 layers, 5 nodes, lr=0.01 — visualise prequential results
-4. **Generate 50 configs** — systematic grid: layers [1,2] × nodes [5,8,16,32,64] × lr [0.001,0.005,0.01,0.05,0.1]
-5. **Evaluate all 50** — loop with try/except, store in `nn_hp_df`
-6. **Select best by NLP** — display best config details
-7. **Sensitivity analysis** — horizontal bar charts for all 50 configs
-8. **Ranked table** — all 50 sorted by NLP, 1-based rank
-9. **Conclusions** — key findings, best architecture, implications for BO
-10. **Run and validate** — all cells execute without errors
+4. **Generate 50 NN configs** — systematic grid: layers [1,2] × nodes [5,8,16,32,64] × lr [0.001,0.005,0.01,0.05,0.1]
+5. **Evaluate all 50 NN configs** — loop with try/except, store in `nn_hp_df`
+6. **Select best NN by NLP** — display best config details
+7. **Add MFGP imports** — BoTorch SingleTaskMultiFidelityGP, GPyTorch GaussianLikelihood, GreaterThan
+8. **Implement `mfgp_prequential_with_config()`** — appends fidelity=1.0 column, builds MFGP, fits MLL, returns metrics
+9. **Generate 50 MFGP configs** — grid: nu [0.5,1.5,2.5] × linear_truncated [T/F] × transform [raw/std] × noise_lb [1e-4..1e-7] + 2 extras
+10. **Evaluate all 50 MFGP configs** — loop with try/except, store in `mfgp_hp_df`
+11. **Select best MFGP by NLP** — display best config details
+12. **2-way comparison** — best NN vs best MFGP: table + grouped bar chart
+13. **Best model visualisation** — re-run overall winner, plot 3-panel prequential results
+14. **Combined sensitivity analysis** — horizontal bar charts for all 100 configs (NN=orange, MFGP=pink)
+15. **Combined ranked table** — all 100 sorted by NLP, 1-based rank, Family column
+16. **Conclusions** — key findings, winner, per-family insights, implications for BO
+17. **Run and validate** — all cells execute without errors
 
 ## Verification (F6)
 
 - **SC-F6-001**: All cells execute without errors
-- **SC-F6-002**: 6 one-step-ahead predictions per config (50 configs × 6 = 300 total predictions)
-- **SC-F6-003**: Ranked results table identifies best NN configuration
+- **SC-F6-002**: 6 one-step-ahead predictions per config (100 configs × 6 = 600 total predictions)
+- **SC-F6-003**: Ranked results table identifies best config across both families
 - **SC-F6-004**: All three metrics (MAE, NLP, Coverage) reported for every configuration
-- **SC-F6-005**: Visualisations clear, labelled
+- **SC-F6-005**: Visualisations clear, labelled, NN = orange (#FF9800), MFGP = pink (#E91E63)
 - **SC-F6-006**: Code is simple, each step explained
 - **SC-F6-007**: Default NN architecture matches spec (2 layers, 5 nodes, lr=0.01)
+- **SC-F6-008**: 50 MFGP configs evaluated with fidelity column appended
+- **SC-F6-009**: 2-way comparison table and chart present
+- **SC-F6-010**: Best overall model visualised with 3-panel plot
+- **SC-F6-011**: Combined sensitivity charts show both families with distinct colours
 
 ## Decisions (F6)
 
-- Single surrogate family: NN with MC Dropout — 50 configs (NN-only, no GP/GBT comparison)
-- Configurable architecture: `FlexibleNN(input_dim, n_layers, n_nodes, dropout=0.2)`
-- Uncertainty: MC Dropout with 50 forward passes, std floored at 1e-10
-- Fixed: activation=ReLU, dropout=0.2, epochs=500, MC_samples=50
-- Varied: layers (1–2), nodes (5, 8, 16, 32, 64), lr (0.001, 0.005, 0.01, 0.05, 0.1)
+- Two surrogate families: NN with MC Dropout (50 configs) + MFGP (50 configs) → 100 total
+- NN architecture: `FlexibleNN(input_dim, n_layers, n_nodes, dropout=0.2)`
+- NN uncertainty: MC Dropout with 50 forward passes, std floored at 1e-10
+- NN fixed: activation=ReLU, dropout=0.2, epochs=500, MC_samples=50
+- NN varied: layers (1–2), nodes (5, 8, 16, 32, 64), lr (0.001, 0.005, 0.01, 0.05, 0.1)
+- MFGP architecture: SingleTaskMultiFidelityGP with fidelity=1.0 column appended (5D→6D)
+- MFGP varied: nu (0.5, 1.5, 2.5), linear_truncated (T/F), output_transform (raw/std), noise_lb (1e-4..1e-7)
 - N_INIT = 20 (F6 starts with 20 initial samples)
 - Ranking by NLP (lower is better), consistent with F1–F5
-- Colour: NN = orange (#FF9800) — distinct from GP/GBT/MFGP colours
+- Colours: NN = orange (#FF9800), MFGP = pink (#E91E63)

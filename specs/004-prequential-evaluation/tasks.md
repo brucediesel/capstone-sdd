@@ -700,9 +700,9 @@ Task T013-T014: "Verify BART default evaluation (cells 19-23)"
 
 ---
 
-## Phase F6-5: Polish & Validation
+## Phase F6-5: Polish & Validation (NN-only)
 
-**Purpose**: End-to-end validation
+**Purpose**: End-to-end validation of NN section
 
 - [x] T-F6-016 Run all cells of `functions/f6/preq-eval-f6.ipynb` top-to-bottom and verify no errors (SC-F6-001)
 - [x] T-F6-017 Verify 50 configs × 6 predictions each = 300 total predictions (SC-F6-002)
@@ -711,10 +711,55 @@ Task T013-T014: "Verify BART default evaluation (cells 19-23)"
 
 ---
 
+## Phase F6-6: MFGP Hyperparameter Optimisation (User Story F6-4)
+
+**Purpose**: Evaluate 50 MFGP configurations and identify best by NLP
+
+- [x] T-F6-020 Add MFGP markdown cell — describe architecture (SingleTaskMultiFidelityGP, fidelity column, kernel types) and 50-config search space (FR-F6-014, FR-F6-016)
+- [x] T-F6-021 Add MFGP imports to imports cell — BoTorch SingleTaskMultiFidelityGP, GPyTorch GaussianLikelihood, GreaterThan, ExactMarginalLogLikelihood (FR-F6-014)
+- [x] T-F6-022 Implement `mfgp_prequential_with_config()` — appends fidelity=1.0 column to 5D inputs (→6D), builds MFGP, fits MLL, computes metrics (FR-F6-015)
+- [x] T-F6-023 Define 50 `mfgp_configs` — grid: nu [0.5,1.5,2.5] × linear_truncated [T/F] × transform [raw/std] × noise_lb [1e-4..1e-7] + 2 extras (FR-F6-016)
+- [x] T-F6-024 Add MFGP HP optimisation loop cell with try/except — store results in `mfgp_hp_df` (FR-F6-017)
+- [x] T-F6-025 Add best MFGP selection cell — select by lowest NLP, display DataFrame (FR-F6-018)
+
+**Checkpoint**: MFGP HP optimisation produces 50-row results table
+
+---
+
+## Phase F6-7: 2-Way Comparison (User Story F6-5)
+
+**Purpose**: Compare best NN vs best MFGP and produce combined analysis
+
+- [x] T-F6-026 Add 2-way comparison markdown cell — describe head-to-head methodology
+- [x] T-F6-027 Add comparison table + bar chart cell — best NN vs best MFGP across MAE, NLP, Coverage_95 (FR-F6-019, FR-F6-020)
+- [x] T-F6-028 Add best model visualisation cell — re-run overall winner, 3-panel prequential plot (FR-F6-023)
+- [x] T-F6-029 Update sensitivity charts — all 100 configs, NN=orange, MFGP=pink (FR-F6-021)
+- [x] T-F6-030 Update ranked table — all 100 configs sorted by NLP, Family column (FR-F6-022)
+- [x] T-F6-031 Update conclusions — 2-way comparison findings, winner, implications for BO
+
+**Checkpoint**: Complete 2-way comparison with combined sensitivity and ranking
+
+---
+
+## Phase F6-8: Final Validation
+
+**Purpose**: End-to-end validation of complete 100-config notebook
+
+- [x] T-F6-032 Run all cells top-to-bottom — verify no errors (SC-F6-001)
+- [x] T-F6-033 Verify 100 configs × 6 = 600 total predictions (SC-F6-002)
+- [x] T-F6-034 Verify 2-way comparison table and chart present (SC-F6-009)
+- [x] T-F6-035 Verify best model 3-panel plot present (SC-F6-010)
+- [x] T-F6-036 Verify combined sensitivity charts show both families with distinct colours (SC-F6-011)
+
+---
+
 ## Dependencies & Execution Order (F6)
 
 - **Phase F6-1** (Setup): No dependencies — start here
 - **Phase F6-2** (NN Default): Depends on Phase F6-1
 - **Phase F6-3** (NN HP Opt): Depends on Phase F6-2
-- **Phase F6-4** (Sensitivity): Depends on Phase F6-3
-- **Phase F6-5** (Polish): Depends on all phases
+- **Phase F6-4** (NN Sensitivity): Depends on Phase F6-3
+- **Phase F6-5** (NN Validation): Depends on Phase F6-4
+- **Phase F6-6** (MFGP HP Opt): Depends on Phase F6-1 (data loading), Phase F6-5 (NN baseline complete)
+- **Phase F6-7** (2-Way Comparison): Depends on Phase F6-3 + Phase F6-6
+- **Phase F6-8** (Final Validation): Depends on all phases

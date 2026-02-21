@@ -968,11 +968,15 @@ data/f5/updated_outputs - Week 6.npy ──┤
 
 ---
 
-# Function 6: Neural Network Prequential Evaluation — 50 Hyperparameter Configurations
+# Function 6: Prequential Evaluation — NN, SFGP & MFGP Comparison
 
 ## Overview (F6)
 
-Evaluate a **Neural Network (NN)** surrogate with **MC Dropout** uncertainty across **50 hyperparameter configurations** for Function 6, a 5D cake-recipe optimisation problem. The goal is to identify the NN architecture and training hyperparameters that produce the best-calibrated surrogate (lowest NLP) for use in the Bayesian Optimisation pipeline.
+Evaluate three surrogate families — **Neural Network (NN)**, **Single Fidelity GP (SFGP)**, and **Multi-Fidelity GP (MFGP)** — across **135 total hyperparameter configurations** for Function 6, a 5D cake-recipe optimisation problem. The goal is to identify the best surrogate model and hyperparameters that produce the most accurate and well-calibrated predictions (lowest NLP) for use in the Bayesian Optimisation pipeline.
+
+1. **Neural Network (NN)** — 45 configurations varying hidden layers, nodes per layer, and learning rate
+2. **Single Fidelity GP (SFGP)** — 40 configurations varying kernel type, output transform, and noise floor
+3. **Multi-Fidelity GP (MFGP)** — 50 configurations varying Matérn smoothness, fidelity kernel type, output transform, and noise lower bound
 
 ### Function 6 Context
 
@@ -997,8 +1001,8 @@ Based on the existing F6 notebook (Week 5/6):
 
 | Hyperparameter | Starting Value | Notes |
 |----------------|---------------|-------|
-| **Hidden layers** | 2 | Progressive narrowing |
-| **Nodes per layer** | 5 | Minimal starting architecture per user spec |
+| **Hidden layers** | 2 | Mid-range architecture |
+| **Nodes per layer** | 5 | Small architecture appropriate for 26 samples |
 | **Activation** | ReLU | Standard for regression |
 | **Dropout** | 0.2 | Fixed — required for MC Dropout uncertainty |
 | **Learning rate** | 0.01 | Adam optimiser |
@@ -1007,18 +1011,19 @@ Based on the existing F6 notebook (Week 5/6):
 | **Input normalisation** | z-score | $(x - \bar{x}) / \sigma_x$ |
 | **Output normalisation** | z-score | $(y - \bar{y}) / \sigma_y$ |
 
-### Hyperparameter Search Space (50 Configs)
+### NN Hyperparameter Search Space (45 Configs)
 
-The 50 configurations are generated from a structured grid over three axes:
+The 45 configurations are generated from a structured grid over three axes:
 
 | Axis | Values | Count |
 |------|--------|-------|
 | **Hidden layers** | 1, 2, 3 | 3 |
-| **Nodes per layer** | 5, 8, 16, 32, 64 | 5 |
+| **Nodes per layer** | 4, 5, 6 | 3 |
 | **Learning rate** | 0.001, 0.005, 0.01, 0.05, 0.1 | 5 |
 
-Base grid: layers ∈ {1, 2} × nodes ∈ {5, 8, 16, 32, 64} × lr ∈ {0.001, 0.005, 0.01, 0.05, 0.1} = 50 configs.
-Additionally, 3-layer architectures are explored as supplementary analysis.
+Full grid: layers ∈ {1, 2, 3} × nodes ∈ {4, 5, 6} × lr ∈ {0.001, 0.005, 0.01, 0.05, 0.1} = **45 configs**.
+
+**Rationale**: Layers 1–3 test shallow to moderately deep architectures; nodes 4–6 are appropriate for the small dataset (26 samples, 5D input). Wider networks (16, 32, 64 nodes) are excluded to avoid overfitting risk.
 
 **Fixed hyperparameters** (not varied):
 - Activation: ReLU
@@ -1031,10 +1036,10 @@ Additionally, 3-layer architectures are explored as supplementary analysis.
 
 | Aspect | F5 | F6 |
 |--------|----|----|
-| Surrogate families | GP, GBT, MFGP (3 families × 15) | NN (50) + MFGP (50) → 2-way comparison |
-| Total configs | 45 | 100 (50 NN + 50 MFGP) |
-| HP axes | Kernel, transform, noise, lengthscale | NN: layers, nodes, lr · MFGP: nu, kernel, transform, noise |
-| Uncertainty method | Analytic (GP/MFGP), Quantile (GBT) | MC Dropout (NN), Analytic (MFGP) |
+| Surrogate families | GP, GBT, MFGP (3 families × 15) | **NN (45) + SFGP (40) + MFGP (50) → 3-way comparison** |
+| Total configs | 45 | **135** (45 NN + 40 SFGP + 50 MFGP) |
+| HP axes | Kernel, transform, noise, lengthscale | NN: layers, nodes, lr · SFGP: kernel, transform, noise · MFGP: nu, fidelity kernel, transform, noise |
+| Uncertainty method | Analytic (GP/MFGP), Quantile (GBT) | MC Dropout (NN), Analytic (SFGP/MFGP) |
 | Input dims | 4 | 5 (+ 1 fidelity column for MFGP = 6D) |
 | Output nature | Wide range (0.11–3332) | Narrow negative range (−2.57–−0.22) |
 
@@ -1047,21 +1052,21 @@ Additionally, 3-layer architectures are explored as supplementary analysis.
 
 ### User Story F6-2: NN Hyperparameter Optimisation
 **As a** data scientist tuning NN architectures,
-**I want** to evaluate 50 NN configurations varying layers, nodes, and learning rate,
+**I want** to evaluate 45 NN configurations varying layers (1–3), nodes (4–6), and learning rate,
 **so that** I can identify the most accurate and well-calibrated NN architecture for F6.
 
 ### User Story F6-3: Sensitivity & Ranking
 **As a** researcher analysing the hyperparameter landscape,
-**I want** to see a ranked table and sensitivity visualisation for all 50 configurations,
-**so that** I understand which hyperparameters matter most for F6 performance.
+**I want** to see a ranked table and sensitivity visualisation for all configurations across all three families,
+**so that** I understand which hyperparameters and surrogate families matter most for F6 performance.
 
 ### User Story F6-4: MFGP Hyperparameter Optimisation (Priority: P1)
 
 **As a** data scientist evaluating alternative surrogate families for F6,
 **I want** to evaluate 50 Multi-Fidelity GP configurations varying kernel type, smoothness, output transform, and noise floor,
-**so that** I can identify the best MFGP configuration and compare it fairly against the best NN.
+**so that** I can identify the best MFGP configuration and compare it fairly against the other surrogates.
 
-**Why this priority**: The MFGP evaluation is the primary new deliverable — without it, the 2-way comparison cannot proceed.
+**Why this priority**: MFGP is already implemented and provides a strong GP-based baseline for the 3-way comparison.
 
 **Independent Test**: Can be fully tested by running the 50-config MFGP evaluation loop and verifying a 50-row results table with MAE, NLP, and Coverage columns.
 
@@ -1070,20 +1075,35 @@ Additionally, 3-layer architectures are explored as supplementary analysis.
 1. **Given** F6 data (26 × 5 inputs, 26 outputs) and N_INIT = 20, **When** the MFGP evaluation loop runs 50 configurations, **Then** a 50-row DataFrame `mfgp_hp_df` is produced with columns label, MAE, NLP, Coverage_95
 2. **Given** 50 evaluated MFGP configs, **When** selecting the best by NLP, **Then** the configuration with the lowest NLP is identified and displayed
 
-### User Story F6-5: NN vs MFGP Comparison (Priority: P1)
+### User Story F6-7: SFGP Hyperparameter Optimisation (Priority: P1)
+
+**As a** data scientist comparing standard GP against multi-fidelity GP and neural network surrogates,
+**I want** to evaluate 40 Single Fidelity GP configurations varying kernel type, output transform, and noise floor,
+**so that** I can assess whether standard GP is competitive with NN and MFGP on the 5D cake-recipe problem.
+
+**Why this priority**: SFGP provides the classical GP baseline — essential for understanding whether the added complexity of MFGP or NN is justified.
+
+**Independent Test**: Can be fully tested by running the 40-config SFGP evaluation loop and verifying a 40-row results table with MAE, NLP, and Coverage columns.
+
+**Acceptance Scenarios**:
+
+1. **Given** F6 data (26 × 5 inputs, 26 outputs) and N_INIT = 20, **When** the SFGP evaluation loop runs 40 configurations, **Then** a 40-row DataFrame `sfgp_hp_df` is produced with columns label, MAE, NLP, Coverage_95
+2. **Given** 40 evaluated SFGP configs, **When** selecting the best by NLP, **Then** the configuration with the lowest NLP is identified and displayed
+
+### User Story F6-5: 3-Way Comparison — NN vs SFGP vs MFGP (Priority: P1)
 
 **As a** researcher deciding which surrogate family to use for F6 Bayesian Optimisation,
-**I want** to see a direct 2-way comparison of the best NN and the best MFGP configurations,
+**I want** to see a direct 3-way comparison of the best NN, best SFGP, and best MFGP configurations,
 **so that** I can make an informed decision about which model to deploy.
 
 **Why this priority**: The head-to-head comparison is the core deliverable that informs the surrogate selection decision.
 
-**Independent Test**: Can be fully tested by verifying a side-by-side table and bar chart comparing the best NN and best MFGP on all three metrics.
+**Independent Test**: Can be fully tested by verifying a side-by-side table and bar chart comparing the best of each family on all three metrics.
 
 **Acceptance Scenarios**:
 
-1. **Given** best NN and best MFGP results, **When** displayed in a comparison table, **Then** both models appear side-by-side with MAE, NLP, and Coverage_95 values
-2. **Given** all 100 configs (50 NN + 50 MFGP), **When** ranked together by NLP, **Then** a combined ranked table and sensitivity charts show both families with distinct colours (NN = orange, MFGP = pink)
+1. **Given** best NN, best SFGP, and best MFGP results, **When** displayed in a comparison table, **Then** all three models appear side-by-side with MAE, NLP, and Coverage_95 values and metric-by-metric winners identified
+2. **Given** all 135 configs (45 NN + 40 SFGP + 50 MFGP), **When** ranked together by NLP, **Then** a combined ranked table and sensitivity charts show all three families with distinct colours (NN = orange, SFGP = blue, MFGP = pink)
 
 ### User Story F6-6: Best Model Visualisation (Priority: P2)
 
@@ -1097,7 +1117,7 @@ Additionally, 3-layer architectures are explored as supplementary analysis.
 
 **Acceptance Scenarios**:
 
-1. **Given** the overall best model (lowest NLP across all 100 configs), **When** its prequential results are plotted, **Then** a 3-panel visualisation (predictions vs actuals with 95% CI, absolute error, NLP contribution per step) is displayed
+1. **Given** the overall best model (lowest NLP across all 135 configs), **When** its prequential results are plotted, **Then** a 3-panel visualisation (predictions vs actuals with 95% CI, absolute error, NLP contribution per step) is displayed
 
 ## Requirements (F6)
 
@@ -1112,47 +1132,54 @@ Additionally, 3-layer architectures are explored as supplementary analysis.
 | FR-F6-005 | NN uses MC Dropout (50 forward passes) for uncertainty estimation | F6-1, F6-2 |
 | FR-F6-006 | NN normalises inputs and outputs via z-score before training | F6-1, F6-2 |
 | FR-F6-007 | NN trains with Adam optimiser for 500 epochs with MSELoss | F6-1, F6-2 |
-| FR-F6-008 | Define 50 NN configurations varying layer count, node count, and learning rate | F6-2 |
-| FR-F6-009 | Evaluate all 50 configs via prequential loop, store results in `nn_hp_df` | F6-2 |
-| FR-F6-010 | Select best configuration by NLP (primary) and MAE (secondary) | F6-2 |
-| FR-F6-011 | Display horizontal sensitivity bar chart for all 50 configs (NLP) | F6-3 |
-| FR-F6-012 | Display full ranked table of all 50 configs sorted by NLP | F6-3 |
+| FR-F6-008 | Define 45 NN configurations: layers {1,2,3} × nodes {4,5,6} × lr {0.001,0.005,0.01,0.05,0.1} | F6-2 |
+| FR-F6-009 | Evaluate all 45 NN configs via prequential loop, store results in `nn_hp_df` | F6-2 |
+| FR-F6-010 | Select best NN configuration by NLP (primary) and MAE (secondary) | F6-2 |
+| FR-F6-011 | Display horizontal sensitivity bar chart for all configs (NLP, MAE, Coverage) | F6-3 |
+| FR-F6-012 | Display full ranked table of all configs sorted by NLP | F6-3 |
 | FR-F6-013 | Visualise default config prequential results (predictions vs actuals, error, NLP per step) | F6-1 |
-| FR-F6-014 | Import BoTorch/GPyTorch MFGP dependencies (SingleTaskMultiFidelityGP, fit_gpytorch_mll, GaussianLikelihood, GreaterThan) | F6-4 |
+| FR-F6-014 | Import BoTorch/GPyTorch dependencies (SingleTaskGP, SingleTaskMultiFidelityGP, fit_gpytorch_mll, GaussianLikelihood, GreaterThan, kernels) | F6-4, F6-7 |
 | FR-F6-015 | Implement `mfgp_prequential_with_config()` — appends fidelity=1.0 column to 5D inputs, builds SingleTaskMultiFidelityGP, returns metrics | F6-4 |
 | FR-F6-016 | Define 50 MFGP configurations varying nu (2.5, 1.5, 0.5), linear_truncated (True/False), output_transform (raw/standardise), and noise_lb (1e-4, 1e-5, 1e-6, 1e-7) | F6-4 |
 | FR-F6-017 | Evaluate all 50 MFGP configs via prequential loop, store results in `mfgp_hp_df` | F6-4 |
 | FR-F6-018 | Select best MFGP configuration by NLP (primary) and MAE (secondary) | F6-4 |
-| FR-F6-019 | Display 2-way comparison table: best NN vs best MFGP with MAE, NLP, Coverage_95 | F6-5 |
-| FR-F6-020 | Display comparison bar chart: best NN vs best MFGP across all three metrics | F6-5 |
-| FR-F6-021 | Update sensitivity charts to show all 100 configs (NN = orange #FF9800, MFGP = pink #E91E63) | F6-5 |
-| FR-F6-022 | Update ranked table to include all 100 configs sorted by NLP | F6-5 |
+| FR-F6-019 | Display 3-way comparison table: best NN vs best SFGP vs best MFGP with MAE, NLP, Coverage_95 | F6-5 |
+| FR-F6-020 | Display comparison bar chart: best NN vs best SFGP vs best MFGP across all three metrics | F6-5 |
+| FR-F6-021 | Update sensitivity charts to show all 135 configs (NN = orange #FF9800, SFGP = blue #2196F3, MFGP = pink #E91E63) | F6-5 |
+| FR-F6-022 | Update ranked table to include all 135 configs sorted by NLP with Family column | F6-5 |
 | FR-F6-023 | Visualise prequential results for the overall best model — 3-panel plot (predictions vs actuals with 95% CI, absolute error, NLP per step) | F6-6 |
+| FR-F6-024 | Implement `sfgp_prequential_with_config()` — builds SingleTaskGP with configurable kernel (Matérn 2.5, 1.5, 0.5, RBF), output transform, noise constraint | F6-7 |
+| FR-F6-025 | Define 40 SFGP configurations: kernel {Matérn 2.5, 1.5, 0.5, RBF} × transform {raw, standardise} × noise_lb {1e-4, 1e-5, 1e-6, 1e-7, 1e-8} | F6-7 |
+| FR-F6-026 | Evaluate all 40 SFGP configs via prequential loop, store results in `sfgp_hp_df` | F6-7 |
+| FR-F6-027 | Select best SFGP configuration by NLP (primary) and MAE (secondary) | F6-7 |
 
 ### Key Entities (F6)
 
 - **NN Config**: dict with `n_layers`, `n_nodes`, `lr`, `label`
+- **SFGP Config**: dict with `kernel_type`, `output_transform`, `noise_lb`, `label`
 - **MFGP Config**: dict with `nu`, `linear_truncated`, `output_transform`, `noise_lb`, `label`
 - **Prequential Result**: dict with `predictions`, `actuals`, `stds`, `metrics`
-- **nn_hp_df**: DataFrame with columns `label`, `MAE`, `NLP`, `Coverage_95` (50 rows)
+- **nn_hp_df**: DataFrame with columns `label`, `MAE`, `NLP`, `Coverage_95` (45 rows)
+- **sfgp_hp_df**: DataFrame with columns `label`, `MAE`, `NLP`, `Coverage_95` (40 rows)
 - **mfgp_hp_df**: DataFrame with columns `label`, `MAE`, `NLP`, `Coverage_95` (50 rows)
-- **combined_df**: Merged DataFrame of all 100 configs with a `Family` column (NN / MFGP)
+- **combined_df**: Merged DataFrame of all 135 configs with a `Family` column (NN / SFGP / MFGP)
 
 ## Success Criteria (F6)
 
 | ID | Criterion |
 |----|-----------|
 | SC-F6-001 | All cells execute without errors |
-| SC-F6-002 | 100 configs × 6 predictions each = 600 total predictions (300 NN + 300 MFGP) |
-| SC-F6-003 | Ranked results table identifies the best configuration across both families |
+| SC-F6-002 | 135 configs × 6 predictions each = 810 total predictions (270 NN + 240 SFGP + 300 MFGP) |
+| SC-F6-003 | Ranked results table identifies the best configuration across all three families |
 | SC-F6-004 | All three metrics (MAE, NLP, Coverage) reported for every configuration |
-| SC-F6-005 | Visualisations clear and labelled, NN in orange (#FF9800), MFGP in pink (#E91E63) |
+| SC-F6-005 | Visualisations clear and labelled: NN in orange (#FF9800), SFGP in blue (#2196F3), MFGP in pink (#E91E63) |
 | SC-F6-006 | Code simple, each step explained in markdown |
-| SC-F6-007 | NN architecture matches the specified starting config (2 layers, 5 nodes) |
+| SC-F6-007 | NN configurations use layers {1,2,3} × nodes {4,5,6} as specified |
 | SC-F6-008 | 50 MFGP configs evaluated with SingleTaskMultiFidelityGP (fidelity column appended) |
-| SC-F6-009 | 2-way comparison table and chart show best NN vs best MFGP side-by-side |
+| SC-F6-009 | 3-way comparison table and chart show best NN vs best SFGP vs best MFGP side-by-side |
 | SC-F6-010 | Best overall model visualised with 3-panel prequential plot |
-| SC-F6-011 | Combined sensitivity charts show all 100 configs with distinct family colours |
+| SC-F6-011 | Combined sensitivity charts show all 135 configs with distinct family colours |
+| SC-F6-012 | 40 SFGP configs evaluated with SingleTaskGP (ARD for 5D, configurable kernel/noise) |
 
 ## Technical Notes (F6)
 
@@ -1183,13 +1210,36 @@ With model in `train()` mode (dropout active), run 50 forward passes per test po
 
 ### Edge Cases
 
-- **Very small networks** (1 layer, 5 nodes): May underfit, producing high MAE but possibly reasonable NLP
-- **Large networks** (3 layers, 64 nodes): Risk overfitting with only 20 training points; dropout mitigates
+- **Very small networks** (1 layer, 4 nodes): May underfit, producing high MAE but possibly reasonable NLP
+- **3 hidden layers with 4–6 nodes**: Moderately deep for 20 training points; dropout mitigates overfitting
 - **Learning rate extremes**: lr=0.1 may cause training instability; lr=0.001 may not converge in 500 epochs
 - **Narrow output range**: F6 outputs span ~2.35 units — z-score normalisation is appropriate
+- **SFGP with Matérn 0.5**: Very rough kernel; may struggle if the underlying function is smooth
+- **SFGP noise floor too low** (1e-8): May cause numerical instability during Cholesky decomposition
+- **SFGP with negative outputs**: Z-score standardisation handles negative outputs; log-transform not applicable
 - **MFGP with nu=0.5**: Very rough kernel; may struggle with smooth underlying function
 - **MFGP noise floor too low** (1e-7): May cause numerical instability during Cholesky decomposition
 - **MFGP standardised output + negative values**: Z-score normalisation handles negative outputs correctly since it centres on the mean
+
+### SFGP Architecture
+
+Single Fidelity Gaussian Process using BoTorch's `SingleTaskGP`:
+- Standard GP with 5D inputs (no fidelity column)
+- ARD (Automatic Relevance Determination) lengthscales for all 5 dimensions
+- Configurable base kernel: Matérn 2.5, Matérn 1.5, Matérn 0.5, or RBF
+- Output transform options: raw or standardise (z-score)
+- Noise constraint via `GaussianLikelihood(noise_constraint=GreaterThan(noise_lb))`
+- Hyperparameters fitted via `fit_gpytorch_mll` (L-BFGS-B optimisation of marginal log-likelihood)
+
+### SFGP Hyperparameter Search Space (40 configs)
+
+| Axis | Values | Count |
+|------|--------|-------|
+| Kernel type | Matérn 2.5, Matérn 1.5, Matérn 0.5, RBF | 4 |
+| Output transform | raw, standardise | 2 |
+| noise_lb (noise floor) | 1e-4, 1e-5, 1e-6, 1e-7, 1e-8 | 5 |
+
+Full grid: 4 × 2 × 5 = **40 configs**
 
 ### MFGP Architecture
 
@@ -1220,27 +1270,27 @@ data/f6/updated_outputs - Week 6.npy ──┤
                                         ▼
                               Load all 26 points
                                         │
-                          ┌─────────────┼─────────────┐
-                          ▼                           ▼
-                  NN Evaluation               MFGP Evaluation
-                  (50 configs)                (50 configs)
-                          │                           │
-                          ▼                           ▼
-                  NN Results (nn_hp_df)     MFGP Results (mfgp_hp_df)
-                          │                           │
-                          └─────────┬─────────────────┘
-                                    ▼
-                          2-Way Comparison
-                          (Best NN vs Best MFGP)
-                                    │
-                                    ▼
-                    Combined Ranking & Sensitivity
-                          (100 configs)
-                                    │
-                                    ▼
-                    Best Model Visualisation
-                          (Overall winner)
-                                    │
-                                    ▼
-                        Tables + Visualisations
+                    ┌───────────────────┼───────────────────┐
+                    ▼                   ▼                   ▼
+            NN Evaluation       SFGP Evaluation     MFGP Evaluation
+            (45 configs)        (40 configs)        (50 configs)
+                    │                   │                   │
+                    ▼                   ▼                   ▼
+            nn_hp_df            sfgp_hp_df          mfgp_hp_df
+                    │                   │                   │
+                    └─────────┬─────────┴───────────────────┘
+                              ▼
+                    3-Way Comparison
+                    (Best NN vs Best SFGP vs Best MFGP)
+                              │
+                              ▼
+                Combined Ranking & Sensitivity
+                        (135 configs)
+                              │
+                              ▼
+                Best Model Visualisation
+                        (Overall winner)
+                              │
+                              ▼
+                    Tables + Visualisations
 ````

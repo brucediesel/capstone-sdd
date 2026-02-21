@@ -753,6 +753,40 @@ Task T013-T014: "Verify BART default evaluation (cells 19-23)"
 
 ---
 
+## Phase F6-9: SFGP Addition & NN Grid Update (3-Way Upgrade)
+
+**Purpose**: Extend F6 from 2-way (NN+MFGP, 90 configs) to 3-way (NN+SFGP+MFGP, 135 configs)
+
+- [x] T-F6-037 Update imports — add SingleTaskGP, MaternKernel, RBFKernel, ScaleKernel (FR-F6-024)
+- [x] T-F6-038 Update NN grid — layers {1,2,3} × nodes {4,5,6} × lr {5} = 45 configs (FR-F6-001)
+- [x] T-F6-039 Add SFGP evaluation markdown cell — describe SingleTaskGP architecture
+- [x] T-F6-040 Add sfgp_prequential_with_config() function cell — configurable kernel, manual z-score, ARD, noise constraint (FR-F6-024)
+- [x] T-F6-041 Add SFGP HP grid markdown cell — 4 kernels × 2 transforms × 5 noise levels = 40 configs (FR-F6-025)
+- [x] T-F6-042 Add SFGP eval loop cell — 40 configs, try/except, sfgp_hp_df DataFrame (FR-F6-026)
+- [x] T-F6-043 Add best SFGP selection cell — min NLP, print stats (FR-F6-027)
+- [x] T-F6-044 Upgrade comparison markdown — "2-Way" → "3-Way", add SFGP
+- [x] T-F6-045 Upgrade comparison code — add SFGP to comparison_data, colors=['#FF9800','#2196F3','#E91E63']
+- [x] T-F6-046 Upgrade winner viz — add SFGP elif branch with sfgp_configs, winner_color='#2196F3'
+- [x] T-F6-047 Upgrade sensitivity code — add SFGP rows (blue), 3-entry legend
+- [x] T-F6-048 Upgrade ranked table — concat nn_summary + sfgp_summary + mfgp_summary
+- [x] T-F6-049 Upgrade conclusions — "three surrogate families", 135 configs, add SFGP bullet
+
+**Checkpoint**: Complete 3-way comparison with 135 configurations
+
+---
+
+## Phase F6-10: 3-Way Validation
+
+**Purpose**: End-to-end validation of complete 135-config notebook
+
+- [x] T-F6-050 Run all cells top-to-bottom — verify no errors
+- [x] T-F6-051 Verify 135 configs (45 NN + 40 SFGP + 50 MFGP) all evaluated
+- [x] T-F6-052 Verify 3-way comparison table and chart present with 3 bars
+- [x] T-F6-053 Verify sensitivity charts show all 3 families with distinct colours
+- [x] T-F6-054 Verify ranked table has 135 rows sorted by NLP
+
+---
+
 ## Dependencies & Execution Order (F6)
 
 - **Phase F6-1** (Setup): No dependencies — start here
@@ -763,3 +797,5 @@ Task T013-T014: "Verify BART default evaluation (cells 19-23)"
 - **Phase F6-6** (MFGP HP Opt): Depends on Phase F6-1 (data loading), Phase F6-5 (NN baseline complete)
 - **Phase F6-7** (2-Way Comparison): Depends on Phase F6-3 + Phase F6-6
 - **Phase F6-8** (Final Validation): Depends on all phases
+- **Phase F6-9** (SFGP + NN Update): Depends on Phase F6-8 (existing 2-way complete)
+- **Phase F6-10** (3-Way Validation): Depends on Phase F6-9

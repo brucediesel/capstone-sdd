@@ -799,3 +799,36 @@ Task T013-T014: "Verify BART default evaluation (cells 19-23)"
 - **Phase F6-8** (Final Validation): Depends on all phases
 - **Phase F6-9** (SFGP + NN Update): Depends on Phase F6-8 (existing 2-way complete)
 - **Phase F6-10** (3-Way Validation): Depends on Phase F6-9
+---
+
+## Function 7 — Prequential Evaluation (6D, N_INIT=30)
+
+### Phase F7-1: Create & Execute Notebook
+
+- [x] F7-1.1: Clone F6 notebook → `functions/f7/preq-eval-f7.ipynb` (adapt data paths, N_INIT=30, 6D descriptions)
+- [x] F7-1.2: Execute all 17 code cells (imports → data → metrics → NN default → NN 45 configs → best NN → MFGP fn → MFGP 50 configs → best MFGP → SFGP fn → SFGP 40 configs → best SFGP → 3-way comparison → winner viz → sensitivity → ranked table)
+- [x] F7-1.3: Validate 135 configs (45 NN + 40 SFGP + 50 MFGP) across 6 eval steps
+- [x] F7-1.4: Verify 5 visualisations rendered (default plot, comparison bar, winner plot, sensitivity bars, ranked table)
+
+**F7 Results**: Winner = NN (2L×5N, lr=0.005) — MAE=0.547, NLP=0.859, Coverage=83.3%
+
+## Dependencies & Execution Order (F7)
+
+- Single phase — depends on F6 notebook as template
+
+---
+
+## Function 8 — Prequential Evaluation (8D, N_INIT=40)
+
+### Phase F8-1: Create & Execute Notebook
+
+- [x] F8-1.1: Clone F6 notebook → `functions/f8/preq-eval-f8.ipynb` (adapt data paths, N_INIT=40, 8D descriptions)
+- [x] F8-1.2: Execute all 17 code cells (imports → data → metrics → NN default → NN 45 configs → best NN → MFGP fn → MFGP 50 configs → best MFGP → SFGP fn → SFGP 40 configs → best SFGP → 3-way comparison → winner viz → sensitivity → ranked table)
+- [x] F8-1.3: Validate 135 configs (45 NN + 40 SFGP + 50 MFGP) across 6 eval steps
+- [x] F8-1.4: Verify 5 visualisations rendered (default plot, comparison bar, winner plot, sensitivity bars, ranked table)
+
+**F8 Results**: Winner = SFGP (matern_2.5, standardise, noise>=1e-07) — MAE=0.079, NLP=-1.121, Coverage=83.3%
+
+## Dependencies & Execution Order (F8)
+
+- Single phase — depends on F6 notebook as template

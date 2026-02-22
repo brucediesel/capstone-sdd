@@ -63,6 +63,7 @@ Provide the next query for each function in this format
  - process the outputs of week 6 submissions and propose a next location to sample providing the same visualization as week 5
 
 # waiting for submission 7 results - perform Prequential Evaluation on different surrogates to assess prediction performance now we have some data - start with f1
+ 
  /specify
  - create a new notebook in the functions/f1 folder named "preq-eval-f1.ipynb"
  - This notebook is used to perform Prequential Evaluation of Surrogate performance starting only with F1
@@ -168,3 +169,21 @@ Provide the next query for each function in this format
 - Create the same performance evaluations and visualisation for F7 and F8 as F6
 - For F7 train the model with initial 30 inputs, then perform Prequential Evaluation with the remaining 6 samples in the data set
 - For F8 train the model with initial 40 inputs, then perform Prequential Evaluation with the remaining 6 samples in the data set
+
+# 22 Feb - Resutls from week 7 received.
+# First step, review the results
+
+# address function 1
+# still no improvements!  continue exploration!!
+/specify
+- create a new code branch called 005-week7-pe-surrogates
+- update f1 as follows
+    - create a new section in the f1 notebook
+    - process updated data set
+    - change the surrogate model to a hurdle model using classifier for P(y > 0) and regressor for log1p(y) | y > 0
+    - for acquisition function use weighted UCB a(x)=p(x)\cdot\mu(x) + \kappa\cdot\sqrt{\text{Var}(p(x)\mu(x))}
+    - add local penalization to find multiple sources
+    - focus on exploration
+- present the same visualizations as week 6
+- process the outputs and propose a new sampling point
+- make sure hyperparamters are explicit and document how they are selected

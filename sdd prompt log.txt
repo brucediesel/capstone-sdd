@@ -85,3 +85,86 @@ Provide the next query for each function in this format
  - Perform this optimisation for Gaussian Processes, BART, and Random Forest
  - compare the results of the three types of surrogate model
  
+ /specify
+- extend the 004-prequential-evaluation specification, using the same code branch
+- create a new notebook in the functions/f3 folder named "preq-eval-f3.ipynb"
+ - This notebook is used to perform Prequential Evaluation of Surrogate performance starting only with F3
+ - The goal is to identify the best surrogate model, and hyperparameters for each function in the challenge
+ - For each surrogate model, train the model with the initial 15 inputs and outputs, with initial best guess of hyperparameters for the type of function
+ - then for each of the remaining samples, predict the output for the sample, and calcaluate the error between the prediction and the sample.  retrain the model and repeat the process untill all predictions and actual results have been evaluated.  Provide an overall error metrics, including MAE, NLP and coverage of 95% interval
+ - Optimise the hyperparameters for 15 iterations
+ - Perform this optimisation for Gaussian Processes, BART, and Random Forest
+ - compare the results of the three types of surrogate model
+
+/specify
+- extend the 004-prequential-evaluation specification, using the same code branch
+- create a new notebook in the functions/f4 folder named "preq-eval-f4.ipynb"
+ - This notebook is used to perform Prequential Evaluation of Surrogate performance starting only with F4
+ - The goal is to identify the best surrogate model, and hyperparameters for each function in the challenge
+ - For each surrogate model, train the model with the initial 30 inputs and outputs, with initial best guess of hyperparameters for the type of function
+ - then for each of the remaining samples, predict the output for the sample, and calcaluate the error between the prediction and the sample.  retrain the model and repeat the process untill all predictions and actual results have been evaluated.  Provide an overall error metrics, including MAE, NLP and coverage of 95% interval
+ - Optimise the hyperparameters for 15 iterations
+ - Perform this optimisation for Single Fidelity GP and Multi Fidelity GP
+ - compare the results all the surrogate models
+
+/specify
+- extend the 004-prequential-evaluation specification, using the same code branch
+- Add GBT to F4 and perform the full Prequential Evaluation comparison with the SFGP and MFBP and GBT
+
+/specify
+- extend the 004-prequential-evaluation specification, using the same code branch
+- create a new notebook in the functions/f5 folder named "preq-eval-f5.ipynb"
+ - This notebook is used to perform Prequential Evaluation of Surrogate performance for F5
+ - The goal is to identify the best surrogate model hyperparameters for F5
+ - For each set of hyperparamters, train the model with the initial 20 inputs and outputs, with initial best guess of hyperparameters for the type of function
+ - then for each of the remaining samples, predict the output for the sample, and calcaluate the error between the prediction and the sample.  retrain the model and repeat the process until all predictions and actual results have been evaluated.  Provide an overall error metrics, including MAE, NLP and coverage of 95% interval
+ - Perform this optimisation for GP with the following starting configuration
+- Kernel: Matérn‑5/2 with ARD
+- Mean function: Constant prior  
+- Likelihood: Gaussian
+- Output transformation: Standardise yields (z‑score)
+- Hyperparameter priors / initialisation
+    Lengthscales (ℓ1..ℓ4):   Initialise around 0.2–0.3 (inputs scaled to [0,1])
+    Signal variance σ_f²:     Initialised to Var(y)
+    Noise variance σ_n²:      Initialised to (0.02–0.05)·Var(y)
+    Jitter:                   1e‑6
+    Optimisation:             10–20 random restarts of MLL (L‑BFGS‑B)
+ - Optimise the hyperparameters for 10 iterations
+
+ /specify
+- extend the 004-prequential-evaluation specification, using the same code branch
+- Add GBT, and MFGP to F5 and optimise each model with 15 iterations 
+- perform the full Prequential Evaluation comparison for all models
+ 
+ /specify
+- extend the 004-prequential-evaluation specification, using the same code branch
+- create a new notebook in the functions/f6 folder named "preq-eval-f6.ipynb"
+ - This notebook is used to perform Prequential Evaluation of Surrogate performance using a neural network with 2 hidden layers and 5 nodes
+ - The goal is to identify the best surrogate model, and hyperparameters for this function
+ - For each surrogate model, train the model with the initial 20 inputs and outputs, with initial best guess of hyperparameters for the function
+ - then for each of the remaining samples, predict the output for the sample, and calcaluate the error between the prediction and the sample.  retrain the model and repeat the process until all predictions and actual results have been evaluated.  Provide an overall error metrics, including MAE, NLP and coverage of 95% interval
+ - Perform 50 iterations of evaluation, selecting different hyperparameters number of layers, number of nodes and step size of gradient descnt
+ - compare the results all the hyperparameters
+
+/specify
+- extend the 004-prequential-evaluation specification, using the same code branch
+- Add MFGP to F6 and optimise hyperparameters with 50 iterations 
+- perform the full Prequential Evaluation comparison of MFGP and the Neural network
+- Visualise the performance of the best model
+
+/specify
+- extend the 004-prequential-evaluation specification, using the same code branch
+- Extend the F6 Prequential Evaluation as follows
+- Change the neural network hyperparamter range to have 1 to 3 hidden layers with 4 to 6 nodes
+- add SFGP model and compare with MFGP and Neural network
+- perform 40 hyperparameter iterations to optimise SFGP
+- visualise the best performing model 
+
+/specify
+- extend the 004-prequential-evaluation specification, using the same code branch
+- create a new notebook in the functions/f7 folder named "preq-eval-f7.ipynb"
+- create a new notebook in the functions/f8 folder named "preq-eval-f8.ipynb"
+- implement the same Prequential Evaluation strategy of 3 different surrogate models SFGP, MFGP and NN for F7 anf F8 as the one used in F6
+- Create the same performance evaluations and visualisation for F7 and F8 as F6
+- For F7 train the model with initial 30 inputs, then perform Prequential Evaluation with the remaining 6 samples in the data set
+- For F8 train the model with initial 40 inputs, then perform Prequential Evaluation with the remaining 6 samples in the data set

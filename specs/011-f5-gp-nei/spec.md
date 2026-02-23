@@ -49,7 +49,7 @@ As a data scientist, I need to run the Noisy Expected Improvement acquisition fu
 
 1. **Given** a trained GP surrogate, **When** NEI is optimised with q=2 and 3000 Sobol initialisations narrowed to 50 L-BFGS restarts, **Then** 2 candidate points in [0,1]⁴ are returned.
 2. **Given** 2 candidate points, **When** posterior means are computed, **Then** the best candidate (highest posterior mean) is selected for submission and its coordinates are displayed.
-3. **Given** the best candidate, **When** formatted as a submission query, **Then** the output follows the `x1-x2-x3-x4` format with 6 decimal places, all values in [0, 1].
+3. **Given** the best candidate, **When** formatted as a submission query, **Then** the output follows the `x1-x2-x3-x4` format with 6 decimal places, all values in [0, 0.999999].
 
 ---
 
@@ -92,8 +92,8 @@ As a data scientist, I need the same visualisation as Week 6 (2D surrogate slice
 - **FR-012**: System MUST set the NEI exploration parameter ξ = 0.01 (via eta or prune_baseline adjustment).
 - **FR-013**: System MUST optimise the acquisition function using 3000 Sobol initial points, selecting the best 50 for L-BFGS refinement.
 - **FR-014**: System MUST report all q=2 candidate points with their posterior means and select the best for submission.
-- **FR-015**: System MUST format the submission query as `x1-x2-x3-x4` with 6 decimal places, all values in [0, 1].
-- **FR-016**: System MUST validate the submission query format (4 dimensions, 6 decimal places, values in [0, 1]).
+- **FR-015**: System MUST format the submission query as `x1-x2-x3-x4` with 6 decimal places, all values in [0, 0.999999] (values at 1.0 MUST be clamped to 0.999999).
+- **FR-016**: System MUST validate the submission query format (4 dimensions, 6 decimal places, values in [0, 0.999999]).
 - **FR-017**: System MUST produce a surrogate visualisation with the same structure as Week 6: 2D slice over the two most important dimensions showing predicted mean and uncertainty, with observed and proposed points overlaid.
 - **FR-018**: System MUST produce a convergence plot showing running best across all observations with a vertical line at the Week 6→7 boundary (sample 26.5).
 - **FR-019**: System MUST document all hyperparameters in a markdown cell before the training code, including the rationale for the switch from GBT to GP.
@@ -115,7 +115,7 @@ As a data scientist, I need the same visualisation as Week 6 (2D surrogate slice
 - **SC-002**: The GP trains without errors and the negative MLL converges across restarts.
 - **SC-003**: All 4 fitted lengthscales, signal variance, and noise variance are reported with at least 4 significant figures.
 - **SC-004**: The NEI acquisition returns exactly 2 candidate points, each with 4 coordinates in [0, 1].
-- **SC-005**: The submission query matches the format `0.xxxxxx-0.xxxxxx-0.xxxxxx-0.xxxxxx` and passes validation.
+- **SC-005**: The submission query matches the format `0.xxxxxx-0.xxxxxx-0.xxxxxx-0.xxxxxx` (each value in [0.000000, 0.999999]) and passes validation.
 - **SC-006**: The surrogate visualisation renders a multi-panel figure consistent with Week 6's layout (mean surface, uncertainty surface, and dimension relevance).
 - **SC-007**: The convergence plot shows a non-decreasing running best with the Week 6→7 boundary correctly marked at sample 26.5.
 - **SC-008**: All new content is appended as new cells after cell 50 (`#VSC-8f8ac8b4`), preserving all existing notebook content.
@@ -129,3 +129,9 @@ As a data scientist, I need the same visualisation as Week 6 (2D surrogate slice
 5. **NEI ξ parameter**: In BoTorch, NEI does not have a direct ξ parameter. The exploration-exploitation balance is achieved via the `prune_baseline` mechanism and the inherent noise-aware baseline. The ξ=0.01 intent is captured by using standard NEI defaults which provide slight exploration bias.
 6. **Week 6 visualisation style**: The Week 6 visualisation used 3 panels (mean, std, feature importance). For the GP surrogate, feature importance is replaced with lengthscale-based dimension relevance (shorter lengthscale = more important dimension). The 2D slice approach and convergence plot layout are preserved.
 7. **Existing cells**: The notebook has 50 cells. All new Week 7 content is appended starting at cell 51.
+
+## Clarifications
+
+### Session 2026-02-23
+
+- Q: What is the valid range for submission query values? → A: [0.000000, 0.999999] — values at 1.0 must be clamped to 0.999999. This applies to all function notebooks (f1–f8).

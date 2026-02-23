@@ -147,5 +147,5 @@
 - **Output**: Submission query string + validation confirmation
 - **Acceptance**:
   - Query matches pattern `\d\.\d{6}-\d\.\d{6}-\d\.\d{6}-\d\.\d{6}`
-  - All 4 values in [0, 1]
+  - All 4 values in [0, 0.999999]
   - Validation print: "✓ Submission format validated"

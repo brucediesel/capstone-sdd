@@ -187,3 +187,62 @@ Provide the next query for each function in this format
 - present the same visualizations as week 6
 - process the outputs and propose a new sampling point
 - make sure hyperparamters are explicit and document how they are selected
+
+# Adress F2
+# Unable to execute PE - reduce to just use GP as research proposes.
+/specify
+- extend the 005-week7-pe-surrogates
+- replace all the surrogate models evaluated in preq-eval-f2.ipynb with a SFGP and a MFGP
+- perform Prequential Evaluation as before
+- test 50 optimisation iterations on both surrogate models, chosing appropriate hyperparameter ranges
+- use the same visualization of results
+- present the best performing surrogate results visually
+- start with initial 10 samples, then perform prequential evaluation with the next 7 points
+
+/specify
+- remain on 005-week7-pe-surrogates branch, do not create a new branch
+- change F2 surrogate function to SFGP with parameters matern15,noise=1e-03,ard=True,norm=T
+- use NEI acquisition function balancing exploration with exploitation
+- create new section in f2 notebook
+- use same visualization as week 6
+- process the outputs and propose a new sample point
+
+/specify
+- extend the 005-week7-pe-surrogates specification, using the same code branch
+- This specification only relates to F3
+- Review the preq-eval-f3.ipynb notebook and reduce the BART iterations as the machine runs out of memory - use smaller models
+- keep all other model evaluations the same
+
+/clarify
+- remove all BART hyperparameter optimisations from preq-eval-f3.ipynb
+- too much memory consumption for these models on this computer
+
+
+# git repo has become confusing.  Start a new feature which is still part of week 7
+/specify
+- for week 7, add a new section to the F3 notebook, process inputs from week 7
+- modify f3.ipynb to use SFGP with the following hyperparameters:
+    Mean:        Constant (learned)
+    Kernel:      Matérn-5/2 with ARD (ℓA, ℓB, ℓC)
+    Likelihood:  Gaussian noise  (or Student-t if heavy-tail outliers)
+    Scaling:     Standardize inputs to [0,1]; standardize transformed outputs (z-score)
+    Fit:         Maximize marginal log-likelihood with 10–20 random restarts
+- Use NEI for acquisition
+- execute one bayesian optimisation iteration and propose next sample point
+- visualise the surrogate functions and convergence performance
+
+/specify
+- update f4 for week 7
+- process outputs from week 6
+- perform bayesian optimisation using following surrogate:
+    - MFGP with nu=2.5, LinTrunc, standardise, noise>=1e-4
+    - acquisition funciton: Cost-aware MF-qNEI (q=4), fantasies=64
+- visualise the surrogate functions and convergence performance
+
+/specify
+- update f5 for week 7
+- process outputs from week 6
+- perform bayesian optimisation using following surrogate:
+    - GP with GP: Matern52, log, noise=0.03·Var, ls=0.25
+    - acquisition function: NEI, q=2, ξ=0.01, Optimiser=3000 Sobol starts → best 50 → L‑BFGS
+- vuse same visualization as week 6

@@ -21,7 +21,7 @@ A student reviewing the capstone notebook opens `functions/f2/f2.ipynb` and navi
 
 1. **Given** the Week 7 f2 data files are present, **When** the Week 7 section cells are executed top-to-bottom, **Then** a surrogate mean and uncertainty surface are plotted and a next sample point is printed in `x1-x2` format with 6 decimal places clamped to `[0.0, 1.0]`.
 2. **Given** the SFGP is trained with the specified parameters (Matern-1.5 kernel, noise lower bound 1e-3, ARD, input normalisation), **When** the model is fitted, **Then** the model reports one lengthscale value per input dimension, confirming that each dimension is weighted independently.
-3. **Given** the NEI acquisition function is evaluated, **When** any candidate falls outside `[0.0, 0.999999]`, **Then** that candidate is rejected and the proposed point is clamped within valid bounds.
+3. **Given** the NEI acquisition function is evaluated, **When** any candidate falls outside `[0.0, 1.0]`, **Then** that candidate is rejected and the proposed point is clamped within valid bounds.
 
 ---
 
@@ -58,7 +58,7 @@ The notebook section prints all SFGP and NEI hyperparameters with plain-English 
 
 - What happens if Week 7 data files are missing? → File-not-found error raised at load time with the expected path shown clearly.
 - What if all observed outputs are equal (zero variance)? → The noise lower bound and input normalisation prevent a singular covariance; the model still fits with noise dominating.
-- What if the NEI optimiser returns a point on the boundary? → The point is clamped to `[0.0, 0.999999]` before submission formatting.
+- What if the NEI optimiser returns a point on the boundary? → The point is clamped to `[0.0, 1.0]` before submission formatting.
 - What if the model fitting procedure does not converge on first attempt? → The fitting routine retries internally; a warning is displayed but training completes and the best available model is used.
 
 ---

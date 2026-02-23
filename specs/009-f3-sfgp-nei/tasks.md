@@ -17,7 +17,7 @@
 
 **Purpose**: Add the Week 7 section header to the notebook
 
-- [ ] T001 Add Week 7 section header markdown cell (Cell 1) to functions/f3/f3.ipynb
+- [X] T001 Add Week 7 section header markdown cell (Cell 1) to functions/f3/f3.ipynb
 
   Append a **markdown cell** after the last existing cell (the Research section) with:
   - Heading: `## Week 7 — SFGP with Matérn-5/2 ARD`
@@ -34,7 +34,7 @@
 
 ### Implementation
 
-- [ ] T002 [US1] Add imports and data loading code cell (Cell 2) to functions/f3/f3.ipynb
+- [X] T002 [US1] Add imports and data loading code cell (Cell 2) to functions/f3/f3.ipynb
 
   Append a **code cell** with step label comment `# Step 1: Load Week 7 Data`. Must:
   1. Import all libraries needed for the entire Week 7 section (per RES-006):
@@ -67,7 +67,7 @@
 
 ### Implementation
 
-- [ ] T003 [P] [US2] Add hyperparameter explanation markdown cell (Cell 3) to functions/f3/f3.ipynb
+- [X] T003 [P] [US2] Add hyperparameter explanation markdown cell (Cell 3) to functions/f3/f3.ipynb
 
   Append a **markdown cell** with step label `### Step 2: SFGP Hyperparameters and Justifications`. Must document all 10 items from the contracts Cell 3 table:
 
@@ -86,7 +86,7 @@
 
   - **References**: contracts Cell 3; research.md RES-001 through RES-004
 
-- [ ] T004 [US2] Add SFGP training with 15 random restarts code cell (Cell 4) to functions/f3/f3.ipynb
+- [X] T004 [US2] Add SFGP training with 15 random restarts code cell (Cell 4) to functions/f3/f3.ipynb
 
   Append a **code cell** with step label comment `# Step 3: Train SFGP with 15 Random Restarts`. Must:
   1. Convert data to tensors:
@@ -142,7 +142,7 @@
 
 ### Implementation
 
-- [ ] T005 [US3] Add NEI acquisition code cell (Cell 5) to functions/f3/f3.ipynb
+- [X] T005 [US3] Add NEI acquisition code cell (Cell 5) to functions/f3/f3.ipynb
 
   Append a **code cell** with step label comment `# Step 4: NEI Acquisition — Propose Next Sample`. Must:
   1. Define bounds: `BOUNDS = torch.tensor([[0.0, 0.0, 0.0], [0.999999, 0.999999, 0.999999]], dtype=torch.double)`
@@ -174,7 +174,7 @@
 
 ### Implementation
 
-- [ ] T006 [P] [US4] Add surrogate pairwise 2D slice plots code cell (Cell 6) to functions/f3/f3.ipynb
+- [X] T006 [P] [US4] Add surrogate pairwise 2D slice plots code cell (Cell 6) to functions/f3/f3.ipynb
 
   Append a **code cell** with step label comment `# Step 5: Surrogate Visualisation — Pairwise 2D Slices`. Must:
   1. Find best observed point: `best_idx = Y_raw.argmax()`, `best_point = X_raw[best_idx]`
@@ -195,7 +195,7 @@
   5. `plt.tight_layout(); plt.show()`
   - **References**: data-model.md E-10; research.md RES-005; contracts Cell 6
 
-- [ ] T007 [US4] Add convergence plot code cell (Cell 7) to functions/f3/f3.ipynb
+- [X] T007 [US4] Add convergence plot code cell (Cell 7) to functions/f3/f3.ipynb
 
   Append a **code cell** with step label comment `# Step 6: Convergence Plot`. Must:
   1. Compute `running_max = np.maximum.accumulate(Y_raw)`
@@ -217,7 +217,7 @@
 
 **Purpose**: Format and display the final submission query (Cell 8 must be last in notebook)
 
-- [ ] T008 [US3] Add submission query formatting code cell (Cell 8) to functions/f3/f3.ipynb
+- [X] T008 [US3] Add submission query formatting code cell (Cell 8) to functions/f3/f3.ipynb
 
   Append a **code cell** (must be final cell) with step label comment `# Step 7: Format Submission Query`. Must:
   1. Clamp: `clamped = np.clip(next_x_raw, 0.0, 0.999999)`
@@ -239,7 +239,7 @@
 
 **Purpose**: End-to-end validation and commit
 
-- [ ] T009 Run full kernel-restart validation per quickstart.md on functions/f3/f3.ipynb
+- [X] T009 Run full kernel-restart validation per quickstart.md on functions/f3/f3.ipynb
   - Restart kernel, run all 8 new cells top-to-bottom
   - Verify all items in quickstart.md verification checklist pass:
     - Cell 2 prints sample count and best value
@@ -249,7 +249,7 @@
     - Cell 7 renders convergence plot with correct labels
     - Cell 8 prints `0.XXXXXX-0.YYYYYY-0.ZZZZZZ` format string
 
-- [ ] T010 Verify zero existing cells modified and commit changes to functions/f3/f3.ipynb
+- [X] T010 Verify zero existing cells modified and commit changes to functions/f3/f3.ipynb
   - Run `git diff functions/f3/f3.ipynb` — only additions at end, no modifications to existing cells
   - `git add functions/f3/f3.ipynb && git commit -m "feat(f3): add Week 7 SFGP Matern-5/2 ARD + NEI section"`
 

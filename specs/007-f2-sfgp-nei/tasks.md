@@ -20,7 +20,7 @@
 
 **Purpose**: Confirm prerequisites are in place before writing any notebook cells.
 
-- [ ] T001 Confirm `data/f2/updated_inputs - Week 7.npy` and `data/f2/updated_outputs - Week 7.npy` exist and load cleanly (run `np.load(...)` to verify shapes: 17×2 inputs, 17 outputs)
+- [X] T001 Confirm `data/f2/updated_inputs - Week 7.npy` and `data/f2/updated_outputs - Week 7.npy` exist and load cleanly (run `np.load(...)` to verify shapes: 17×2 inputs, 17 outputs)
 
 **Checkpoint**: Data files confirmed present → proceed to Phase 2
 
@@ -32,8 +32,8 @@
 
 ⚠️ **CRITICAL**: No user story implementation can begin until these two cells are in place
 
-- [ ] T002 Add `## Week 7 — SFGP with NEI Acquisition` header markdown cell at end of `functions/f2/f2.ipynb` (context: 17 cumulative data points, SFGP surrogate, NEI acquisition)
-- [ ] T003 [P] Add Step 1 data loading code cell in `functions/f2/f2.ipynb` (load `data/f2/updated_inputs - Week 7.npy` as `X_w7`, `data/f2/updated_outputs - Week 7.npy` as `y_w7`, print shapes and value ranges)
+- [X] T002 Add `## Week 7 — SFGP with NEI Acquisition` header markdown cell at end of `functions/f2/f2.ipynb` (context: 17 cumulative data points, SFGP surrogate, NEI acquisition)
+- [X] T003 [P] Add Step 1 data loading code cell in `functions/f2/f2.ipynb` (load `data/f2/updated_inputs - Week 7.npy` as `X_w7`, `data/f2/updated_outputs - Week 7.npy` as `y_w7`, print shapes and value ranges)
 
 **Checkpoint**: Section header and data loading cells present → all story phases can begin
 
@@ -47,16 +47,16 @@
 
 ### Implementation for User Story 1
 
-- [ ] T004 [US1] Add Step 3 SFGP training code cell in `functions/f2/f2.ipynb`:
+- [X] T004 [US1] Add Step 3 SFGP training code cell in `functions/f2/f2.ipynb`:
   - Prepare `X_train_t` (17×2 tensor) and `y_train_t` (17×1 tensor)
   - Instantiate `SingleTaskGP` with `MaternKernel(nu=1.5, ard_num_dims=2)`, `GaussianLikelihood(noise_constraint=GreaterThan(NOISE_LB))`, and `Normalize(d=2)` input transform
   - Fit with `fit_gpytorch_mll(mll)` using `ExactMarginalLogLikelihood`
   - Print fitted lengthscales (one per dimension) and fitted noise level
-- [ ] T005 [US1] Add Step 4 NEI acquisition code cell in `functions/f2/f2.ipynb`:
+- [X] T005 [US1] Add Step 4 NEI acquisition code cell in `functions/f2/f2.ipynb`:
   - Instantiate `qNoisyExpectedImprovement(model, X_baseline=X_train_t)`
   - Call `optimize_acqf(acq_function=nei, bounds=BOUNDS, q=1, num_restarts=N_RESTARTS, raw_samples=RAW_SAMPLES)`
   - Store result as `next_x` (1×2 tensor); print raw candidate value
-- [ ] T006 [US1] Add Step 7 submission formatting code cell in `functions/f2/f2.ipynb`:
+- [X] T006 [US1] Add Step 7 submission formatting code cell in `functions/f2/f2.ipynb`:
   - Extract `x1, x2` from `next_x`, clamp to `[0.0, 1.0]`
   - Print `f">>> SUBMISSION: {x1:.6f}-{x2:.6f}"`
 
@@ -72,14 +72,14 @@
 
 ### Implementation for User Story 2
 
-- [ ] T007 [P] [US2] Add Step 5 three-panel visualization code cell in `functions/f2/f2.ipynb`:
+- [X] T007 [P] [US2] Add Step 5 three-panel visualization code cell in `functions/f2/f2.ipynb`:
   - Build 50×50 evaluation grid over `[0,1]²`
   - `fig, axes = plt.subplots(1, 3, figsize=(18, 5))`
   - Panel (a): `contourf` posterior mean, colormap `viridis`, title "GP Posterior Mean"
   - Panel (b): `contourf` posterior std, colormap `YlOrRd`, title "GP Posterior Uncertainty"
   - Panel (c): `contourf` NEI acquisition surface, colormap `plasma`, title "NEI Acquisition Surface"
   - All panels: red scatter for 17 observed points; yellow star marker for `next_x`; colorbars; axis labels x1/x2
-- [ ] T008 [P] [US2] Add Step 6 convergence plot code cell in `functions/f2/f2.ipynb`:
+- [X] T008 [P] [US2] Add Step 6 convergence plot code cell in `functions/f2/f2.ipynb`:
   - `running_max = np.maximum.accumulate(y_w7)`
   - Plot running max vs sample index
   - `plt.axvline(x=10.5, linestyle='--', color='gray', label='Weekly submissions start')`
@@ -99,7 +99,7 @@
 
 ### Implementation for User Story 3
 
-- [ ] T009 [US3] Add Step 2 hyperparameter constants code cell in `functions/f2/f2.ipynb` (insert after data loading cell, before training cell):
+- [X] T009 [US3] Add Step 2 hyperparameter constants code cell in `functions/f2/f2.ipynb` (insert after data loading cell, before training cell):
   - `KERNEL = 'matern15'` — smooth but non-differentiable response, appropriate for unknown regularity
   - `NOISE_LB = 1e-3` — prevents noise collapsing to zero; reflects measurement uncertainty in black-box outputs
   - `ARD = True` — allows each input dimension to have its own lengthscale, so model can detect if one dimension matters more
@@ -117,11 +117,11 @@
 
 **Purpose**: End-to-end validation and commit.
 
-- [ ] T010 Run all Week 7 section cells top-to-bottom in `functions/f2/f2.ipynb` and confirm: no runtime errors, three visualization panels rendered, convergence plot rendered, submission line printed
-- [ ] T011 [P] Verify SC-002: SFGP reports exactly 2 distinct lengthscale values — confirm ARD is active (both values should differ)
-- [ ] T012 [P] Verify SC-004: print fitted noise level and confirm it is ≥ 1e-3 (noise lower bound enforced)
-- [ ] T013 [P] Verify SC-005: confirm proposed `x1-x2` point does not duplicate any of the 17 observed input pairs
-- [ ] T014 Commit `functions/f2/f2.ipynb` (Week 7 section added) to `005-week7-pe-surrogates` with message `feat(007): add Week 7 SFGP+NEI section to f2.ipynb`
+- [X] T010 Run all Week 7 section cells top-to-bottom in `functions/f2/f2.ipynb` and confirm: no runtime errors, three visualization panels rendered, convergence plot rendered, submission line printed
+- [X] T011 [P] Verify SC-002: SFGP reports exactly 2 distinct lengthscale values — confirm ARD is active (both values should differ)
+- [X] T012 [P] Verify SC-004: print fitted noise level and confirm it is ≥ 1e-3 (noise lower bound enforced)
+- [X] T013 [P] Verify SC-005: confirm proposed `x1-x2` point does not duplicate any of the 17 observed input pairs
+- [X] T014 Commit `functions/f2/f2.ipynb` (Week 7 section added) to `005-week7-pe-surrogates` with message `feat(007): add Week 7 SFGP+NEI section to f2.ipynb`
 
 ---
 

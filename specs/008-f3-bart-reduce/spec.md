@@ -23,7 +23,7 @@ A student runs `preq-eval-f3.ipynb` end-to-end on a memory-constrained laptop. T
 
 1. **Given** the notebook is opened with `preq-eval-f3.ipynb`, **When** the BART default run cell is executed, **Then** the cell completes without error and prints one prediction per prequential step plus MAE, NLP, and 95% coverage metrics.
 2. **Given** the BART default run has completed, **When** the BART HP sweep cell is executed, **Then** all 8 configurations run to completion, errors are printed per step, and a results table is displayed with no NaN rows caused by OOM crashes.
-3. **Given** the BART default run uses `m_trees=20, draws=200, tune=100, chains=2`, **When** the notebook is run on a machine with 16 GB RAM, **Then** peak memory usage during BART training does not trigger a kernel restart.
+3. **Given** the BART default run uses `m_trees=20, draws=200, tune=100, chains=4`, **When** the notebook is run on a machine with 16 GB RAM, **Then** peak memory usage during BART training does not trigger a kernel restart.
 
 ---
 
@@ -53,8 +53,8 @@ A student verifies that reducing BART model sizes has not altered any other part
 
 ### Functional Requirements
 
-- **FR-001**: The BART default run in `preq-eval-f3.ipynb` MUST use `m_trees=20, draws=200, tune=100, chains=2` as its baseline parameters.
-- **FR-002**: The BART hyperparameter sweep MUST contain exactly 8 configurations, all using `m_trees ≤ 20`, `draws ≤ 200`, `tune ≤ 100`, and `chains = 2`.
+- **FR-001**: The BART default run in `preq-eval-f3.ipynb` MUST use `m_trees=20, draws=200, tune=100, chains=4` as its baseline parameters.
+- **FR-002**: The BART hyperparameter sweep MUST contain exactly 8 configurations, all using `m_trees ≤ 20`, `draws ≤ 200`, `tune ≤ 100`, and `chains = 4`.
 - **FR-003**: The BART hyperparameter sweep configurations MUST vary `m_trees` across at least two distinct values (e.g., 5, 10, 20) and vary `draws` across at least two values (e.g., 100, 200).
 - **FR-004**: The `bart_prequential_evaluation()` function signature and return structure MUST remain unchanged so that downstream visualisation and comparison cells continue to work without modification.
 - **FR-005**: All 15 GP hyperparameter configurations MUST remain exactly as they are; no GP cell may be modified.
@@ -64,7 +64,7 @@ A student verifies that reducing BART model sizes has not altered any other part
 
 ### Key Entities
 
-- **BART Configuration**: A parameter set `{m_trees, draws, tune, chains, label}` passed to `bart_prequential_evaluation()`. After this change, all configurations satisfy `m_trees ≤ 20`, `draws ≤ 200`, `tune ≤ 100`, `chains = 2`.
+- **BART Configuration**: A parameter set `{m_trees, draws, tune, chains, label}` passed to `bart_prequential_evaluation()`. After this change, all configurations satisfy `m_trees ≤ 20`, `draws ≤ 200`, `tune ≤ 100`, `chains = 4`.
 - **Prequential Step**: One iteration of train-on-first-N, predict-on-N+1. F3 uses 15 initial training points and evaluates the remaining samples one at a time.
 - **Results Table**: A pandas DataFrame with columns `label`, `MAE`, `NLP`, `Coverage_95` — one row per configuration.
 
@@ -75,15 +75,15 @@ A student verifies that reducing BART model sizes has not altered any other part
 - **SC-001**: The BART default run cell completes successfully (no error, no OOM crash) on a 16 GB RAM machine.
 - **SC-002**: All 8 BART HP sweep configurations either complete successfully or fail gracefully with a caught exception, producing a full results table with no unhandled kernel crash.
 - **SC-003**: No GP cell and no RF cell in `preq-eval-f3.ipynb` is modified by this change (verified by `git diff` showing zero changes to GP and RF code cells).
-- **SC-004**: The BART default configuration uses `m_trees=20, draws=200, tune=100, chains=2` (verified by reading the notebook cell).
+- **SC-004**: The BART default configuration uses `m_trees=20, draws=200, tune=100, chains=4` (verified by reading the notebook cell).
 - **SC-005**: The BART HP sweep contains only configurations with `m_trees ≤ 20` and `draws ≤ 200` (verified by inspecting `bart_configs` list).
 - **SC-006**: The markdown cell describing the BART HP sweep accurately documents the new smaller parameter ranges.
 
 ## Assumptions
 
-- The development machine has approximately 16 GB RAM. Reducing to `chains=2, draws=200, m_trees=20` is expected to reduce peak memory by roughly 70% compared to the original `chains=4, draws=500, m_trees=50` setting.
+- The development machine has approximately 16 GB RAM. Reducing to `chains=4, draws=200, m_trees=20` is expected to reduce peak memory by roughly 50% compared to the original `chains=4, draws=500, m_trees=50` setting.
 - The 7 prequential evaluation steps for F3 (15 initial + 7 subsequent samples) each require a full BART model re-train. The bottleneck is the MCMC sampling, not the data size.
-- PyMC-BART version installed is compatible with `chains=2`; no additional library changes are required.
+- PyMC-BART version installed is compatible with `chains=4`; no additional library changes are required.
 - Reducing MCMC samples may increase variance in BART posterior estimates; this is an acceptable trade-off for notebook executability and is noted in the spec. The prequential evaluation still produces valid (if noisier) uncertainty estimates.
 - The `compute_metrics()` helper already handles degenerate predictions (NaN, inf) gracefully via clipping.
 - The `random_seed=42` used in BART calls remains unchanged to preserve reproducibility given the same parameters.

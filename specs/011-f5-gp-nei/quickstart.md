@@ -20,7 +20,7 @@
 
 1. **Cell 51** (Markdown): Week 7 header with strategy rationale
    - Title: `## Week 7 — GP Matérn-5/2 + NEI`
-   - Include comparison table: Week 6 (GBT, UCB, κ=0.5) vs Week 7 (GP, NEI, q=2)
+   - Include comparison table: Week 6 (GBT, UCB, κ=0.5) vs Week 7 (GP, NEI, q=4)
 
 2. **Cell 52** (Code): Imports + data loading
    ```python
@@ -42,7 +42,7 @@
 
 ### Phase 2: Documentation (Cell 53)
 
-3. **Cell 53** (Markdown): Hyperparameter table with 12+ entries
+3. **Cell 53** (Markdown): Hyperparameter table with 14 entries (incl. outcome_transform=None, distance-based selection, clamping)
 
 ### Phase 3: Model Training (Cell 54)
 
@@ -64,9 +64,10 @@
        torch.manual_seed(seed)
        likelihood = GaussianLikelihood(noise_constraint=GreaterThan(1e-6))
        covar = ScaleKernel(MaternKernel(nu=2.5, ard_num_dims=4))
-       model = SingleTaskGP(X_train, Y_train, covar_module=covar, likelihood=likelihood)
-       model.covar_module.base_kernel.lengthscale = 0.25
-       model.likelihood.noise = 0.03
+       model = SingleTaskGP(X_train, Y_train, covar_module=covar, likelihood=likelihood,
+                            outcome_transform=None)
+       model.covar_module.base_kernel.lengthscale = 0.5
+       model.likelihood.noise = 0.1 * Y_train.var().item()
        model.covar_module.outputscale = 1.0
        mll = ExactMarginalLogLikelihood(model.likelihood, model)
        fit_gpytorch_mll(mll)
@@ -78,9 +79,9 @@
            best_loss, best_model = loss, copy.deepcopy(model)
    ```
 
-### Phase 4: Acquisition (Cell 55)
+### Phase 4: Acquisition & Selection (Cell 55)
 
-5. **Cell 55** (Code): NEI with q=2
+5. **Cell 55** (Code): NEI with q=4 + distance-based selection
    ```python
    best_model.eval()
    sampler = SobolQMCNormalSampler(sample_shape=torch.Size([512]))
@@ -89,9 +90,22 @@
    )
    BOUNDS = torch.tensor([[0.0]*4, [1.0]*4], dtype=torch.double)
    candidates, acq_value = optimize_acqf(
-       acq_function=nei, bounds=BOUNDS, q=2,
+       acq_function=nei, bounds=BOUNDS, q=4,
        num_restarts=50, raw_samples=3000
    )
+   candidates = torch.clamp(candidates, 0.0, 0.999999)
+
+   # Distance-based selection
+   with torch.no_grad():
+       post = best_model.posterior(candidates)
+       means = post.mean.squeeze(-1)  # (4,)
+   median_mean = means.median()
+   above_median = means >= median_mean
+   dists = torch.cdist(candidates, X_train).min(dim=1).values  # (4,)
+   mask = above_median
+   best_idx = dists[mask].argmax()  # farthest among above-median
+   best_idx = torch.where(mask)[0][best_idx]
+   best_point = candidates[best_idx]
    ```
 
 ### Phase 5: Visualisation (Cells 56–57)
@@ -105,10 +119,13 @@
 
 ## Key Patterns
 
-- **Transform pipeline**: `y_raw → log1p → z-score → GP → z-score⁻¹ → expm1 → y_pred`
+- **Transform pipeline**: `y_raw → log1p → z-score → GP(outcome_transform=None) → z-score⁻¹ → expm1 → y_pred`
+- **outcome_transform=None**: Prevents double-standardization with manual z-score
 - **Restart loop**: F3/F4 pattern — fresh model per seed, deepcopy best
 - **Dim selection for viz**: `top2 = np.argsort(lengthscales)[:2]` (shortest = most important)
 - **Inverse transform for viz**: `y_orig = np.expm1(pred_std * y_std_val + y_mean)`
+- **Distance-based selection**: Filter by mean > median, then select farthest from training data
+- **Clamping**: `torch.clamp(candidates, 0.0, 0.999999)` before formatting
 
 ## Verification
 

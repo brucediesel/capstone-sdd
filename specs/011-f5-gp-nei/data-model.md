@@ -39,14 +39,16 @@
 |-------|------|-------------|
 | kernel | ScaleKernel(MaternKernel) | nu=2.5, ARD with 4 lengthscales |
 | likelihood | GaussianLikelihood | noise_constraint=GreaterThan(1e-6) |
-| model | SingleTaskGP | Fitted on (X_train, Y_train) |
+| model | SingleTaskGP | outcome_transform=None; fitted on (X_train, Y_train) |
 
 **Initial Hyperparameters**:
 | Parameter | Init Value | Learnable |
-|-----------|-----------|-----------|
-| ℓ₁–ℓ₄ (lengthscales) | 0.25 | Yes |
+|-----------|-----------|----------|
+| ℓ₁–ℓ₄ (lengthscales) | 0.5 | Yes |
 | σ²_f (output scale) | Var(y_std) ≈ 1.0 | Yes |
-| σ²_n (noise) | 0.03 | Yes |
+| σ²_n (noise) | 0.1 · Var(Y_train) ≈ 0.1 | Yes |
+
+**Note**: `outcome_transform=None` disables the default `Standardize(m=1)` to avoid double-standardization with manual z-score.
 
 **Relationships**: Trained via E-04 (MLL); input to E-05 (acquisition)
 
@@ -83,8 +85,8 @@
 
 | Field | Type | Description |
 |-------|------|-------------|
-| acq_fn | qLogNoisyExpectedImprovement | q=2, prune_baseline=True |
-| sampler | SobolQMCNormalSampler | sample_shape=512 |
+| acq_fn | qLogNoisyExpectedImprovement | q=4, prune_baseline=True |
+| sampler | SobolQMCNormalSampler | sample_shape=torch.Size([512]) |
 | bounds | Tensor (2, 4) | [[0,0,0,0],[1,1,1,1]] |
 | num_restarts | int | 50 |
 | raw_samples | int | 3000 |
@@ -97,11 +99,14 @@
 
 | Field | Type | Constraints |
 |-------|------|-------------|
-| candidates | Tensor (2, 4) | All values in [0, 1] |
-| posterior_means | ndarray (2,) | In standardised space |
-| posterior_means_orig | ndarray (2,) | Inverse-transformed to original scale |
-| best_idx | int | Index of candidate with highest posterior mean |
+| candidates | Tensor (4, 4) | All values in [0, 1]; q=4 batch |
+| posterior_means | ndarray (4,) | In standardised space |
+| posterior_means_orig | ndarray (4,) | Inverse-transformed to original scale |
+| distances | ndarray (4,) | Min Euclidean distance from each candidate to X_train |
+| best_idx | int | Distance-based: farthest from data among candidates with mean > median(means) |
 | best_point | ndarray (4,) | The selected candidate for submission |
+
+**Selection Logic**: (1) Filter candidates where posterior_mean > median(posterior_means), (2) among filtered, select the one farthest from training data (max min-distance to X_train). This balances exploitation (above-median predicted quality) with exploration (spatial diversity).
 
 **Relationships**: Input to E-08 (submission query) and E-09 (visualisation overlay)
 
@@ -113,9 +118,10 @@
 |-------|------|-------------|
 | query_string | str | Format: `x1-x2-x3-x4` |
 | components | list[str] | 4 values, each `0.xxxxxx` (6 decimal places) |
-| values | list[float] | Each in [0.0, 1.0] |
+| values | list[float] | Each in [0.0, 0.999999] after clamping |
 
 **Validation**: len(parts) == 4, all parts start with "0.", all float values in [0, 1]
+**Clamping**: `torch.clamp(candidates, 0.0, 0.999999)` before formatting to ensure `0.xxxxxx` format (avoids `1.000000`)
 
 ---
 

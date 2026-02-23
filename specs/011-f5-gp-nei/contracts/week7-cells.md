@@ -36,20 +36,22 @@
 - **Type**: Markdown
 - **Insert after**: Cell 52
 - **Content**: Table of all hyperparameters with columns: Parameter, Value, Rationale
-- **Required entries** (minimum 12):
+- **Required entries** (minimum 14):
   1. Kernel: Matérn-5/2
   2. ARD: True (4 lengthscales)
-  3. Lengthscale init: 0.25
+  3. Lengthscale init: 0.5 (broader uncertainty for exploration)
   4. Output scale init: ~1.0 (Var of standardised data)
-  5. Noise init: 0.03 (3% of standardised variance)
+  5. Noise init: 0.1 · Var(Y_train) ≈ 0.1 (prevents over-interpolation)
   6. Noise floor: 1e-6 (jitter)
-  7. Output transform: log1p → z-score
+  7. Output transform: manual log1p → z-score (outcome_transform=None)
   8. MLL restarts: 15
   9. Acquisition: qLogNoisyExpectedImprovement (NEI)
-  10. q: 2 (batch size)
+  10. q: 4 (batch size for diversity)
   11. raw_samples: 3000 (Sobol initial points)
   12. num_restarts: 50 (L-BFGS starting points)
-- **Acceptance**: All 12+ entries present with non-empty rationale
+  13. Selection: distance-based (farthest from data, mean > median)
+  14. Clamping: [0, 0.999999] before formatting
+- **Acceptance**: All 14 entries present with non-empty rationale
 
 ---
 
@@ -60,7 +62,7 @@
 - **Logic**:
   1. Compute `y_log = np.log1p(y_raw)`, z-score → `y_std`
   2. Convert to torch tensors (double precision)
-  3. Loop 15 restarts: construct SingleTaskGP, init HPs (ls=0.25, noise=0.03, outputscale=1.0), fit MLL, score, keep best
+  3. Loop 15 restarts: construct SingleTaskGP(outcome_transform=None), init HPs (ls=0.5, noise=0.1·Var(Y_train), outputscale=1.0), fit MLL, score, keep best
   4. Print per-restart neg_MLL
   5. Print fitted HPs: ℓ₁–ℓ₄, σ²_f, σ²_n
 - **Output**:
@@ -75,25 +77,27 @@
 
 ---
 
-## Cell 55: NEI Acquisition
+## Cell 55: NEI Acquisition & Distance-Based Selection
 
 - **Type**: Code (Python)
 - **Insert after**: Cell 54
 - **Logic**:
-  1. Construct `qLogNoisyExpectedImprovement` with fitted model, q=2, prune_baseline=True
+  1. Construct `qLogNoisyExpectedImprovement` with fitted model, q=4, prune_baseline=True
   2. Call `optimize_acqf` with bounds=[[0]*4, [1]*4], num_restarts=50, raw_samples=3000
-  3. Extract 2 candidate points
+  3. Extract 4 candidate points; clamp to [0, 0.999999]
   4. Compute posterior means (standardised + inverse-transformed to original scale)
-  5. Select best candidate by highest posterior mean
+  5. Distance-based selection: filter candidates with mean > median(means), select farthest from X_train
 - **Output**:
-  - 2 candidate points with coordinates
+  - 4 candidate points with coordinates
   - Posterior means (standardised and original scale)
-  - Best candidate index and coordinates
+  - Min-distance from each candidate to training data
+  - Selected candidate index, coordinates, and rationale
 - **Acceptance**:
-  - `candidates.shape == (2, 4)`
-  - All candidate values in [0, 1]
-  - Posterior means printed for both candidates
-  - Best candidate clearly identified
+  - `candidates.shape == (4, 4)`
+  - All candidate values in [0, 0.999999]
+  - Posterior means printed for all 4 candidates
+  - Distance-based selection clearly shown
+  - Selected candidate identified with distance and predicted value
 
 ---
 

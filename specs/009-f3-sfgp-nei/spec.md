@@ -5,6 +5,15 @@
 **Status**: Draft  
 **Spec Directory**: `specs/009-f3-sfgp-nei`
 
+## Clarifications
+
+### Session 2026-02-23
+
+- Q: Are the `updated_inputs - Week X.npy` / `updated_outputs - Week X.npy` files cumulative (all samples to date) or incremental (new samples only)? → A: Cumulative — each file contains all samples from the initial set through week X; loading only the Week 7 file provides the complete training dataset.
+- Q: What initial values should be used for signal variance σ²_f and noise variance σ²_n before MLL fitting? → A: Specify values appropriate for F3 as a standalone function; do not borrow from other functions. Use σ²_f = Var(y) of the training outputs (= 1.0 after z-score standardisation); σ²_n = 0.1 (a conservative 10% noise-to-signal ratio suited to an unknown black-box with no prior noise estimate); jitter = 1e-6.
+
+---
+
 ## Overview
 
 Function 3 (`f3.ipynb`) requires a new Week 7 section that loads the updated Week 7 dataset, fits a Single-Fidelity Gaussian Process (SFGP) surrogate with a fully specified configuration, runs one Bayesian Optimisation iteration using the Noisy Expected Improvement (NEI) acquisition function, and reports the proposed next sampling point together with surrogate and convergence visualisations.
@@ -95,13 +104,17 @@ A student runs the visualisation cells and sees:
 ### Functional Requirements
 
 - **FR-001**: A new section titled **"Week 7"** MUST be added to `functions/f3/f3.ipynb` as a new markdown heading followed by new code cells. Existing cells MUST NOT be modified.
-- **FR-002**: The Week 7 section MUST load inputs from `data/f3/updated_inputs - Week 7.npy` and outputs from `data/f3/updated_outputs - Week 7.npy`.
+- **FR-002**: The Week 7 section MUST load inputs from `data/f3/updated_inputs - Week 7.npy` and outputs from `data/f3/updated_outputs - Week 7.npy`. These files are cumulative and contain all samples from the initial set through Week 7; no additional loading of prior week files is required.
 - **FR-003**: Loaded inputs MUST be validated to lie in [0.0, 1.0]; any out-of-range value MUST trigger a printed warning identifying the offending row.
 - **FR-004**: Inputs MUST be scaled to [0, 1] before training; outputs MUST be z-score standardised (subtract mean, divide by std). Predictions MUST be converted back to the original output scale before display and submission.
 - **FR-005**: The surrogate MUST be a Single-Fidelity Gaussian Process with the following explicit configuration:
   - **Mean function**: Constant (value learned during training)
   - **Kernel**: Matérn-5/2 with Automatic Relevance Determination (ARD) — one lengthscale per input dimension (ℓ_A, ℓ_B, ℓ_C)
   - **Likelihood**: Gaussian noise by default; a markdown note MUST document the option to switch to Student-t likelihood if heavy-tail outliers are observed
+  - **Variance initialisations** (F3-specific, before MLL fitting):
+    - Signal variance σ²_f: initialise to `Var(y)` of the training outputs (= 1.0 after z-score standardisation)
+    - Noise variance σ²_n: initialise to 0.1 (conservative 10% noise-to-signal ratio for an unknown black-box with no prior noise estimate)
+    - Jitter: 1e-6 for numerical stability
   - **Training**: Maximise marginal log-likelihood with 10–20 random restarts
 - **FR-006**: A markdown cell MUST precede the model definition cell explaining each hyperparameter, its role, and the rationale for its starting value.
 - **FR-007**: After training, the cell MUST print the fitted values of ℓ_A, ℓ_B, ℓ_C, signal variance σ²_f, and noise variance σ²_n, each clearly labelled.
@@ -117,7 +130,7 @@ A student runs the visualisation cells and sees:
 ### Key Entities
 
 - **SFGP Model**: A Gaussian Process with constant mean, Matérn-5/2 ARD kernel, and Gaussian noise likelihood. Hyperparameters documented in a dedicated markdown cell.
-- **Training Dataset**: Union of all F3 samples (initial + Weeks 3–7). Inputs scaled to [0, 1]; outputs z-score standardised.
+- **Training Dataset**: All F3 samples from the initial set through Week 7, sourced entirely from `updated_inputs - Week 7.npy` and `updated_outputs - Week 7.npy` (cumulative files). Inputs scaled to [0, 1]; outputs z-score standardised.
 - **NEI Acquisition Function**: Noisy Expected Improvement evaluated over the [0, 0.999999]³ input space to select the most promising next query point.
 - **Proposal**: The single candidate output by NEI, formatted as `0.xxxxxx-0.yyyyyy-0.zzzzzz` for direct challenge submission.
 - **Surrogate Visualisation**: A set of pairwise 2D slice contour plots showing surrogate mean and uncertainty, with the proposed point marked.
@@ -130,9 +143,11 @@ A student runs the visualisation cells and sees:
 - F3 has a 3-dimensional input space; lengthscales ℓ_A, ℓ_B, ℓ_C refer to dimensions 1, 2, and 3 respectively.
 - The challenge evaluates the maximum of the black-box function; convergence tracking uses the running maximum of observed outputs.
 - All existing notebook cells from previous weeks remain intact and unmodified.
+- The `updated_inputs - Week 7.npy` and `updated_outputs - Week 7.npy` files are cumulative and contain all observations from the initial dataset through Week 7. No prior weekly files need to be loaded.
 - Week 7 data files exist at the expected paths when the notebook is executed.
 - The Student-t likelihood is documented as an option but Gaussian noise is implemented as the default.
-- Lengthscale initialisations around 0.2–0.3 (inputs scaled to [0, 1]) are appropriate starting values for a 3-dimensional function.
+- Lengthscale initialisations around 0.2–0.3 (inputs scaled to [0, 1]) are appropriate starting values for a 3-dimensional function with no known length-scale structure.
+- Signal variance σ²_f = 1.0 and noise variance σ²_n = 0.1 are chosen as F3-specific conservative starting values before MLL optimisation. These are not derived from any other function in the challenge.
 
 ---
 

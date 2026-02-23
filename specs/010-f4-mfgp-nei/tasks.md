@@ -19,7 +19,7 @@
 
 **Purpose**: Verify environment and notebook readiness
 
-- [ ] T001 Verify branch is `010-f4-mfgp-nei`, notebook `functions/f4/f4.ipynb` has 52 existing cells, and last cell is `#VSC-21b0ced4`
+- [X] T001 Verify branch is `010-f4-mfgp-nei`, notebook `functions/f4/f4.ipynb` has 52 existing cells, and last cell is `#VSC-21b0ced4`
 
 **Checkpoint**: Notebook structure confirmed, ready to append cells.
 
@@ -29,7 +29,7 @@
 
 **Purpose**: Section header cell that all subsequent cells depend on
 
-- [ ] T002 Insert Week 7 markdown header cell after `#VSC-21b0ced4` in `functions/f4/f4.ipynb` with heading `## Week 7 — Multi-Fidelity GP (Matérn-5/2 ARD + LinTrunc) + MF-qNEI` and rationale paragraph (PE winner, acquisition strategy)
+- [X] T002 Insert Week 7 markdown header cell after `#VSC-21b0ced4` in `functions/f4/f4.ipynb` with heading `## Week 7 — Multi-Fidelity GP (Matérn-5/2 ARD + LinTrunc) + MF-qNEI` and rationale paragraph (PE winner, acquisition strategy)
 
 **Checkpoint**: Week 7 section visible in notebook. All subsequent cells insert after this header.
 
@@ -41,7 +41,7 @@
 
 **Independent Test**: Run the data-loading cell; confirm 37 samples, inputs in [0, 1], best value printed.
 
-- [ ] T003 [US1] Insert code cell after the Week 7 header in `functions/f4/f4.ipynb` — imports (numpy, torch, copy, warnings, matplotlib, botorch.models.SingleTaskMultiFidelityGP, botorch.fit.fit_gpytorch_mll, botorch.acquisition.logei.qLogNoisyExpectedImprovement, botorch.optim.optimize_acqf, botorch.sampling.normal.SobolQMCNormalSampler, gpytorch.mlls.ExactMarginalLogLikelihood, gpytorch.constraints.GreaterThan, gpytorch.likelihoods.GaussianLikelihood) + load `data/f4/updated_inputs - Week 7.npy` and `data/f4/updated_outputs - Week 7.npy` + validate shape (37, 4), range [0, 1], print best value, sample count, mean, std
+- [X] T003 [US1] Insert code cell after the Week 7 header in `functions/f4/f4.ipynb` — imports (numpy, torch, copy, warnings, matplotlib, botorch.models.SingleTaskMultiFidelityGP, botorch.fit.fit_gpytorch_mll, botorch.acquisition.logei.qLogNoisyExpectedImprovement, botorch.optim.optimize_acqf, botorch.sampling.normal.SobolQMCNormalSampler, gpytorch.mlls.ExactMarginalLogLikelihood, gpytorch.constraints.GreaterThan, gpytorch.likelihoods.GaussianLikelihood) + load `data/f4/updated_inputs - Week 7.npy` and `data/f4/updated_outputs - Week 7.npy` + validate shape (37, 4), range [0, 1], print best value, sample count, mean, std
 
 **Checkpoint**: US1 complete — data loaded and validated independently.
 
@@ -53,8 +53,8 @@
 
 **Independent Test**: Run training cell; confirm fitted HPs printed, noise ≥ 1e-4, no NaN errors.
 
-- [ ] T004 [US2] Insert markdown cell after the data loading cell in `functions/f4/f4.ipynb` — hyperparameter documentation table with ≥ 10 entries (nu=2.5, linear_truncated=True, noise_lb=1e-4, z-score, 15 restarts, q=4, 64 MC samples, 512 raw_samples, 20 acq restarts, fixed_features={4: 1.0}) with justifications
-- [ ] T005 [US2] Insert code cell after the HP markdown cell in `functions/f4/f4.ipynb` — z-score standardise outputs, convert to torch tensors, append fidelity column (all 1.0) creating (37, 5) X_mf, loop 15 restarts with manual seeds creating SingleTaskMultiFidelityGP(nu=2.5, linear_truncated=True, data_fidelities=[4], GaussianLikelihood with GreaterThan(1e-4)), fit_gpytorch_mll, track best by neg MLL with deepcopy, print per-restart scores, print fitted ℓ₁–ℓ₄, σ²_f, σ²_n, fidelity power
+- [X] T004 [US2] Insert markdown cell after the data loading cell in `functions/f4/f4.ipynb` — hyperparameter documentation table with ≥ 10 entries (nu=2.5, linear_truncated=True, noise_lb=1e-4, z-score, 15 restarts, q=4, 64 MC samples, 512 raw_samples, 20 acq restarts, fixed_features={4: 1.0}) with justifications
+- [X] T005 [US2] Insert code cell after the HP markdown cell in `functions/f4/f4.ipynb` — z-score standardise outputs, convert to torch tensors, append fidelity column (all 1.0) creating (37, 5) X_mf, loop 15 restarts with manual seeds creating SingleTaskMultiFidelityGP(nu=2.5, linear_truncated=True, data_fidelities=[4], GaussianLikelihood with GreaterThan(1e-4)), fit_gpytorch_mll, track best by neg MLL with deepcopy, print per-restart scores, print fitted ℓ₁–ℓ₄, σ²_f, σ²_n, fidelity power
 
 **Checkpoint**: US2 complete — MFGP trained, all hyperparameters reported.
 
@@ -66,7 +66,7 @@
 
 **Independent Test**: Run acquisition cell; confirm 4 candidates in [0, 0.999999]⁴, best identified.
 
-- [ ] T006 [US3] Insert code cell after the MFGP training cell in `functions/f4/f4.ipynb` — create SobolQMCNormalSampler(64), create qLogNoisyExpectedImprovement(model, X_baseline=X_mf, sampler, prune_baseline=True), set bounds (2, 5) with spatial [0, 0.999999] and fidelity [1.0, 1.0], optimize_acqf(q=4, num_restarts=20, raw_samples=512, fixed_features={4: 1.0}), extract candidates[:, :4], evaluate posterior mean per candidate, select best by highest posterior mean, print all 4 candidates and selected best
+- [X] T006 [US3] Insert code cell after the MFGP training cell in `functions/f4/f4.ipynb` — create SobolQMCNormalSampler(64), create qLogNoisyExpectedImprovement(model, X_baseline=X_mf, sampler, prune_baseline=True), set bounds (2, 5) with spatial [0, 0.999999] and fidelity [1.0, 1.0], optimize_acqf(q=4, num_restarts=20, raw_samples=512, fixed_features={4: 1.0}), extract candidates[:, :4], evaluate posterior mean per candidate, select best by highest posterior mean, print all 4 candidates and selected best
 
 **Checkpoint**: US3 complete — submission candidate identified.
 
@@ -78,8 +78,8 @@
 
 **Independent Test**: Run both visualisation cells; confirm plots render with labels/colorbars.
 
-- [ ] T007 [US4] Insert code cell after the acquisition cell in `functions/f4/f4.ipynb` — identify top-2 dims by shortest ARD lengthscales, build 80×80 grid fixing other 2 dims at best_point values, append fidelity=1.0, get posterior mean+std (de-standardise), plot 2-panel contour figure (mean + std) with observed points (red), proposed point (yellow star), colorbars, axis labels, title
-- [ ] T008 [US4] Insert code cell after the surrogate plot cell in `functions/f4/f4.ipynb` — compute running_best = np.maximum.accumulate(y_raw), plot vs observation number, add vertical line at x=30.5 (initial→weekly boundary), add labels/title/legend/grid, print best observed values at boundaries
+- [X] T007 [US4] Insert code cell after the acquisition cell in `functions/f4/f4.ipynb` — identify top-2 dims by shortest ARD lengthscales, build 80×80 grid fixing other 2 dims at best_point values, append fidelity=1.0, get posterior mean+std (de-standardise), plot 2-panel contour figure (mean + std) with observed points (red), proposed point (yellow star), colorbars, axis labels, title
+- [X] T008 [US4] Insert code cell after the surrogate plot cell in `functions/f4/f4.ipynb` — compute running_best = np.maximum.accumulate(y_raw), plot vs observation number, add vertical line at x=30.5 (initial→weekly boundary), add labels/title/legend/grid, print best observed values at boundaries
 
 **Checkpoint**: US4 complete — both visualisations rendered.
 
@@ -89,8 +89,8 @@
 
 **Purpose**: Format submission query and validate entire notebook
 
-- [ ] T009 Insert code cell after the convergence plot in `functions/f4/f4.ipynb` — clip best_point to [0, 0.999999], format as dash-separated string with 6 decimal places, validate (4 parts, each in [0, 1]), print submission summary (surrogate type, acquisition, fitted HPs, query string)
-- [ ] T010 Run all 8 new cells (53-60) in `functions/f4/f4.ipynb` to validate end-to-end execution, verify no existing cells modified (52 original cells unchanged), verify git diff shows only additions, commit with message "feat(f4): add Week 7 MFGP Matérn-5/2 ARD LinTrunc + MF-qNEI section"
+- [X] T009 Insert code cell after the convergence plot in `functions/f4/f4.ipynb` — clip best_point to [0, 0.999999], format as dash-separated string with 6 decimal places, validate (4 parts, each in [0, 1]), print submission summary (surrogate type, acquisition, fitted HPs, query string)
+- [X] T010 Run all 8 new cells (53-60) in `functions/f4/f4.ipynb` to validate end-to-end execution, verify no existing cells modified (52 original cells unchanged), verify git diff shows only additions, commit with message "feat(f4): add Week 7 MFGP Matérn-5/2 ARD LinTrunc + MF-qNEI section"
 
 ---
 

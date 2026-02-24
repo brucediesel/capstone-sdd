@@ -1,50 +1,31 @@
-# Implementation Plan: F6 Week 7 — SFGP Matérn-1.5 + NEI
+# Implementation Plan: F6 Week 7 — SFGP Matérn-1.5 + NEI (Exploration Focus)
 
-**Branch**: `012-f6-sfgp-nei` | **Date**: 2026-02-24 | **Spec**: `specs/012-f6-sfgp-nei/spec.md`
+**Branch**: `012-f6-sfgp-nei` | **Date**: 2026-02-24 | **Spec**: [spec.md](spec.md)
 **Input**: Feature specification from `/specs/012-f6-sfgp-nei/spec.md`
+
+**Note**: Revised after clarification session that identified the x4(milk)=0 boundary-trap problem. Key changes: noise floor 1e-8→1e-2, noise init 0.1→0.2, bounds [0,1]⁵→feasibility-constrained.
 
 ## Summary
 
-Add Week 7 section to F6 notebook implementing exploration-focused Bayesian optimisation. Uses a Single-Fidelity GP surrogate (Matérn-1.5 ARD kernel, `Standardize(m=1)` default outcome transform, ℓ=0.5 init, noise=0.1·Var(y) init with lower bound 1e-8) fitted via 15-restart MLL, with `qLogNoisyExpectedImprovement` acquisition (q=4, 3000 Sobol → 50 L-BFGS). Candidate selection filters to posterior mean ≥ median, then picks farthest from existing data. F6 has all-negative outputs [-2.571, -0.206] with strong x4 (milk) anti-correlation; exploration aims to diversify sampling in the 5D space.
+Add a Week 7 section to `functions/f6/f6.ipynb` that performs Bayesian optimisation using a SingleTaskGP with Matérn-1.5 ARD kernel and qLogNoisyExpectedImprovement (q=4). The model uses an aggressive noise floor (1e-2) and feasibility-constrained bounds (x4≥0.10, others≥0.01) to prevent boundary-trap exploitation and promote exploration. Distance-based candidate selection picks the farthest-from-data candidate among those with above-median predicted quality.
 
 ## Technical Context
 
-**Language/Version**: Python 3.14 (pyenv `sdd-dev`)
-**Primary Dependencies**: BoTorch 0.16.1, GPyTorch 1.15.1, PyTorch, NumPy, Matplotlib
-**Storage**: `.npy` files in `data/f6/` (27 samples × 5 dims)
-**Testing**: None required (per constitution)
-**Target Platform**: macOS (local Jupyter notebook execution)
-**Project Type**: Single project — Jupyter notebooks
-**Performance Goals**: N/A (single-run batch BO, no latency targets)
-**Constraints**: Append-only notebook cells; no modification of existing Week 4–6 content
-**Scale/Scope**: 8 new cells (48–55) appended to existing 47-cell notebook
-
-### Key Technical Decisions
-
-1. **Matérn ν=1.5 (not 2.5)**: User-specified. Once-differentiable kernel, rougher than ν=2.5, suits functions with sharp local variations. F6's cake-recipe function may have abrupt ingredient interactions.
-2. **Standardize(m=1) default**: F6's output range is only 12.5x ([-2.571, -0.206]) and all-negative. Unlike F5 (30,000x range requiring manual log1p + z-score), BoTorch's built-in `Standardize(m=1)` is sufficient. No manual transform, no `outcome_transform=None`.
-3. **Noise lower bound 1e-8 (not 1e-6)**: Tighter constraint allows the GP to interpolate more closely when noise is truly low, per user specification.
-4. **5D (not 4D)**: F6 has 5 input dimensions (flour, sugar, eggs, butter, milk), one more than F5.
-5. **qLogNEI not qNEI**: Use `qLogNoisyExpectedImprovement` (log-space formulation) for numerical stability with the all-negative output regime.
+**Language/Version**: Python 3.14.2 (pyenv `sdd-dev` on macOS)
+**Primary Dependencies**: BoTorch 0.16.1, GPyTorch 1.15.1, PyTorch (double precision), NumPy, Matplotlib
+**Storage**: `.npy` files in `data/f6/` (27×5 inputs, 27 outputs); notebook cells in `functions/f6/f6.ipynb`
+**Testing**: Manual cell-by-cell execution in Jupyter/VS Code; assertion-based validation in code cells
+**Target Platform**: macOS (local Jupyter notebook)
+**Project Type**: Single notebook — append-only cells at end of existing `f6.ipynb`
+**Performance Goals**: N/A — single-run BO pipeline, training completes in seconds
+**Constraints**: Existing cells (1–49 original) remain untouched. Week 7 cells (50–57) from first implementation attempt will be replaced with corrected versions. The notebook currently has 58 cells.
+**Scale/Scope**: 27 samples in 5D; 8 code/markdown cells; single submission query output
 
 ## Constitution Check
 
 *GATE: Must pass before Phase 0 research. Re-check after Phase 1 design.*
 
-| # | Gate | Status | Evidence |
-|---|------|--------|----------|
-| 1 | Code as simple as possible | PASS | Straightforward sequential cells, each step explained in markdown |
-| 2 | All code in Jupyter notebooks | PASS | All work targets `functions/f6/f6.ipynb` |
-| 3 | No unit tests required | PASS | No test tasks |
-| 4 | Each problem in its own notebook/folder | PASS | F6 notebook in `functions/f6/` |
-| 5 | Weekly sections appended, not replaced | PASS | FR-019: append after cell 47, no existing cells modified |
-| 6 | Section title includes week number | PASS | Cell 48 header: "## Week 7 — SFGP Matérn-1.5 + NEI" |
-| 7 | BoTorch as default GP library | PASS | SingleTaskGP + qLogNEI from BoTorch |
-| 8 | Hyperparameters documented with rationale | PASS | FR-009, Cell 50: markdown HP table |
-| 9 | Surrogate function visualisation | PASS | FR-014, Cell 53: 3-panel mean/std/relevance |
-| 10 | Convergence visualisation | PASS | FR-016, Cell 54: running-best plot with boundary |
-
-**Result**: All 10 gates PASS. No violations to justify.
+The constitution file (`.specify/memory/constitution.md`) is a blank template with no project-specific rules. **No gates to enforce.** Proceeding to Phase 0.
 
 ## Project Structure
 
@@ -52,28 +33,29 @@ Add Week 7 section to F6 notebook implementing exploration-focused Bayesian opti
 
 ```text
 specs/012-f6-sfgp-nei/
-├── plan.md              # This file
-├── research.md          # Phase 0 output
-├── data-model.md        # Phase 1 output
-├── quickstart.md        # Phase 1 output
-├── contracts/           # Phase 1 output
-│   └── week7-cells.md   # Cell acceptance contract
-└── tasks.md             # Phase 2 output (/speckit.tasks)
+├── plan.md              # This file (revised after clarification)
+├── research.md          # Phase 0 output (updated for noise/bounds changes)
+├── data-model.md        # Phase 1 output (updated for noise/bounds changes)
+├── quickstart.md        # Phase 1 output (updated for noise/bounds changes)
+├── contracts/
+│   └── week7-cells.md   # Phase 1 output (updated for noise/bounds changes)
+├── tasks.md             # Phase 2 output (to be regenerated by /speckit.tasks)
+└── spec.md              # Feature specification (updated by clarification)
 ```
 
 ### Source Code (repository root)
 
 ```text
 functions/f6/
-└── f6.ipynb             # Target notebook (47 existing cells + 8 new)
+└── f6.ipynb             # Target notebook — replace Week 7 cells 50–57 with corrected versions
 
 data/f6/
-├── updated_inputs - Week 7.npy    # (27, 5) input data
-└── updated_outputs - Week 7.npy   # (27,) output data
+├── updated_inputs - Week 7.npy   # (27, 5)
+└── updated_outputs - Week 7.npy  # (27,)
 ```
 
-**Structure Decision**: No new source directories. All implementation is 8 appended cells in the existing `functions/f6/f6.ipynb` notebook. Data is read from `data/f6/`.
+**Structure Decision**: Single Jupyter notebook, append-only for new weeks. The Week 7 cells (50–57) from the first attempt will be edited in-place with corrected noise floor, noise init, and feasibility-constrained bounds.
 
 ## Complexity Tracking
 
-> No constitution violations. Table intentionally left empty.
+> No constitution violations — table not needed.

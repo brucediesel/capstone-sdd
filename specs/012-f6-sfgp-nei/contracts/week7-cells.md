@@ -2,24 +2,24 @@
 
 **Feature**: 012-f6-sfgp-nei
 **Notebook**: `functions/f6/f6.ipynb`
-**Existing cells**: 47 (cells 1–47, last cell id: `a52b2e42`)
-**New cells**: 8 (cells 48–55)
+**Existing cells**: 49 (cells 1–49; plus 8 Week 7 cells 50–57 from first attempt and 1 user-added cell 58 — total 58)
+**New cells**: 8 (replacing cells 50–57; cell 58 kept as-is)
 
 ---
 
-## Cell 48: Week 7 Markdown Header
+## Cell 50: Week 7 Markdown Header
 
 - **Type**: Markdown
-- **Insert after**: cell 47 (id `a52b2e42`)
+- **Position**: Cell 50 (replaces existing Week 7 header)
 - **Content**: `## Week 7 — SFGP Matérn-1.5 + NEI` with strategy summary explaining the switch from NN + MC Dropout + UCB κ=0.5 (Week 6) to SFGP + NEI q=4 (Week 7), including a comparison table
 - **Acceptance**: Renders as formatted markdown with week title, rationale, and comparison table
 
 ---
 
-## Cell 49: Imports & Data Loading
+## Cell 51: Imports & Data Loading
 
 - **Type**: Code (Python)
-- **Insert after**: Cell 48
+- **Position**: Cell 51 (replaces existing)
 - **Imports**: torch, gpytorch, botorch (SingleTaskGP, fit_gpytorch_mll, qLogNoisyExpectedImprovement, optimize_acqf, SobolQMCNormalSampler), numpy, matplotlib, copy
 - **Data**: Load `updated_inputs - Week 7.npy` and `updated_outputs - Week 7.npy` via relative path `../../data/f6/`
 - **Output**: Print shape (27, 5), (27,), input range, output range, best observed value and index
@@ -32,18 +32,18 @@
 
 ---
 
-## Cell 50: Hyperparameter Documentation
+## Cell 52: Hyperparameter Documentation
 
 - **Type**: Markdown
-- **Insert after**: Cell 49
+- **Position**: Cell 52 (replaces existing)
 - **Content**: Table of all hyperparameters with columns: Parameter, Value, Rationale
 - **Required entries** (minimum 14):
   1. Kernel: Matérn-1.5 (once-differentiable, rougher than 2.5)
   2. ARD: True (5 lengthscales, one per dimension)
   3. Lengthscale init: 0.5 (broader uncertainty for exploration)
   4. Output scale init: 1.0 (matches standardised variance)
-  5. Noise init: 0.1 (10% of standardised Var(y)≈1.0; see RES-003)
-  6. Noise floor: 1e-8 (tighter than 1e-6; user-specified)
+  5. Noise init: 0.2 (20% of standardised Var(y)≈1.0; discourages exact interpolation)
+  6. Noise floor: 1e-2 (aggressive floor prevents boundary-trap exploitation)
   7. Outcome transform: Standardize(m=1) — BoTorch default z-score
   8. MLL restarts: 15
   9. Acquisition: qLogNoisyExpectedImprovement (NEI)
@@ -51,15 +51,15 @@
   11. raw_samples: 3000 (Sobol initial points)
   12. num_restarts: 50 (L-BFGS starting points)
   13. Selection: distance-based (farthest from data, mean ≥ median)
-  14. Clamping: [0, 0.999999] before formatting
+  14. Bounds: feasibility-constrained (x4≥0.10, others≥0.01)
 - **Acceptance**: All 14 entries present with non-empty rationale
 
 ---
 
-## Cell 51: GP Training with MLL Restarts
+## Cell 53: GP Training with MLL Restarts
 
 - **Type**: Code (Python)
-- **Insert after**: Cell 50
+- **Position**: Cell 53 (replaces existing)
 - **Logic**:
   1. Convert raw data to torch double tensors: `X_train (27,5)`, `Y_train (27,1)`
   2. Loop 15 restarts: construct SingleTaskGP (**no** `outcome_transform` arg — uses default `Standardize(m=1)`), init HPs (ℓ=0.5, noise=0.1, outputscale=1.0), fit MLL, score, keep best
@@ -69,8 +69,8 @@
   - No `log1p` / z-score transform — raw Y passed directly
   - No `outcome_transform=None` — default `Standardize(m=1)` used
   - `MaternKernel(nu=1.5, ard_num_dims=5)` (not `nu=2.5, ard_num_dims=4`)
-  - `noise_constraint=GreaterThan(1e-8)` (not `1e-6`)
-  - `noise = 0.1` (not `0.1 * Y_train.var().item()`)
+  - `noise_constraint=GreaterThan(1e-2)` (not `1e-8` or `1e-6`)
+  - `noise = 0.2` (not `0.1` or `0.1 * Y_train.var().item()`)
 - **Output**:
   - 15 restart scores printed
   - Best neg_MLL value
@@ -78,19 +78,19 @@
 - **Acceptance**:
   - No runtime errors
   - All 15 restarts produce finite neg_MLL values
-  - Fitted noise ≥ 1e-8
+  - Fitted noise ≥ 1e-2
   - All lengthscales > 0
   - 5 distinct lengthscale values (ARD active)
 
 ---
 
-## Cell 52: NEI Acquisition & Distance-Based Selection
+## Cell 54: NEI Acquisition & Distance-Based Selection
 
 - **Type**: Code (Python)
-- **Insert after**: Cell 51
+- **Position**: Cell 54 (replaces existing)
 - **Logic**:
   1. Construct `qLogNoisyExpectedImprovement` with fitted model, q=4, prune_baseline=True
-  2. Call `optimize_acqf` with bounds=[[0]*5, [1]*5], num_restarts=50, raw_samples=3000
+  2. Call `optimize_acqf` with **feasibility-constrained bounds**: lower=[0.01, 0.01, 0.01, 0.01, 0.10], upper=[1, 1, 1, 1, 1], num_restarts=50, raw_samples=3000
   3. Extract 4 candidate points; clamp to [0, 0.999999]
   4. Compute posterior means — these are in **original space** automatically (no manual untransform)
   5. Distance-based selection: filter candidates with mean ≥ median(means), select farthest from X_train
@@ -109,10 +109,10 @@
 
 ---
 
-## Cell 53: Surrogate Visualisation (3-Panel)
+## Cell 55: Surrogate Visualisation (3-Panel)
 
 - **Type**: Code (Python)
-- **Insert after**: Cell 52
+- **Position**: Cell 55 (replaces existing)
 - **Logic**:
   1. Identify top-2 important dims (shortest ARD lengthscales)
   2. Build 80×80 grid over top-2 dims, fixing other 3 at best_point values
@@ -131,10 +131,10 @@
 
 ---
 
-## Cell 54: Convergence Plot
+## Cell 56: Convergence Plot
 
 - **Type**: Code (Python)
-- **Insert after**: Cell 53
+- **Position**: Cell 56 (replaces existing)
 - **Logic**:
   1. Compute `running_best = np.maximum.accumulate(y_raw)`
   2. Plot running best vs observation number
@@ -149,10 +149,10 @@
 
 ---
 
-## Cell 55: Submission Query & Summary
+## Cell 57: Submission Query & Summary
 
 - **Type**: Code (Python)
-- **Insert after**: Cell 54
+- **Position**: Cell 57 (replaces existing)
 - **Logic**:
   1. Format best_point as `x1-x2-x3-x4-x5` with 6 decimal places
   2. Validate: 5 parts, all parseable as float, all in [0, 0.999999]

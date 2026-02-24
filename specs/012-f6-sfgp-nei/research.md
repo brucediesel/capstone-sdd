@@ -47,30 +47,39 @@ Key behaviours verified:
 
 ---
 
-## RES-003: Noise Constraint and Initialisation
+## RES-003: Noise Constraint and Initialisation (REVISED after clarification)
 
-**Decision**: Use `GaussianLikelihood(noise_constraint=GreaterThan(1e-8))` and initialise noise to **0.1** (not `0.1 * y_raw.var()`).
+**Decision**: Use `GaussianLikelihood(noise_constraint=GreaterThan(1e-2))` and initialise noise to **0.2**.
 
-**Rationale**: The `Standardize(m=1)` transform guarantees that the GP's internal training targets have variance ≈ 1.0. Therefore, `0.1 · Var(y_standardized)` = `0.1 · 1.0` = `0.1`. Using `0.1 * Var(y_raw)` = `0.1 * 0.33` = `0.033` would only give 3.3% noise-to-signal ratio instead of the intended 10%.
+**Rationale (post-clarification)**: The first implementation attempt used noise floor 1e-8, which caused all 15 MLL restarts to converge to noise ≈ 1e-8 (the floor), resulting in exact interpolation with zero posterior uncertainty near observed points. This drove NEI to exploit the x4=0 boundary, producing a physically infeasible milk=0 submission.
+
+The aggressive noise floor of **1e-2** was chosen as the strongest exploration-promoting option:
+- Prevents exact interpolation — the GP *must* maintain at least 1% observation noise
+- Ensures non-trivial posterior uncertainty at all observed points, giving NEI genuine exploration incentive
+- The `Standardize(m=1)` transform guarantees the GP's internal training targets have Var ≈ 1.0, so 1e-2 represents ~1% of signal variance — meaningful but not dominant
+- Combined with noise init of 0.2, the MLL optimiser starts well above the floor and can settle at any value ≥ 0.01
+
+Noise init of **0.2** (fixed value, not a function of y_raw.var()):
+- Represents ~20% of standardised variance (≈1.0)
+- Gives the MLL optimiser a starting point that strongly discourages the exact-interpolation local minimum
+- Higher than the previous 0.1 init, which consistently collapsed to the floor
 
 Noise constraint details:
-- `GreaterThan(1e-8)` is a hard floor on the learnable σ²_n parameter.
-- Numerically safe for 27 samples in 5D — MLL optimizer naturally settles around 1e-6 to 1e-5 even with 1e-8 floor.
-- GPyTorch adds independent Cholesky jitter (1e-8 for float64) as a second safety net.
-- The constraint and jitter are independent mechanisms — do not interact.
-
-**Spec clarification**: FR-008 states "0.1 · Var(y_train) (where y_train are the raw outputs)". Since `Standardize(m=1)` operates internally, the noise init should reflect the standardized variance (≈1.0), not raw variance (0.33). The implementation uses `model.likelihood.noise = 0.1` with a code comment explaining why.
+- `GreaterThan(1e-2)` is a hard floor on the learnable σ²_n parameter
+- GPyTorch adds independent Cholesky jitter (1e-8 for float64) as a second safety net
+- The constraint and jitter are independent mechanisms — do not interact
 
 **Alternatives Considered**:
-- `GreaterThan(1e-6)` (F5 pattern) — user explicitly specified 1e-8
-- `0.1 * y_raw.var()` = 0.033 — only 3.3% noise ratio, would over-interpolate
-- `train_Yvar=torch.full_like(Y, noise)` — makes noise fixed/heteroscedastic (wrong semantics)
+- `GreaterThan(1e-8)` + noise init 0.1 (original) — failed: all restarts converged to exact interpolation, x4=0
+- `GreaterThan(1e-4)` + noise init 0.2 — moderate option; may still allow near-interpolation
+- `GreaterThan(1e-3)` + noise init 0.1 — less aggressive; noise might collapse to floor
+- `GreaterThan(1e-2)` + noise init 0.2 — **CHOSEN**: most aggressive, maximises posterior uncertainty
 
 ---
 
 ## RES-004: NEI Exploration Mechanism
 
-**Decision**: BoTorch's `qLogNoisyExpectedImprovement` has NO ξ parameter. Exploration is achieved through: q=4 batch diversity, distance-based candidate selection, ℓ=0.5 lengthscale init, Matérn-1.5's wider posterior uncertainty, and 0.1 noise init.
+**Decision**: BoTorch's `qLogNoisyExpectedImprovement` has NO ξ parameter. Exploration is achieved through: q=4 batch diversity, distance-based candidate selection, ℓ=0.5 lengthscale init, Matérn-1.5's wider posterior uncertainty, 0.2 noise init, 1e-2 noise floor, and feasibility-constrained bounds (x4≥0.10, others≥0.01).
 
 **Rationale**: Confirmed via API inspection. The constructor accepts: `model, X_baseline, sampler, objective, posterior_transform, constraints, X_pending, prune_baseline, fat, tau_max, tau_relu, cache_root, eta`. The `eta` parameter only controls smooth sigmoid for constraint satisfaction — zero effect when `constraints=None`. The exploration intent is encoded in the surrounding hyperparameter choices and post-hoc selection strategy.
 
@@ -82,11 +91,21 @@ Noise constraint details:
 
 ## RES-005: Acquisition Optimisation Setup
 
-**Decision**: Use `optimize_acqf` with `q=4, raw_samples=3000, num_restarts=50`. Bounds = `[0,1]⁵`. This directly implements "3000 Sobol starts → best 50 → L-BFGS".
+**Decision**: Use `optimize_acqf` with `q=4, raw_samples=3000, num_restarts=50`. Bounds = **feasibility-constrained**: x4 (milk) ∈ [0.10, 1.0], all other dims ∈ [0.01, 1.0]. This directly implements "3000 Sobol starts → best 50 → L-BFGS" with domain restriction.
 
-**Rationale**: `optimize_acqf` operates in two stages: (1) evaluate 3000 Sobol points within bounds, select best 50 via Boltzmann sampling on acquisition values, (2) L-BFGS-B from those 50 starting points. With q=4, each optimisation produces 4 candidates jointly. The 3000/50 configuration matches F5's approach and the spec's emphasis on exploration.
+**Rationale (post-clarification)**: The first implementation used unconstrained bounds [0,1]⁵, which allowed NEI to exploit the x4=0 boundary where the GP's anti-correlation with milk (ρ=−0.758) predicted the best values. The feasibility-constrained bounds prevent this:
+- x4 ≥ 0.10 ensures all candidates have at least 10% milk — physically feasible for the cake recipe domain
+- x0–x3 ≥ 0.01 prevents exact-zero proposals on other ingredients
+- Upper bounds remain at 1.0 for all dimensions
+- `optimize_acqf` respects bounds during both Sobol sampling and L-BFGS-B optimisation
+
+`optimize_acqf` operates in two stages: (1) evaluate 3000 Sobol points within the constrained bounds, select best 50 via Boltzmann sampling on acquisition values, (2) L-BFGS-B from those 50 starting points. With q=4, each optimisation produces 4 candidates jointly.
 
 **Alternatives Considered**:
+- `[0,1]⁵` unconstrained (original) — failed: x4=0 boundary trap
+- x4 ≥ 0.05 — too permissive, still allows near-zero milk
+- x4 ≥ 0.20 — overly restrictive, may exclude valid recipes
+- Penalty-based constraints — adds complexity; hard bounds are simpler and sufficient
 - `batch_initial_conditions` — bypasses Sobol; unnecessarily complex
 - `sequential=True` — greedy one-at-a-time; joint optimisation (default `False`) is standard for batch NEI
 
@@ -98,7 +117,7 @@ Noise constraint details:
 
 **Rationale**: `fit_gpytorch_mll` performs a single L-BFGS run with no built-in restart mechanism. 15 restarts is the middle of the 10–20 range. The Matérn-1.5 kernel may have a slightly rougher MLL landscape than Matérn-2.5, making multiple restarts slightly more valuable. Each restart: construct → init HPs → fit → eval → score → deepcopy if best.
 
-**Important**: When initialising hyperparameters, the noise init is set to `0.1` (not `0.1 * Y_train.var().item()`) because `Standardize(m=1)` ensures internal Y_train has variance ≈ 1.0. See RES-003.
+**Important**: When initialising hyperparameters, the noise init is set to `0.2` (not `0.1 * Y_train.var().item()`) because `Standardize(m=1)` ensures internal Y_train has variance ≈1.0, and the higher init discourages the exact-interpolation local minimum. See RES-003.
 
 **Alternatives Considered**:
 - Single `fit_gpytorch_mll` — risks local MLL optimum

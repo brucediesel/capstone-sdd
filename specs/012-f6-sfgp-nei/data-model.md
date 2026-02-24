@@ -36,7 +36,7 @@
 | Field | Type | Description |
 |-------|------|-------------|
 | kernel | ScaleKernel(MaternKernel) | **nu=1.5**, ARD with 5 lengthscales |
-| likelihood | GaussianLikelihood | noise_constraint=GreaterThan(1e-8) |
+| likelihood | GaussianLikelihood | noise_constraint=GreaterThan(1e-2) |
 | model | SingleTaskGP | Default `Standardize(m=1)` outcome transform; fitted on (X_train, Y_train) |
 
 **Initial Hyperparameters**:
@@ -44,9 +44,9 @@
 |-----------|-----------|----------|-------|
 | ℓ₁–ℓ₅ (lengthscales) | 0.5 | Yes | Broader uncertainty for exploration |
 | σ²_f (output scale) | 1.0 | Yes | Matches standardised variance |
-| σ²_n (noise) | 0.1 | Yes | 10% of standardised Var(y)≈1.0; see RES-003 |
+| σ²_n (noise) | 0.2 | Yes | 20% of standardised Var(y)≈1.0; aggressive exploration init; see RES-003 |
 
-**Critical note**: Noise init is `0.1` (not `0.1 * y_raw.var()` = 0.033) because `Standardize(m=1)` ensures internal training targets have Var≈1.0.
+**Critical note**: Noise init is `0.2` (not `0.1 * y_raw.var()` = 0.033) because `Standardize(m=1)` ensures internal training targets have Var≈1.0, and the higher init discourages the exact-interpolation local minimum that caused the x4=0 boundary trap.
 
 **Relationships**: Trained via E-04 (MLL); input to E-05 (acquisition); posterior used for E-08 (visualisation)
 
@@ -60,7 +60,7 @@
 | best_loss | float | Lowest negative MLL across restarts |
 | best_model | SingleTaskGP | deepcopy of best restart |
 
-**State Transition**: For each restart seed 0..14: construct → init HPs (ℓ=0.5, noise=0.1, outputscale=1.0) → fit_gpytorch_mll → score → keep if best
+**State Transition**: For each restart seed 0..14: construct → init HPs (ℓ=0.5, noise=0.2, outputscale=1.0) → fit_gpytorch_mll → score → keep if best
 
 ---
 
@@ -86,7 +86,7 @@
 |-------|------|-------------|
 | acq_fn | qLogNoisyExpectedImprovement | q=4, prune_baseline=True |
 | sampler | SobolQMCNormalSampler | sample_shape=torch.Size([512]) |
-| bounds | Tensor (2, 5) | [[0,0,0,0,0],[1,1,1,1,1]] |
+| bounds | Tensor (2, 5) | [[0.01,0.01,0.01,0.01,0.10],[1,1,1,1,1]] — feasibility-constrained |
 | num_restarts | int | 50 |
 | raw_samples | int | 3000 |
 

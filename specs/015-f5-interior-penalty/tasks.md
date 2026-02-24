@@ -27,8 +27,8 @@ _(No tasks — the notebook and branch already exist.)_
 
 **Purpose**: Markdown section header and hyperparameter constants that ALL subsequent cells depend on.
 
-- [ ] T001 [US2] Append markdown cell (Cell 58, ID: IP-00) with section title "Week 7 — Interior Penalty on Acquisition Function", motivation paragraph, hyperparameter table (STEEPNESS, FLOOR), and penalty formula in `functions/f5/f5.ipynb`
-- [ ] T002 [US2] Append code cell (Cell 59, ID: IP-01) defining `STEEPNESS = 1.0` and `FLOOR = 0.01` as named constants, printing both values, in `functions/f5/f5.ipynb`
+- [X] T001 [US2] Append markdown cell (Cell 58, ID: IP-00) with section title "Week 7 — Interior Penalty on Acquisition Function", motivation paragraph, hyperparameter table (STEEPNESS, FLOOR), and penalty formula in `functions/f5/f5.ipynb`
+- [X] T002 [US2] Append code cell (Cell 59, ID: IP-01) defining `STEEPNESS = 1.0` and `FLOOR = 0.01` as named constants, printing both values, in `functions/f5/f5.ipynb`
 
 **Checkpoint**: Hyperparameters defined — US1 implementation can begin.
 
@@ -42,7 +42,7 @@ _(No tasks — the notebook and branch already exist.)_
 
 ### Implementation for User Story 1
 
-- [ ] T003 [US1] Append code cell (Cell 60, ID: IP-02) implementing interior penalty computation, candidate re-scoring (`weighted_means = pred_means_orig * interior_weight`), median filter on weighted means, distance-based selection, clipping to [0, 0.999999], diagnostic table, and min-distance warning in `functions/f5/f5.ipynb`
+- [X] T003 [US1] Append code cell (Cell 60, ID: IP-02) implementing interior penalty computation, candidate re-scoring (`weighted_means = pred_means_orig * interior_weight`), median filter on weighted means, distance-based selection, clipping to [0, 0.999999], diagnostic table, and min-distance warning in `functions/f5/f5.ipynb`
 
 **Checkpoint**: Core penalty logic complete. `next_x_ip`, `interior_weight`, `weighted_means`, `min_dist_ip` available in kernel. US1 is independently testable.
 
@@ -56,8 +56,8 @@ _(No tasks — the notebook and branch already exist.)_
 
 ### Implementation for User Story 3
 
-- [ ] T004 [US3] Append code cell (Cell 61, ID: IP-03) with 3-panel visualisation: Panel 1 GP posterior mean (viridis), Panel 2 GP posterior std (magma), Panel 3 penalised mean `mean_orig * w(x)` on 80x80 grid (plasma), red scatter + magenta star for `next_x_ip`, suptitle with STEEPNESS/FLOOR values, in `functions/f5/f5.ipynb`
-- [ ] T005 [US3] Append code cell (Cell 62, ID: IP-04) with convergence plot: `np.maximum.accumulate(y_raw)` running best, individual observations, Week 6→7 boundary at x=26.5, print best observed value and index, in `functions/f5/f5.ipynb`
+- [X] T004 [US3] Append code cell (Cell 61, ID: IP-03) with 3-panel visualisation: Panel 1 GP posterior mean (viridis), Panel 2 GP posterior std (magma), Panel 3 penalised mean `mean_orig * w(x)` on 80x80 grid (plasma), red scatter + magenta star for `next_x_ip`, suptitle with STEEPNESS/FLOOR values, in `functions/f5/f5.ipynb`
+- [X] T005 [US3] Append code cell (Cell 62, ID: IP-04) with convergence plot: `np.maximum.accumulate(y_raw)` running best, individual observations, Week 6→7 boundary at x=26.5, print best observed value and index, in `functions/f5/f5.ipynb`
 
 **Checkpoint**: Visualisation complete. Penalised acquisition surface confirms boundary suppression.
 
@@ -67,7 +67,7 @@ _(No tasks — the notebook and branch already exist.)_
 
 **Goal**: Format and validate the selected interior-penalised point as a submission string.
 
-- [ ] T006 [US1] Append code cell (Cell 63, ID: IP-05) with submission query: clip `next_x_ip` to [0, 0.999999], format as `0.xxxxxx-0.xxxxxx-0.xxxxxx-0.xxxxxx`, validate 4 dimensions in range, print summary with surrogate type, acquisition type, interior penalty parameters, and fitted lengthscales, in `functions/f5/f5.ipynb`
+- [X] T006 [US1] Append code cell (Cell 63, ID: IP-05) with submission query: clip `next_x_ip` to [0, 0.999999], format as `0.xxxxxx-0.xxxxxx-0.xxxxxx-0.xxxxxx`, validate 4 dimensions in range, print summary with surrogate type, acquisition type, interior penalty parameters, and fitted lengthscales, in `functions/f5/f5.ipynb`
 
 **Checkpoint**: Complete feature — all 6 cells appended, notebook produces penalised submission.
 
@@ -77,9 +77,9 @@ _(No tasks — the notebook and branch already exist.)_
 
 **Purpose**: Final validation across all cells.
 
-- [ ] T007 Validate syntax of all 6 new cells by parsing notebook JSON and compiling each code cell with `py_compile` or `ast.parse`
-- [ ] T008 Verify all contract variables (`STEEPNESS`, `FLOOR`, `interior_weight`, `weighted_means`, `next_x_ip`, `min_dist_ip`) are produced by the correct cells per contracts/cells.md
-- [ ] T009 Run quickstart.md verification checklist: no errors, coordinates in [0.05, 0.95], min distance ≥ 0.05, 3-panel plot boundary suppression, submission format valid
+- [X] T007 Validate syntax of all 6 new cells by parsing notebook JSON and compiling each code cell with `py_compile` or `ast.parse`
+- [X] T008 Verify all contract variables (`STEEPNESS`, `FLOOR`, `interior_weight`, `weighted_means`, `next_x_ip`, `min_dist_ip`) are produced by the correct cells per contracts/cells.md
+- [X] T009 Run quickstart.md verification checklist: no errors, coordinates in [0.05, 0.95], min distance ≥ 0.05, 3-panel plot boundary suppression, submission format valid
 
 ---
 

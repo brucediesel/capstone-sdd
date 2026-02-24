@@ -246,3 +246,15 @@ Provide the next query for each function in this format
     - GP with GP: Matern52, log, noise=0.03·Var, ls=0.25
     - acquisition function: NEI, q=2, ξ=0.01, Optimiser=3000 Sobol starts → best 50 → L‑BFGS
 - vuse same visualization as week 6
+
+/specify
+- update F1 by adding an interior penalty to the acquisition function
+- This is a soft penalty that decays towards the edges
+- provide a "steepness" hyperparameter that controls how aggressive the boundaries are penalised
+- set a "floor" to ensure does not become zero
+
+/specify
+- update F5 by adding an interior penalty to the acquisition function
+- This is a soft penalty that decays towards the edges
+- provide a "steepness" hyperparameter that controls how aggressive the boundaries are penalised
+- set a "floor" to ensure does not become zero

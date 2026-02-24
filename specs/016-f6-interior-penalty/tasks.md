@@ -19,8 +19,8 @@
 
 **Purpose**: Verify environment and existing notebook state before adding new cells.
 
-- [ ] T001 Verify conda environment `sdd-dev` is active, Python 3.11 with torch/botorch/gpytorch/numpy/matplotlib available
-- [ ] T002 Verify `functions/f6/f6.ipynb` has 60 cells (0–59) and existing Week 7 cells execute without errors
+- [x] T001 Verify conda environment `sdd-dev` is active, Python 3.11 with torch/botorch/gpytorch/numpy/matplotlib available
+- [x] T002 Verify `functions/f6/f6.ipynb` has 60 cells (0–59) and existing Week 7 cells execute without errors
 
 **Checkpoint**: Notebook runs end-to-end; all Week 7 variables (`candidates`, `pred_means`, `dists`, `best_model`, `X_train`, `y_raw`, `ls`) are populated.
 
@@ -34,10 +34,10 @@
 
 ### Implementation for User Story 1
 
-- [ ] T003 [US1] Append markdown cell 60 — section header "Week 7 — Interior Penalty Re-Scoring" with hyperparameter table documenting STEEPNESS=1.0 and FLOOR=0.01 in `functions/f6/f6.ipynb`
-- [ ] T004 [US1] Append code cell 61 — compute `interior_weight` (4,) from `candidates` (4,5) using `w(x) = FLOOR + (1-FLOOR) · ∏ sin(πxᵢ)^(2·STEEPNESS)` with assertions and boundary/interior labels in `functions/f6/f6.ipynb`
-- [ ] T005 [US1] Append code cell 62 — rank-based re-scoring (`rank_mean`, `rank_weight`, `combined_score`), median filter on `combined_score`, distance-based selection among above-median, fallback logic, comparison table with `◄` marker, feasibility assertions in `functions/f6/f6.ipynb`
-- [ ] T006 [US1] Append code cell 65 — submission query printing `best_point` to 4 decimal places, feasibility validation (all ≥ 0.01, x4 ≥ 0.10), penalty metadata (STEEPNESS, FLOOR, weight, score), raw-vs-penalty comparison in `functions/f6/f6.ipynb`
+- [x] T003 [US1] Append markdown cell 60 — section header "Week 7 — Interior Penalty Re-Scoring" with hyperparameter table documenting STEEPNESS=1.0 and FLOOR=0.01 in `functions/f6/f6.ipynb`
+- [x] T004 [US1] Append code cell 61 — compute `interior_weight` (4,) from `candidates` (4,5) using `w(x) = FLOOR + (1-FLOOR) · ∏ sin(πxᵢ)^(2·STEEPNESS)` with assertions and boundary/interior labels in `functions/f6/f6.ipynb`
+- [x] T005 [US1] Append code cell 62 — rank-based re-scoring (`rank_mean`, `rank_weight`, `combined_score`), median filter on `combined_score`, distance-based selection among above-median, fallback logic, comparison table with `◄` marker, feasibility assertions in `functions/f6/f6.ipynb`
+- [x] T006 [US1] Append code cell 65 — submission query printing `best_point` to 4 decimal places, feasibility validation (all ≥ 0.01, x4 ≥ 0.10), penalty metadata (STEEPNESS, FLOOR, weight, score), raw-vs-penalty comparison in `functions/f6/f6.ipynb`
 
 **Checkpoint**: Cells 60–62 + 65 execute without errors. `best_point` shape is (5,), feasibility bounds satisfied, comparison table printed.
 
@@ -63,8 +63,8 @@
 
 ### Implementation for User Story 3
 
-- [ ] T007 [US3] Append code cell 63 — 3-panel visualisation: Panel 1 (posterior mean heatmap on top-2 ARD dims, 80×80 grid), Panel 2 (posterior std heatmap), Panel 3 (interior penalty `w(x)` heatmap, RdYlGn cmap, candidate scatter by combined_score, best_point star) in `functions/f6/f6.ipynb`
-- [ ] T008 [US3] Append code cell 64 — convergence plot showing `y_raw` history, IP-selected predicted mean line, best raw candidate mean dashed line for comparison in `functions/f6/f6.ipynb`
+- [x] T007 [US3] Append code cell 63 — 3-panel visualisation: Panel 1 (posterior mean heatmap on top-2 ARD dims, 80×80 grid), Panel 2 (posterior std heatmap), Panel 3 (interior penalty `w(x)` heatmap, RdYlGn cmap, candidate scatter by combined_score, best_point star) in `functions/f6/f6.ipynb`
+- [x] T008 [US3] Append code cell 64 — convergence plot showing `y_raw` history, IP-selected predicted mean line, best raw candidate mean dashed line for comparison in `functions/f6/f6.ipynb`
 
 **Checkpoint**: Cells 63–64 execute without errors. 3-panel figure shows penalty suppression at edges. Convergence plot shows both IP-selected and raw-best lines.
 
@@ -74,9 +74,9 @@
 
 **Purpose**: Final validation and commit.
 
-- [ ] T009 Run all notebook cells top-to-bottom (cells 0–65) and verify no errors, all assertions pass, all plots render
-- [ ] T010 Verify cells 0–59 are unmodified (diff check against master)
-- [ ] T011 Run quickstart.md verification checklist (11 items) against notebook output
+- [x] T009 Run all notebook cells top-to-bottom (cells 0–65) and verify no errors, all assertions pass, all plots render
+- [x] T010 Verify cells 0–59 are unmodified (diff check against master)
+- [x] T011 Run quickstart.md verification checklist (11 items) against notebook output
 
 ---
 

@@ -19,8 +19,8 @@
 
 **Purpose**: Verify environment and existing notebook state before adding new cells.
 
-- [ ] T001 Verify Python 3.11+ environment is active with torch, numpy, matplotlib available
-- [ ] T002 Verify `functions/f7/f7.ipynb` has 49 cells and existing Week 5–6 cells execute without errors
+- [x] T001 Verify Python 3.11+ environment is active with torch, numpy, matplotlib available
+- [x] T002 Verify `functions/f7/f7.ipynb` has 49 cells and existing Week 5–6 cells execute without errors
 
 **Checkpoint**: Notebook runs end-to-end; all Week 6 variables are populated. Data files `data/f7/updated_inputs - Week 7.npy` and `data/f7/updated_outputs - Week 7.npy` exist.
 
@@ -32,7 +32,7 @@
 
 **⚠️ CRITICAL**: No user story work can begin until this phase is complete.
 
-- [ ] T003 Append code cell 51 — load Week 7 data from `data/f7/updated_inputs - Week 7.npy` and `data/f7/updated_outputs - Week 7.npy`, z-score normalise inputs and outputs, create torch tensors, print summary (37 samples × 6 dims, output range, best observed), assert shapes and all-positive outputs in `functions/f7/f7.ipynb`
+- [x] T003 Append code cell 51 — load Week 7 data from `data/f7/updated_inputs - Week 7.npy` and `data/f7/updated_outputs - Week 7.npy`, z-score normalise inputs and outputs, create torch tensors, print summary (37 samples × 6 dims, output range, best observed), assert shapes and all-positive outputs in `functions/f7/f7.ipynb`
 
 **Checkpoint**: `X_raw` (37, 6), `y_raw` (37,), `X_norm`, `y_norm`, `X_tensor`, `y_tensor`, normalisation stats all available in kernel.
 
@@ -46,9 +46,9 @@
 
 ### Implementation for User Story 1
 
-- [ ] T004 [US1] Append code cell 52 — define `SurrogateNN(nn.Module)` class (6→5→5→1, ReLU, Dropout(0.1)), train with Adam (lr=0.005), MSE loss, 200 epochs, print progress every 40 epochs, plot training loss curve (log scale), compute and print training R² on original scale in `functions/f7/f7.ipynb`
-- [ ] T005 [US1] Append code cell 53 — generate 20,000 random candidates in [0,1]⁶, run 50 MC Dropout forward passes, un-normalise predictions, compute EI via sample-then-average (`mean(max(f_i - y_best, 0))`), compute interior penalty `w(x) = 0.01 + 0.99·∏sin(πxᵢ)²`, multiply `penalised_ei = ei * w`, select best candidate (fallback to argmax interior_weight if all EI=0), print comparison table and penalty effect in `functions/f7/f7.ipynb`
-- [ ] T006 [US1] Append code cell 57 — clip `best_point` to [0, 0.999999], format as `x1-x2-...-x6` with 6 decimal places, validate format (6 parts, each in [0, 0.999999]), print submission query with hyperparameter metadata and per-dimension coordinates in `functions/f7/f7.ipynb`
+- [x] T004 [US1] Append code cell 52 — define `SurrogateNN(nn.Module)` class (6→5→5→1, ReLU, Dropout(0.1)), train with Adam (lr=0.005), MSE loss, 200 epochs, print progress every 40 epochs, plot training loss curve (log scale), compute and print training R² on original scale in `functions/f7/f7.ipynb`
+- [x] T005 [US1] Append code cell 53 — generate 20,000 random candidates in [0,1]⁶, run 50 MC Dropout forward passes, un-normalise predictions, compute EI via sample-then-average (`mean(max(f_i - y_best, 0))`), compute interior penalty `w(x) = 0.01 + 0.99·∏sin(πxᵢ)²`, multiply `penalised_ei = ei * w`, select best candidate (fallback to argmax interior_weight if all EI=0), print comparison table and penalty effect in `functions/f7/f7.ipynb`
+- [x] T006 [US1] Append code cell 57 — clip `best_point` to [0, 0.999999], format as `x1-x2-...-x6` with 6 decimal places, validate format (6 parts, each in [0, 0.999999]), print submission query with hyperparameter metadata and per-dimension coordinates in `functions/f7/f7.ipynb`
 
 **Checkpoint**: Cells 52, 53, 57 execute without errors. `best_point` shape is (6,), all coordinates in [0, 0.999999], penalty effect reported, submission query printed.
 
@@ -62,7 +62,7 @@
 
 ### Implementation for User Story 2
 
-- [ ] T007 [P] [US2] Append markdown cell 50 — section header "## Week 7 — Neural Network + NEI with Interior Penalty" with approach explanation and hyperparameter table (architecture 6→5→5→1, lr=0.005, dropout=0.1, epochs=200, MC samples=50, candidates=20k, STEEPNESS=1.0, FLOOR=0.01) in `functions/f7/f7.ipynb`
+- [x] T007 [P] [US2] Append markdown cell 50 — section header "## Week 7 — Neural Network + NEI with Interior Penalty" with approach explanation and hyperparameter table (architecture 6→5→5→1, lr=0.005, dropout=0.1, epochs=200, MC samples=50, candidates=20k, STEEPNESS=1.0, FLOOR=0.01) in `functions/f7/f7.ipynb`
 
 > **Note**: Cell 50 is the first new cell in notebook order (markdown header before code cells). T007 is marked [P] because it has no code dependencies, but must be appended first in notebook cell order.
 
@@ -78,9 +78,9 @@
 
 ### Implementation for User Story 3
 
-- [ ] T008 [US3] Append code cell 54 — compute gradient-based feature importance (mean absolute gradient per input dim), normalise to sum to 1, identify top-2 dimensions, print importance with bar indicators in `functions/f7/f7.ipynb`
-- [ ] T009 [US3] Append code cell 55 — build 50×50 grid on top-2 dimensions (other dims fixed at best-observed values), run MC Dropout on grid, compute interior penalty on grid, plot 3-panel figure: Panel 1 (NN mean, viridis), Panel 2 (MC uncertainty, YlOrRd), Panel 3 (interior penalty, RdYlGn) with observed data scatter and best_point star in `functions/f7/f7.ipynb`
-- [ ] T010 [US3] Append code cell 56 — convergence plot with running best across 37 observations, IP-selected candidate predicted mean horizontal line, raw-EI best candidate dashed line, weekly data boundary markers in `functions/f7/f7.ipynb`
+- [x] T008 [US3] Append code cell 54 — compute gradient-based feature importance (mean absolute gradient per input dim), normalise to sum to 1, identify top-2 dimensions, print importance with bar indicators in `functions/f7/f7.ipynb`
+- [x] T009 [US3] Append code cell 55 — build 50×50 grid on top-2 dimensions (other dims fixed at best-observed values), run MC Dropout on grid, compute interior penalty on grid, plot 3-panel figure: Panel 1 (NN mean, viridis), Panel 2 (MC uncertainty, YlOrRd), Panel 3 (interior penalty, RdYlGn) with observed data scatter and best_point star in `functions/f7/f7.ipynb`
+- [x] T010 [US3] Append code cell 56 — convergence plot with running best across 37 observations, IP-selected candidate predicted mean horizontal line, raw-EI best candidate dashed line, weekly data boundary markers in `functions/f7/f7.ipynb`
 
 **Checkpoint**: Cells 54–56 execute without errors. 3-panel figure and convergence plot render correctly. Feature importance identifies top-2 dimensions for slice projection.
 
@@ -90,9 +90,9 @@
 
 **Purpose**: Final validation and commit.
 
-- [ ] T011 Run all notebook cells top-to-bottom (cells 0–57) and verify no errors, all assertions pass, all plots render
-- [ ] T012 Verify cells 0–49 are unmodified (diff check against master — only new cells appended)
-- [ ] T013 Run quickstart.md verification checklist (11 items) against notebook output
+- [x] T011 Run all notebook cells top-to-bottom (cells 0–57) and verify no errors, all assertions pass, all plots render
+- [x] T012 Verify cells 0–49 are unmodified (diff check against master — only new cells appended)
+- [x] T013 Run quickstart.md verification checklist (11 items) against notebook output
 
 ---
 

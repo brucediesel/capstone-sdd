@@ -44,10 +44,11 @@ This is a capstone project as part of a certificate course in AI and ML, focused
 7. Repeat process
 
 ### Weekly Updates
-- Each week, changes to the model, hyperparameters, and code should be **added to each notebook as a new section**
-- New section title should include the **week number** (e.g., "Week 2", "Week 3")
-- **Existing code cells should NOT be replaced**
-- Each weekly section preserves the evolutionary history of the optimization process
+- Each weekly iteration MUST be implemented in a **new notebook** named `fX - week Y.ipynb` where X is the function number and Y is the week number (e.g., `f1 - week 7.ipynb`, `f3 - week 8.ipynb`)
+- New iteration notebooks are stored in the same folder as the original function notebook (`./functions/fX/`)
+- The original `fX.ipynb` notebook contains all historical weekly sections up to the point this convention was adopted and MUST NOT be modified further
+- Each iteration notebook MUST be self-contained: imports, data loading, surrogate fitting, acquisition, visualisation, and submission query
+- **Existing notebooks MUST NOT be modified** — previous work is preserved as-is
 
 ## Documentation Requirements
 

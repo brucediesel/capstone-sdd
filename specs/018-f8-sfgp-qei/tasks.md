@@ -19,8 +19,8 @@
 
 **Purpose**: Verify environment and existing notebook state before adding new cells.
 
-- [ ] T001 Verify Python 3.11+ environment is active with torch, botorch, gpytorch, numpy, matplotlib available
-- [ ] T002 Verify `functions/f8/f8.ipynb` has 49 cells and existing Week 5–6 cells execute without errors; confirm `data/f8/updated_inputs - Week 7.npy` (47×8) and `data/f8/updated_outputs - Week 7.npy` (47,) exist
+- [X] T001 Verify Python 3.11+ environment is active with torch, botorch, gpytorch, numpy, matplotlib available
+- [X] T002 Verify `functions/f8/f8.ipynb` has 49 cells and existing Week 5–6 cells execute without errors; confirm `data/f8/updated_inputs - Week 7.npy` (47×8) and `data/f8/updated_outputs - Week 7.npy` (47,) exist
 
 **Checkpoint**: Notebook runs end-to-end; all Week 6 variables are populated. Data files present with expected shapes.
 
@@ -32,8 +32,8 @@
 
 **⚠️ CRITICAL**: No user story work can begin until this phase is complete.
 
-- [ ] T003 Append markdown cell 50 — section header "## Week 7 — SFGP + qEI Acquisition" with approach explanation (returning to GP surrogate after Weeks 5-6 NN) and hyperparameter table (Kernel: Matern 2.5 + ARD, Noise floor: 1e-07, Standardise: Yes, MC samples: 256, xi: 0.01, Restarts: 30, Raw samples: 4096) in `functions/f8/f8.ipynb`
-- [ ] T004 Append code cell 51 — import numpy, torch, matplotlib, botorch (SingleTaskGP, fit_gpytorch_mll, qExpectedImprovement, SobolQMCNormalSampler, optimize_acqf), gpytorch (ExactMarginalLogLikelihood, ScaleKernel, MaternKernel, GaussianLikelihood, GreaterThan); load `../../data/f8/updated_inputs - Week 7.npy` and `../../data/f8/updated_outputs - Week 7.npy`; create X_train (47,8 float64), Y_train (47,1 float64), BOUNDS (2,8), param_names list; print sample count (47), dims (8), output range, best observed; assert shapes in `functions/f8/f8.ipynb`
+- [X] T003 Append markdown cell 50 — section header "## Week 7 — SFGP + qEI Acquisition" with approach explanation (returning to GP surrogate after Weeks 5-6 NN) and hyperparameter table (Kernel: Matern 2.5 + ARD, Noise floor: 1e-07, Standardise: Yes, MC samples: 256, xi: 0.01, Restarts: 30, Raw samples: 4096) in `functions/f8/f8.ipynb`
+- [X] T004 Append code cell 51 — import numpy, torch, matplotlib, botorch (SingleTaskGP, fit_gpytorch_mll, qExpectedImprovement, SobolQMCNormalSampler, optimize_acqf), gpytorch (ExactMarginalLogLikelihood, ScaleKernel, MaternKernel, GaussianLikelihood, GreaterThan); load `../../data/f8/updated_inputs - Week 7.npy` and `../../data/f8/updated_outputs - Week 7.npy`; create X_train (47,8 float64), Y_train (47,1 float64), BOUNDS (2,8), param_names list; print sample count (47), dims (8), output range, best observed; assert shapes in `functions/f8/f8.ipynb`
 
 **Checkpoint**: `X_raw` (47, 8), `y_raw` (47,), `X_train`, `Y_train`, `BOUNDS`, `param_names` all available in kernel.
 
@@ -47,9 +47,9 @@
 
 ### Implementation for User Story 1
 
-- [ ] T005 [US1] Append code cell 52 — define constants XI=0.01, MC_SAMPLES=256, NUM_RESTARTS=30, RAW_SAMPLES=4096; create ScaleKernel(MaternKernel(nu=2.5, ard_num_dims=8)), GaussianLikelihood(noise_constraint=GreaterThan(1e-7)); fit SingleTaskGP(X_train, Y_train, covar_module, likelihood) via fit_gpytorch_mll(ExactMarginalLogLikelihood); extract and print 8 ARD lengthscales; compute best_f = Y_train.max().item() + XI; print best_f in `functions/f8/f8.ipynb`
-- [ ] T006 [US1] Append code cell 53 — create SobolQMCNormalSampler(sample_shape=torch.Size([MC_SAMPLES])), qExpectedImprovement(model=model, best_f=best_f, sampler=sampler); run optimize_acqf(acq_fn, bounds=BOUNDS, q=1, num_restarts=NUM_RESTARTS, raw_samples=RAW_SAMPLES); clamp candidate to [0,1]; if acq_value <= 0 print warning and fall back to highest GP posterior mean on 4096 Sobol candidates; print candidate coordinates, acquisition value, comparison to current best in `functions/f8/f8.ipynb`
-- [ ] T007 [US1] Append code cell 57 — define format_query(point) that clamps to [0, 0.999999] and formats 6 decimal places dash-separated; format next_point; validate 8 parts each parseable float in [0, 0.999999]; print submission query with header/footer, coordinate breakdown, and acquisition value summary in `functions/f8/f8.ipynb`
+- [X] T005 [US1] Append code cell 52 — define constants XI=0.01, MC_SAMPLES=256, NUM_RESTARTS=30, RAW_SAMPLES=4096; create ScaleKernel(MaternKernel(nu=2.5, ard_num_dims=8)), GaussianLikelihood(noise_constraint=GreaterThan(1e-7)); fit SingleTaskGP(X_train, Y_train, covar_module, likelihood) via fit_gpytorch_mll(ExactMarginalLogLikelihood); extract and print 8 ARD lengthscales; compute best_f = Y_train.max().item() + XI; print best_f in `functions/f8/f8.ipynb`
+- [X] T006 [US1] Append code cell 53 — create SobolQMCNormalSampler(sample_shape=torch.Size([MC_SAMPLES])), qExpectedImprovement(model=model, best_f=best_f, sampler=sampler); run optimize_acqf(acq_fn, bounds=BOUNDS, q=1, num_restarts=NUM_RESTARTS, raw_samples=RAW_SAMPLES); clamp candidate to [0,1]; if acq_value <= 0 print warning and fall back to highest GP posterior mean on 4096 Sobol candidates; print candidate coordinates, acquisition value, comparison to current best in `functions/f8/f8.ipynb`
+- [X] T007 [US1] Append code cell 57 — define format_query(point) that clamps to [0, 0.999999] and formats 6 decimal places dash-separated; format next_point; validate 8 parts each parseable float in [0, 0.999999]; print submission query with header/footer, coordinate breakdown, and acquisition value summary in `functions/f8/f8.ipynb`
 
 **Checkpoint**: Cells 52, 53, 57 execute without errors. `next_point` shape is (8,), all coordinates in [0, 0.999999], submission query printed. GP reports 8 positive lengthscales.
 
@@ -63,9 +63,9 @@
 
 ### Implementation for User Story 2
 
-- [ ] T008 [US2] Append code cell 54 — compute importance = 1/lengthscales, normalise to sum to 1; identify top-2 dimensions (smallest lengthscale); print importance for all 8 dimensions with param_names; plot horizontal bar chart of feature importance in `functions/f8/f8.ipynb`
-- [ ] T009 [US2] Append code cell 55 — build 50×50 grid over [0,1]² for top-2 dimensions, fix remaining 6 dims at best observed point values; evaluate GP posterior mean and std on grid; use analytic ExpectedImprovement (from botorch.acquisition.analytic) for 2500-point grid evaluation (faster than qEI); plot 3-panel figure [Mean | Std | EI] with contourf, mark best observed point and proposed candidate with distinct symbols in `functions/f8/f8.ipynb`
-- [ ] T010 [US2] Append code cell 56 — compute running_best = np.maximum.accumulate(y_raw); plot running best vs sample index; add vertical dashed lines at boundaries 40.5 (initial→Week 5), 45.5 (Week 5→Week 6), 46.5 (Week 6→Week 7); print running best at each week boundary in `functions/f8/f8.ipynb`
+- [X] T008 [US2] Append code cell 54 — compute importance = 1/lengthscales, normalise to sum to 1; identify top-2 dimensions (smallest lengthscale); print importance for all 8 dimensions with param_names; plot horizontal bar chart of feature importance in `functions/f8/f8.ipynb`
+- [X] T009 [US2] Append code cell 55 — build 50×50 grid over [0,1]² for top-2 dimensions, fix remaining 6 dims at best observed point values; evaluate GP posterior mean and std on grid; use analytic ExpectedImprovement (from botorch.acquisition.analytic) for 2500-point grid evaluation (faster than qEI); plot 3-panel figure [Mean | Std | EI] with contourf, mark best observed point and proposed candidate with distinct symbols in `functions/f8/f8.ipynb`
+- [X] T010 [US2] Append code cell 56 — compute running_best = np.maximum.accumulate(y_raw); plot running best vs sample index; add vertical dashed lines at boundaries 40.5 (initial→Week 5), 45.5 (Week 5→Week 6), 46.5 (Week 6→Week 7); print running best at each week boundary in `functions/f8/f8.ipynb`
 
 **Checkpoint**: Cells 54–56 execute without errors. Feature importance bar chart, 3-panel surrogate figure, and convergence plot all render correctly. Top-2 dimensions identified for slice projection.
 
@@ -75,9 +75,9 @@
 
 **Purpose**: Final validation and commit.
 
-- [ ] T011 Run all notebook cells top-to-bottom (cells 0–57) and verify no errors, all assertions pass, all plots render
-- [ ] T012 Verify cells 0–49 are unmodified (diff check against master — only new cells appended)
-- [ ] T013 Run quickstart.md verification checklist (11 items) against notebook output
+- [X] T011 Run all notebook cells top-to-bottom (cells 0–57) and verify no errors, all assertions pass, all plots render
+- [X] T012 Verify cells 0–49 are unmodified (diff check against master — only new cells appended)
+- [X] T013 Run quickstart.md verification checklist (11 items) against notebook output
 
 ---
 

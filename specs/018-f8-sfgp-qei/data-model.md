@@ -19,7 +19,7 @@
   - Likelihood: `GaussianLikelihood(noise_constraint=GreaterThan(1e-7))`
   - Outcome transform: `Standardize(m=1)` (default, implicit)
 - **mll**: `ExactMarginalLogLikelihood` — training objective
-- **lengthscales**: `torch.Tensor` shape (1, 8) — ARD lengthscales after fitting
+- **lengthscales**: `np.ndarray` shape (8,) — ARD lengthscales after fitting (extracted via `.detach().numpy().ravel()`)
 - **best_f**: `float` — Y_train.max() + 0.01 (xi offset)
 
 ### Acquisition Function
@@ -37,7 +37,7 @@
 - **top2**: tuple of 2 ints — indices of two most important dimensions (smallest lengthscale)
 - **grid_mu**: `np.ndarray` shape (50, 50) — GP posterior mean on 2D grid
 - **grid_sigma**: `np.ndarray` shape (50, 50) — GP posterior std on 2D grid
-- **grid_qei**: `np.ndarray` shape (50, 50) — qEI values on 2D grid (or analytic EI for speed)
+- **grid_ei**: `np.ndarray` shape (50, 50) — analytic EI values on 2D grid (faster than qEI for 2500 points)
 - **running_best**: `np.ndarray` shape (47,) — cumulative maximum of observations
 
 ---

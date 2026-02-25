@@ -58,10 +58,10 @@ The researcher inspects printed diagnostics confirming data shape, output range,
 ### Edge Cases
 
 - **All qEI values are zero**: If the GP is overconfident and predicts no improvement over best_f = 9.953, the system should detect this condition, log a warning, and fall back to selecting the candidate with the highest posterior mean as a pure exploitation choice.
-- **GP fitting failure / non-convergence**: If the MLL optimiser does not converge (e.g., numerical issues with 47 samples in 8D), the system should catch the exception, report the error, and suggest reducing noise bounds or increasing optimiser iterations.
+- **GP fitting failure / non-convergence** *(informational)*: GP on 47×8 with Matern 2.5 is expected to converge reliably. If issues arise, increase noise floor from 1e-07 to 1e-04 in cell 52. No try/except is implemented to keep code simple per constitution.
 - **Candidate violates bounds**: If `optimize_acqf` returns any coordinate outside [0, 1], all coordinates must be clamped to [0, 1] before formatting the submission.
-- **Numerical instability with 512 MC samples**: If increasing MC samples from 256 to 512 causes memory or numerical issues, remain at 256 and document the choice.
-- **Duplicate candidate**: If the proposed point is within Euclidean distance < 1e-6 of any existing observation, log a warning indicating potential convergence and still submit the point.
+- **Numerical instability with 512 MC samples** *(informational)*: Implementation uses 256 MC samples. The 512 option is deferred as 256 is sufficient for q=1 single-candidate optimisation.
+- **Duplicate candidate** *(informational)*: If the proposed point is within Euclidean distance < 1e-6 of any existing observation, this indicates convergence. No detection logic is implemented — the GP's posterior naturally discourages exact duplicates via noise modelling.
 
 ## Requirements *(mandatory)*
 
@@ -70,12 +70,12 @@ The researcher inspects printed diagnostics confirming data shape, output range,
 - **FR-001**: System MUST load `data/f8/updated_inputs - Week 7.npy` (shape 47 x 8) and `data/f8/updated_outputs - Week 7.npy` (shape 47,) and print data summary including sample count, dimensionality, output range, and best observed value.
 - **FR-002**: System MUST fit a BoTorch `SingleTaskGP` with Matern 2.5 kernel, ARD lengthscales (one per input dimension), output standardisation enabled, and Gaussian likelihood noise lower-bounded at 1e-07.
 - **FR-003**: System MUST optimise the GP hyperparameters by maximising the exact marginal log-likelihood using `fit_gpytorch_mll`.
-- **FR-004**: System MUST compute qEI (`qExpectedImprovement`) with `best_f` set to the maximum observed output, using 256 MC samples (increase to 512 if numerically stable), with an improvement threshold `xi = 0.01`.
+- **FR-004**: System MUST compute qEI (`qExpectedImprovement`) with `best_f = y_max + xi` where `xi = 0.01`, using 256 MC samples via `SobolQMCNormalSampler`. The 512 option is deferred — 256 is the implementation default.
 - **FR-005**: System MUST enable fantasisation for any pending evaluation points when computing qEI.
-- **FR-006**: System MUST optimise the qEI acquisition function over bounds [0, 1]^8 using `optimize_acqf` with sufficient restarts and raw samples for reliable 8D coverage.
+- **FR-006**: System MUST optimise the qEI acquisition function over bounds [0, 1]^8 using `optimize_acqf` with `num_restarts=30` and `raw_samples=4096`.
 - **FR-007**: System MUST clamp the proposed candidate to [0, 1] in every dimension and format it as an 8-value dash-separated string with 6 decimal places.
 - **FR-008**: System MUST display a feature importance chart based on the GP ARD lengthscales for all 8 input dimensions.
-- **FR-009**: System MUST produce a 3-panel 2D slice visualisation (GP posterior mean, GP posterior standard deviation, qEI acquisition surface) through the top-2 most important dimensions, fixing remaining dimensions at the best observed point.
+- **FR-009**: System MUST produce a 3-panel 2D slice visualisation (GP posterior mean, GP posterior standard deviation, analytic EI acquisition surface) through the top-2 most important dimensions, fixing remaining dimensions at the best observed point. Analytic EI is used for the 2500-point grid for performance; qEI is used only for actual candidate selection.
 - **FR-010**: System MUST generate a convergence plot showing running best across all 47 observations with vertical markers at weekly sample boundaries (40, 45, 46, 47).
 - **FR-011**: System MUST detect the case where all qEI values are zero and fall back to selecting the candidate with the highest GP posterior mean.
 - **FR-012**: System MUST append all new cells after existing Week 6 content (cell 49 onwards) without modifying any prior cells.

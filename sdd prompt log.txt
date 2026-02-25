@@ -258,3 +258,29 @@ Provide the next query for each function in this format
 - This is a soft penalty that decays towards the edges
 - provide a "steepness" hyperparameter that controls how aggressive the boundaries are penalised
 - set a "floor" to ensure does not become zero
+
+/specify
+- update F6 by adding an interior penalty to the acquisition function
+- This is a soft penalty that decays towards the edges
+- provide a "steepness" hyperparameter that controls how aggressive the boundaries are penalised
+- set a "floor" to ensure does not become zero
+
+/specify
+- process week 7 outputs for F7
+- Use a Neural Network as a surrogate function with the following hyperparameters: 2L×5N, lr=0.005
+- Use NEI as acquisition function with interior penalty
+- evaluate the problem and data and select appropriate other appropriate hyperparameters
+- Provide the same visualisations as previous weeks.
+
+/specify
+- process week 7 outputs for F8
+- Use a SFGP surrogate function with hyperparameters: matern_2.5, standardise, noise>=1e-07
+- Use qEI acuisition with following paramaters: MC samples: 256 (512 if stable). Fantasization: enabled for pending points. xi: 0.01.
+- evaluate the problem and data and select appropriate other appropriate hyperparameters
+- Provide the same visualisations as previous weeks.
+
+/constitution
+- change the constitution from adding to each function on a weekly basis to create a new function notebook for each iteration, calling the notebook "fX - week Y.ipynb" where X is the function number and Y is the week number.
+- Do not change any of the notebooks yet, only make change to the constitution
+
+

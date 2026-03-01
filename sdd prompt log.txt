@@ -283,4 +283,12 @@ Provide the next query for each function in this format
 - change the constitution from adding to each function on a weekly basis to create a new function notebook for each iteration, calling the notebook "fX - week Y.ipynb" where X is the function number and Y is the week number.
 - Do not change any of the notebooks yet, only make change to the constitution
 
+/specify
+- process week 8 outputs for F1
+- keeping the same strategy as week 7, propose the next sample point
+- reminder - create a new notebook for this iteration as per constitution
 
+/specify
+- process week 8 outputs for F2 through F8
+- keeping the same strategy as week 7, propose the next sample point
+- reminder - create a new notebook for this iteration as per constitution

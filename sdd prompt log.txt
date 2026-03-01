@@ -292,3 +292,6 @@ Provide the next query for each function in this format
 - process week 8 outputs for F2 through F8
 - keeping the same strategy as week 7, propose the next sample point
 - reminder - create a new notebook for this iteration as per constitution
+
+/clarify
+- F2 appears to be suffereing from being trapped in a local opti

@@ -294,4 +294,12 @@ Provide the next query for each function in this format
 - reminder - create a new notebook for this iteration as per constitution
 
 /clarify
-- F2 appears to be suffereing from being trapped in a local opti
+- F2 appears to be suffereing from being trapped in a local optimum
+
+/specify
+- process week 9 outputs for F1 - F8
+- Keep the same strategy as week 8
+- update the vidualisation of all functions to show last 8 sample points in a different colour so that I can visualise how the proposed sample points are clustered through the iterations
+
+/clarify
+- For all functions, evaluate the performance of the optimisation, and in cases where the optimisation is stalling, propose a clear change in strategy to improve the optimisation.  Add this as a markdown section at the end of each notebook

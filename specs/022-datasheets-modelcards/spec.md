@@ -5,6 +5,12 @@
 **Status**: Draft  
 **Input**: User description: "Create two new markdown documents in the root folder: datasheets.md and modelcards.md. Model cards for each of 8 functions with: Overview, Intended use, Details, Performance, Assumptions/limitations, Ethical considerations. Datasheets for each of 8 functions with: Motivation, Composition, Collection process, Preprocessing/uses, Distribution/maintenance."
 
+## Clarifications
+
+### Session 2026-03-05
+
+- Q: How should the model card Details section handle modelling history given the "only last week" constraint? → A: Week 9 focus with brief context — describe the final model in detail, plus one sentence noting it was selected after evaluating alternatives
+
 ## User Scenarios & Testing *(mandatory)*
 
 ### User Story 1 - Model Cards Document (Priority: P1)
@@ -14,7 +20,7 @@ As a capstone assessor or peer reviewer, I want to read a single `modelcards.md`
 Each model card covers:
 - **Overview**: What the model does and which function it targets
 - **Intended Use**: The optimisation context and how the model supports decision-making
-- **Details**: The surrogate modelling strategy across all ten rounds (initial + Weeks 3–9), including model evolution, key hyperparameters, acquisition function, and any special techniques (interior penalty, hurdle model, multi-fidelity, etc.)
+- **Details**: The final (Week 9) surrogate model configuration — model type, key hyperparameters, acquisition function, and any special techniques (interior penalty, hurdle model, multi-fidelity, etc.) — plus a brief note that the model was selected after systematic evaluation of alternatives
 - **Performance**: Observed outputs, best-found values, and any evaluation metrics (prequential evaluation, LOO error) recorded in the notebooks
 - **Assumptions & Limitations**: Known constraints, data limitations, failure modes, and boundary conditions
 - **Ethical Considerations**: Responsible use context, potential for misuse, and fairness considerations relevant to the function's domain
@@ -26,7 +32,7 @@ Each model card covers:
 **Acceptance Scenarios**:
 
 1. **Given** the project repository, **When** a reader opens `modelcards.md`, **Then** they see eight clearly separated model card sections (F1–F8), each with all six subsections populated
-2. **Given** the F1 model card, **When** a reader examines the Details section, **Then** they find a description of the hurdle model approach (logistic classifier + random forest), weighted UCB acquisition, local penalisation, and interior penalty — with a summary of model evolution from GP through polynomial/RF/GBT to the final hurdle model
+2. **Given** the F1 model card, **When** a reader examines the Details section, **Then** they find a description of the final Week 9 hurdle model approach (logistic classifier + random forest), weighted UCB acquisition, local penalisation, and interior penalty — plus a brief note that this was selected after evaluating GP, polynomial, and RF/GBT alternatives
 3. **Given** any model card, **When** a reader checks the Performance section, **Then** they find concrete output statistics (data size, output range, best-found value) and any recorded evaluation metrics
 4. **Given** any model card, **When** a reader reviews Assumptions & Limitations, **Then** they find at least two specific limitations tied to the function's characteristics (e.g., zero-inflated outputs for F1, all-negative outputs for F3/F6)
 
@@ -76,10 +82,11 @@ Each datasheet covers:
 - **FR-003**: Each model card MUST include an **Overview** subsection describing what the surrogate model does and which black-box function it targets, including the function's real-world domain (e.g., Radiation Source Detection for F1, Drug Discovery for F3)
 - **FR-004**: Each model card MUST include an **Intended Use** subsection describing the optimisation context — that the model serves as a cheap-to-evaluate surrogate for an expensive black-box function, guiding candidate selection to find optimal input configurations
 - **FR-005**: Each model card MUST include a **Details** subsection containing:
-  - The final surrogate model type and its key hyperparameters
+  - The final (Week 9) surrogate model type and its key hyperparameters
   - The final acquisition function and its configuration
-  - A summary of model evolution across rounds (which models were tried in which weeks)
+  - A brief one-sentence note that the final model was selected after systematic evaluation of alternative surrogates (e.g., "Selected after prequential evaluation of GP, RF, and NN surrogates")
   - Any special techniques used (interior penalty, hurdle model, multi-fidelity, custom transforms)
+  - The Details section MUST NOT include a full weekly evolution table or round-by-round history
 - **FR-006**: Each model card MUST include a **Performance** subsection containing:
   - The total number of data points available at final round
   - The output range observed (minimum and maximum values)
@@ -154,7 +161,7 @@ Each datasheet covers:
 
 - **SC-001**: Both `modelcards.md` and `datasheets.md` exist in the project root and render correctly in a standard markdown viewer
 - **SC-002**: Each document contains exactly 8 function sections (F1–F8) with all required subsections populated (6 subsections per model card, 5 subsections per datasheet) — 100% section coverage
-- **SC-003**: Every model card's Details section references the actual final surrogate model, acquisition function, and at least one special technique or design decision specific to that function
+- **SC-003**: Every model card's Details section references the actual final (Week 9) surrogate model, acquisition function, and at least one special technique or design decision specific to that function, with a brief note on the selection process
 - **SC-004**: Every datasheet's Composition section contains the correct input dimensionality, initial data size, final data size, and output range matching the actual `.npy` data files
 - **SC-005**: Both documents include a summary comparison table covering all 8 functions
 - **SC-006**: A reader unfamiliar with the project can understand each function's purpose, data characteristics, and modelling approach by reading only these two documents, without consulting the notebooks

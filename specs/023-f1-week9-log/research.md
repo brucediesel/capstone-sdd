@@ -131,8 +131,27 @@ With both penalties removed, the acquisition function simplifies to: `a(x) = p(x
 - Isolating the effect of removing penalties (vs. also changing KAPPA) allows clean comparison with previous iterations
 - The 3-panel contour Panel 3 shows the raw weighted UCB surface (no penalty mask)
 
-**Decision**: Use raw weighted UCB with KAPPA=3.0 unchanged.
-**Rationale**: Isolates the effect of penalty removal for clean comparison.
+**Decision**: Use raw weighted UCB with KAPPA=0.5 (exploitation-focused). See Research Task 8 below for updated rationale.
+**Rationale**: Log transform gives the surrogate meaningful signal (R² ≈ 0.90); only 4 budget submissions remain.
+
+## Research Task 8: KAPPA Reduction from 3.0 to 0.5 (Exploitation Focus)
+
+### Context
+
+The clarification session determined that F1 should prioritise exploitation over exploration. The log transform gives the surrogate meaningful signal (R² ≈ 0.90 on log-scale targets), and only 4 budget submissions remain — insufficient for broad exploration.
+
+### Findings
+
+- In UCB acquisition a(x) = μ(x) + κ·σ(x), standard BO uses κ ∈ [1.96, 2.5] for balanced exploration-exploitation
+- κ=0.5 heavily favours predicted high-value regions (exploitation) while retaining slight exploration pressure
+- With R² ≈ 0.90, the surrogate can meaningfully differentiate between regions — trusting its predictions is justified
+- The proposed candidate at (0.729, 0.780) is 0.047 from the best-ever observation at (0.731, 0.733) — exploitation is working as intended
+- Risk: potential to miss better optima in unexplored high-σ areas if surrogate is locally miscalibrated
+- Mitigation: Week 10 can adjust to κ=0.1 (near-greedy) or back to κ=1.0+ if this submission shows no improvement
+
+**Decision**: KAPPA=0.5 (exploitation-focused)
+**Rationale**: Log transform provides meaningful surrogate signal; only 4 submissions remain; aggressive exploitation is defensible given the surrogate's accuracy.
+**Alternatives Considered**: κ=1.96 (standard balanced — too exploratory for 4 remaining submissions), κ=0.1 (near-greedy — available as Week 10 fallback), κ=3.0 (previous value — pure exploration, inappropriate given improved surrogate).
 
 ## Summary
 
@@ -144,6 +163,7 @@ All unknowns resolved. No NEEDS CLARIFICATION items remain.
 | RF with large negatives | No issues — RF is scale-invariant |
 | Acquisition in log-space | Use log-space throughout; preserves ranking |
 | log(0) safety | Existing y > 0 filter is sufficient |
-| Local penalization removal | Removed — sparse data + strong KAPPA suffices |
+| Local penalization removal | Removed — sparse data + strong classifier gating suffices |
 | Interior penalty removal | Removed — full domain exploration allowed |
-| Simplified acquisition | Raw weighted UCB with KAPPA=3.0 unchanged |
+| Simplified acquisition | Raw weighted UCB with KAPPA=0.5 (exploitation-focused) |
+| KAPPA reduction | 3.0 → 0.5 — log transform gives meaningful signal, 4 submissions remain |

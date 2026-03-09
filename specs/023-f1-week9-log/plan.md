@@ -1,39 +1,39 @@
-# Implementation Plan: F1 Week 9 — log Transform (No Penalties)
+# Implementation Plan: F1 Week 9 — log Transform, No Penalties
 
 **Branch**: `023-f1-week9-log` | **Date**: 2026-03-09 | **Spec**: [spec.md](spec.md)
 **Input**: Feature specification from `/specs/023-f1-week9-log/spec.md`
 
 ## Summary
 
-Create a self-contained Jupyter notebook for F1 Week 9 that uses a hurdle model (CalibratedClassifierCV + RandomForestRegressor) with `log(y)` instead of `log1p(y)` for Stage 2. The acquisition function is simplified weighted UCB with no local penalization or interior penalty, keeping KAPPA=3.0. The notebook loads 19 samples (10 initial + 9 submissions), fits the surrogate, proposes the next sample point in correct submission format, and provides 3-panel contour visualisation in log-space plus convergence and performance evaluation.
+Create a self-contained Jupyter notebook for F1 Week 9 that switches the Stage 2 RF regressor from `log1p(y)` to `log(y)`, removes local penalization and interior penalty from the acquisition function, and reduces KAPPA from 3.0 to 0.5 (exploitation-focused). The notebook uses a two-stage hurdle model (Calibrated LR classifier + RF regressor) with weighted UCB acquisition, produces 3-panel log-space visualisations, and outputs a formatted submission query.
 
 ## Technical Context
 
 **Language/Version**: Python 3.x (Jupyter Notebook)
-**Primary Dependencies**: numpy, pandas, matplotlib, scikit-learn (CalibratedClassifierCV, LogisticRegression, RandomForestRegressor), scipy (cdist)
-**Storage**: NumPy .npy files in `./data/f1/`
-**Testing**: Manual notebook execution (no unit tests per constitution)
+**Primary Dependencies**: numpy, matplotlib, scikit-learn (LogisticRegression, CalibratedClassifierCV, RandomForestRegressor), scipy (pdist, squareform)
+**Storage**: NumPy `.npy` files in `./data/f1/`
+**Testing**: None required (Constitution Principle I — no unit tests)
 **Target Platform**: Local Jupyter / VS Code notebook
-**Project Type**: Single self-contained notebook
-**Performance Goals**: Notebook executes end-to-end in <30 seconds
-**Constraints**: Must run on student laptop; no GPU required
-**Scale/Scope**: 19 data points, 2D input space, single notebook deliverable
+**Project Type**: Single notebook deliverable
+**Performance Goals**: N/A (single-run notebook, <1 min execution)
+**Constraints**: All code in one self-contained notebook (Constitution Principle III)
+**Scale/Scope**: 19 observations (10 initial + 9 submissions), 2D input space, single function (F1)
 
 ## Constitution Check
 
 *GATE: Must pass before Phase 0 research. Re-check after Phase 1 design.*
 
-| # | Principle | Status | Evidence |
-|---|-----------|--------|----------|
-| I | Simplicity | **PASS** | Single notebook, scikit-learn only, no complex frameworks. Simplified further by removing penalization terms. |
-| II | Per-Function Isolation | **PASS** | Only F1 modified, notebook in `./functions/f1/` |
-| III | Per-Iteration Notebooks | **PASS** | New notebook `f1 - week 9.ipynb`, existing notebooks untouched |
-| IV | Data Organisation | **PASS** | Loads from `./data/f1/updated_inputs - Week 9.npy` / `updated_outputs - Week 9.npy` |
-| V | BoTorch & PyTorch Stack | **PASS** | Uses scikit-learn for tree-based surrogate (permitted by constitution for non-GP surrogates) |
-| VI | Documentation & Visualisation | **PASS** | Explicit hyperparameters with rationale, 3-panel contour + convergence plots |
-| VII | Maximisation Objective | **PASS** | UCB maximises acquisition; convergence tracks running maximum |
+| Principle | Status | Evidence |
+|-----------|--------|----------|
+| I. Simplicity | ✅ PASS | Single notebook, no unnecessary abstractions, sklearn-only surrogate |
+| II. Per-Function Isolation | ✅ PASS | Deliverable is `functions/f1/f1 - week 9.ipynb` — F1 only |
+| III. Per-Iteration Notebooks | ✅ PASS | New notebook `f1 - week 9.ipynb`, does not modify existing notebooks |
+| IV. Data Organisation | ✅ PASS | Loads from `data/f1/updated_inputs - Week 9.npy` / `updated_outputs - Week 9.npy` |
+| V. BoTorch & PyTorch Stack | ✅ PASS | Hurdle model uses scikit-learn (permitted for non-GP surrogates); acquisition matches surrogate type |
+| VI. Documentation & Visualisation | ✅ PASS | Hyperparameter table with rationale, 3-panel contour + convergence plot, performance evaluation |
+| VII. Maximisation Objective | ✅ PASS | argmax acquisition, running maximum convergence, higher = better throughout |
 
-**Result: 7/7 PASS — proceed to Phase 0.**
+**GATE RESULT**: ✅ ALL PASS — proceed to Phase 0.
 
 ## Project Structure
 
@@ -45,24 +45,23 @@ specs/023-f1-week9-log/
 ├── research.md          # Phase 0 output
 ├── data-model.md        # Phase 1 output
 ├── quickstart.md        # Phase 1 output
-└── tasks.md             # Phase 2 output (created by /speckit.tasks)
+├── contracts/           # Phase 1 output (N/A — no API)
+└── tasks.md             # Phase 2 output (/speckit.tasks command)
 ```
 
 ### Source Code (repository root)
 
 ```text
 functions/f1/
-└── f1 - week 9.ipynb    # THE DELIVERABLE — self-contained notebook
+└── f1 - week 9.ipynb    # Single notebook deliverable
 
 data/f1/
-├── initial_inputs.npy
-├── initial_outputs.npy
 ├── updated_inputs - Week 9.npy
 └── updated_outputs - Week 9.npy
 ```
 
-**Structure Decision**: Single self-contained Jupyter notebook per constitution Principle III. No separate source files, modules, or test directories needed.
+**Structure Decision**: Single notebook in the existing `functions/f1/` directory per Constitution Principle II (per-function isolation) and III (per-iteration notebooks). No additional source directories needed.
 
 ## Complexity Tracking
 
-No constitution violations. Table omitted.
+No violations. All constitution gates pass.

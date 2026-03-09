@@ -16,6 +16,7 @@ Function 1's positive outputs span extreme magnitudes (approximately 1e-245 to 1
 - Q: Should surrogate contour panels display values in log-space or back-transformed original space? → A: Log-space (values -565 to -35) for readable, informative contours.
 - Q: With interior penalty and local penalization removed, should KAPPA be adjusted? → A: Keep KAPPA=3.0 unchanged (isolate the effect of removing penalties).
 - Q: With penalties removed, what should contour Panel 3 display? → A: Raw weighted UCB acquisition surface, titled "Acquisition (Weighted UCB)".
+- Q: Should acquisition prioritise exploitation or exploration given improved surrogate scaling? → A: Exploitation. Reduce KAPPA from 3.0 to 0.5 — only 4 submissions remain in budget and the log transform gives the surrogate meaningful signal to exploit.
 
 ## Per-Function Strategy Summary
 
@@ -23,9 +24,9 @@ This specification covers **F1 only**. All other functions are unchanged.
 
 | Function | Dims | Week 9 Samples | Initial Samples | Surrogate | Acquisition | Interior Penalty |
 |----------|------|-----------------|-----------------|-----------|-------------|------------------|
-| F1 | 2 | 19 | 10 | Hurdle Model (Classifier + RF Regressor with **log** transform) | Weighted UCB (no local penalization) | No |
+| F1 | 2 | 19 | 10 | Hurdle Model (Classifier + RF Regressor with **log** transform) | Weighted UCB (KAPPA=0.5, exploitation-focused, no local penalization) | No |
 
-**Key changes from Week 8**: (1) Stage 2 RF regressor trains on `log(y)` instead of `log1p(y)` for positive outputs. Back-transformation uses `exp()` instead of `expm1()`. (2) Interior penalty and local penalization removed from acquisition function to simplify the optimisation. KAPPA=3.0 retained.
+**Key changes from Week 8**: (1) Stage 2 RF regressor trains on `log(y)` instead of `log1p(y)` for positive outputs. Back-transformation uses `exp()` instead of `expm1()`. (2) Interior penalty and local penalization removed from acquisition function to simplify the optimisation. (3) KAPPA reduced from 3.0 to 0.5 to prioritise exploitation — the log transform gives the surrogate meaningful signal and only 4 budget submissions remain.
 
 ## User Scenarios & Testing *(mandatory)*
 
@@ -135,7 +136,7 @@ As a student, I want the notebook to include a performance evaluation section as
 - **FR-007**: If Stage 2 predictions are displayed in original space (e.g., data table comparison), back-transformation MUST use `np.exp(mu)` (not `np.expm1(mu)`). Contour panels display in log-space and do not require back-transformation.
 - **FR-008**: If fewer than MIN_POSITIVE=3 positive outputs exist, FALLBACK_MODE MUST be set; Stage 2 is skipped and acquisition defaults to pure exploration (mu=0, sigma=1).
 - **FR-009**: Acquisition function MUST be weighted UCB: a(x) = p(x)·mu(x) + kappa·p(x)·sigma_RF(x). No local penalization or interior penalty applied.
-- **FR-010**: Hyperparameters MUST be: N_INITIAL=10, N_TOTAL=19, MIN_POSITIVE=3, C_STAGE1=1.0, N_ESTIMATORS=100, MAX_DEPTH=3, KAPPA=3.0, N_CANDIDATES=20000, GRID_RES=50.
+- **FR-010**: Hyperparameters MUST be: N_INITIAL=10, N_TOTAL=19, MIN_POSITIVE=3, C_STAGE1=1.0, N_ESTIMATORS=100, MAX_DEPTH=3, KAPPA=0.5, N_CANDIDATES=20000, GRID_RES=50.
 - **FR-011**: The proposed sample point MUST be formatted as `0.xxxxxx-0.xxxxxx` with values clipped to [0.0, 0.999999].
 - **FR-012**: The notebook MUST produce a 3-panel contour visualisation: (1) hurdle mean in log-space (p(x) · mu, where mu is log-scale RF prediction, yielding values approximately -565 to -35), (2) hurdle uncertainty in log-space (p(x) · sigma_RF), (3) raw weighted UCB acquisition surface titled "Acquisition (Weighted UCB)" — each overlaying training points (initial samples in blue, weekly submissions in orange, proposed next point as green star).
 - **FR-013**: The convergence plot MUST show the running maximum of observed outputs, with initial samples in blue and weekly submissions in orange.
@@ -166,5 +167,5 @@ As a student, I want the notebook to include a performance evaluation section as
 - F1 has 10 initial samples plus 9 weekly submissions = 19 total observations for week 9.
 - The F1 problem remains a 2D input, scalar output maximisation task.
 - All positive outputs for F1 are strictly greater than zero (no exact-zero positive values), making `log(y)` safe to compute without encountering log(0).
-- The same hyperparameters as Week 8 are retained (only the output transformation changes and the removal of interior penalty and local penalization).
+- The same hyperparameters as Week 8 are retained except KAPPA (reduced from 3.0 to 0.5 for exploitation focus) and the removal of interior penalty and local penalization.
 - The hurdle model architecture (classifier + regressor) is unchanged — the log transform within Stage 2 is modified, and the acquisition function is simplified by removing penalization terms.

@@ -51,7 +51,7 @@
 | C_STAGE1 | 1.0 | Classifier L2 regularisation |
 | N_ESTIMATORS | 100 | RF ensemble size |
 | MAX_DEPTH | 3 | RF max tree depth |
-| KAPPA | 3.0 | UCB exploration weight |
+| KAPPA | 0.5 | UCB exploitation weight (exploitation-focused) |
 | N_CANDIDATES | 20000 | Acquisition candidate count |
 | GRID_RES | 50 | Visualisation grid resolution |
 

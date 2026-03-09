@@ -57,7 +57,7 @@ Remove the local penalization (Gaussian mask) and interior penalty (sinusoidal b
 ```python
 a_final = a_ucb  # No penalty(x) or interior(x) multiplication
 ```
-Remove the `PENALTY_RADIUS`, `STEEPNESS`, and `FLOOR` hyperparameters. Keep KAPPA=3.0.
+Remove the `PENALTY_RADIUS`, `STEEPNESS`, and `FLOOR` hyperparameters. Change KAPPA from 3.0 to 0.5 (exploitation-focused — log transform gives meaningful surrogate signal, only 4 submissions remain).
 
 ### Step 6: Update visualisation labels
 
@@ -94,4 +94,4 @@ Execute all cells. Confirm:
 | Interior penalty | Yes (STEEPNESS=0.1, FLOOR=0.01) | Removed |
 | Acquisition | UCB × penalty × interior | Raw weighted UCB |
 | Panel 3 title | "Penalised Acquisition" | "Acquisition (Weighted UCB)" |
-| KAPPA | 3.0 | 3.0 (unchanged) |
+| KAPPA | 3.0 | 0.5 (exploitation-focused) |

@@ -303,3 +303,26 @@ Provide the next query for each function in this format
 
 /clarify
 - For all functions, evaluate the performance of the optimisation, and in cases where the optimisation is stalling, propose a clear change in strategy to improve the optimisation.  Add this as a markdown section at the end of each notebook
+
+/specify
+- create two new markdown documents in the root folder
+- one should be datasheets.md 
+- one should be modelcards.md
+- create model cards for each of the functions in the challenge and put them in the modelcards.md file
+    - each model card should contain:
+        Overview: name of your approach, type and version.
+        Intended use: what tasks is it suitable for? What use cases should be avoided?
+        Details: explain your strategy across the ten rounds, including the techniques you used and how your approach evolved.
+        Performance: summarise your results across the eight functions. What metrics did you use?
+        Assumptions and limitations: what assumptions underlie your strategy? What are its constraints or failure modes?
+        Ethical considerations: how does transparency support reproducibility and real-world adaptation?
+- create datasheets for each of the functions in the challenge and put them in the datasheets.md file
+    - each datasheet should contain:
+        Motivation: why did you create this data set? What task does it support?
+        Composition: what does it contain? What is the size and format and are there any gaps?
+        Collection process: how were the queries generated? What strategy did you use? Over what time frame?
+        Preprocessing and uses: have you applied any transformations? What are the intended and inappropriate uses?
+        Distribution and maintenance: where is the data set available? What are the terms of use? Who maintains it?
+
+/clarify
+- only document the model cards from the last week 

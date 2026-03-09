@@ -41,6 +41,9 @@ Auto-generated from all feature plans. Last updated: 2026-02-17
 - Python 3.x (Jupyter Notebook) + numpy, pandas, matplotlib, scikit-learn (CalibratedClassifierCV, LogisticRegression, RandomForestRegressor), scipy (cdist) (023-f1-week9-log)
 - NumPy .npy files in `./data/f1/` (023-f1-week9-log)
 - Python 3.x (Jupyter Notebook) + numpy, matplotlib, scikit-learn (LogisticRegression, CalibratedClassifierCV, RandomForestRegressor), scipy (pdist, squareform) (023-f1-week9-log)
+- Python 3.x (Jupyter Notebook) + BoTorch (SingleTaskGP, Standardize, qLogNEI, optimize_acqf), GPyTorch (MaternKernel, ScaleKernel, GaussianLikelihood), PyTorch, NumPy, Matplotlib, SciPy (024-f3-week9-standardize)
+- `.npy` files in `./data/f3/` (24 samples: 15 initial + 9 submissions) (024-f3-week9-standardize)
+- Python 3.11 + BoTorch (SingleTaskGP, Standardize, qLogNEI, optimize_acqf), GPyTorch (MaternKernel, ScaleKernel, GaussianLikelihood, ExactMarginalLogLikelihood), NumPy, Matplotlib, SciPy (024-f3-week9-standardize)
 
 - Python 3.14.2 (pyenv sdd-dev) + numpy, matplotlib, scikit-learn (Ridge, RF, GBT), PyTorch (NN), scipy (f1 only) (003-week6-focus-on-exploitation)
 
@@ -60,9 +63,9 @@ cd src [ONLY COMMANDS FOR ACTIVE TECHNOLOGIES][ONLY COMMANDS FOR ACTIVE TECHNOLO
 Python 3.14.2 (pyenv sdd-dev): Follow standard conventions
 
 ## Recent Changes
+- 024-f3-week9-standardize: Added Python 3.11 + BoTorch (SingleTaskGP, Standardize, qLogNEI, optimize_acqf), GPyTorch (MaternKernel, ScaleKernel, GaussianLikelihood, ExactMarginalLogLikelihood), NumPy, Matplotlib, SciPy
+- 024-f3-week9-standardize: Added Python 3.x (Jupyter Notebook) + BoTorch (SingleTaskGP, Standardize, qLogNEI, optimize_acqf), GPyTorch (MaternKernel, ScaleKernel, GaussianLikelihood), PyTorch, NumPy, Matplotlib, SciPy
 - 023-f1-week9-log: Added Python 3.x (Jupyter Notebook) + numpy, matplotlib, scikit-learn (LogisticRegression, CalibratedClassifierCV, RandomForestRegressor), scipy (pdist, squareform)
-- 023-f1-week9-log: Added Python 3.x (Jupyter Notebook) + numpy, pandas, matplotlib, scikit-learn (CalibratedClassifierCV, LogisticRegression, RandomForestRegressor), scipy (cdist)
-- 023-f1-week9-log: Added Python 3.x (Jupyter Notebook) + numpy, pandas, matplotlib, scikit-learn (LogisticRegression, CalibratedClassifierCV, RandomForestRegressor), scipy (pdist, squareform)
 
 
 <!-- MANUAL ADDITIONS START -->

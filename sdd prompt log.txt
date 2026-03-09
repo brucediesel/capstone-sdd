@@ -345,3 +345,14 @@ Provide the next query for each function in this format
 
 /clarify
 - for F1 prioritise exploitation rather than exploration given better surrogate output scaling.
+
+/specify
+- create a new branch for this week 
+- focus only on F3
+- Apply the following to the week 9 notebook and rerun it
+1. **Use BoTorch Standardize(m=1) instead of manual z-score** — eliminates manual recomputation and ensures consistent normalisation
+2. **Increase acquisition num_restarts from 10 to 20** — broader acquisition search for better candidates
+3. **Add interior penalty (S=0.5, F=0.01)** — encourage exploration away from boundaries
+
+/clarify
+- for F3 - after evaluation, interior penalty appears to be swamping acq results, let's remove it

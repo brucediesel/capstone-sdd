@@ -326,3 +326,22 @@ Provide the next query for each function in this format
 
 /clarify
 - only document the model cards from the last week 
+
+/specify
+- create a new branch for this week
+- Limit to only F1 for this specification
+- Focussing on F1, create a new notebook for week 10 but change the outputs of the RF regressor with 'log' instead of log1p.
+- provide visualisation of surrogate using log instead of log1p 
+- propose next sample point using correct format
+
+/clarify
+- I have made a mistake - we are still working in week 9.
+- replace the current week 9 notebook for F1 with the week 10 notebook renaming the week 10 motebook as week 9
+- replace the reference to week 10 data with week 9
+- so, to be clear, delete week 9 f1 notebook, rename week 10 notebook to week 9, and replace references to week 10 inputs and outputs with week 9 
+
+/clarify
+- staying focused on F1.  Remove interior penalty and local penalisation and process optimisation run again
+
+/clarify
+- for F1 prioritise exploitation rather than exploration given better surrogate output scaling.

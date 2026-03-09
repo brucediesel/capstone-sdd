@@ -35,6 +35,11 @@ Auto-generated from all feature plans. Last updated: 2026-02-17
 - `.npy` files in `./data/fX/` directories (021-f1-f8-week9)
 - Markdown (no code execution required) + None — output is static markdown documents (022-datasheets-modelcards)
 - Two `.md` files in project root (`modelcards.md`, `datasheets.md`) (022-datasheets-modelcards)
+- Python 3.x (Jupyter notebook) + NumPy, scikit-learn (LogisticRegression, CalibratedClassifierCV, RandomForestRegressor), matplotlib, scipy (pdist/squareform) (023-f1-week9-log)
+- Python 3.x (Jupyter Notebook) + numpy, pandas, matplotlib, scikit-learn (LogisticRegression, CalibratedClassifierCV, RandomForestRegressor), scipy (pdist, squareform) (023-f1-week9-log)
+- NumPy `.npy` files in `./data/f1/` (023-f1-week9-log)
+- Python 3.x (Jupyter Notebook) + numpy, pandas, matplotlib, scikit-learn (CalibratedClassifierCV, LogisticRegression, RandomForestRegressor), scipy (cdist) (023-f1-week9-log)
+- NumPy .npy files in `./data/f1/` (023-f1-week9-log)
 
 - Python 3.14.2 (pyenv sdd-dev) + numpy, matplotlib, scikit-learn (Ridge, RF, GBT), PyTorch (NN), scipy (f1 only) (003-week6-focus-on-exploitation)
 
@@ -54,9 +59,9 @@ cd src [ONLY COMMANDS FOR ACTIVE TECHNOLOGIES][ONLY COMMANDS FOR ACTIVE TECHNOLO
 Python 3.14.2 (pyenv sdd-dev): Follow standard conventions
 
 ## Recent Changes
-- 022-datasheets-modelcards: Added Markdown (no code execution required) + None — output is static markdown documents
-- 021-f1-f8-week9: Added Python 3.11 (sdd-dev environment) + BoTorch, GPyTorch, PyTorch, scikit-learn, NumPy, Matplotlib
-- 020-f2-f8-week8: Added Python 3.14.2 (Jupyter kernel `sdd-dev`) + BoTorch, GPyTorch, PyTorch (F2–F6, F8); PyTorch + NumPy (F7 NN)
+- 023-f1-week9-log: Added Python 3.x (Jupyter Notebook) + numpy, pandas, matplotlib, scikit-learn (CalibratedClassifierCV, LogisticRegression, RandomForestRegressor), scipy (cdist)
+- 023-f1-week9-log: Added Python 3.x (Jupyter Notebook) + numpy, pandas, matplotlib, scikit-learn (LogisticRegression, CalibratedClassifierCV, RandomForestRegressor), scipy (pdist, squareform)
+- 023-f1-week9-log: Added Python 3.x (Jupyter notebook) + NumPy, scikit-learn (LogisticRegression, CalibratedClassifierCV, RandomForestRegressor), matplotlib, scipy (pdist/squareform)
 
 
 <!-- MANUAL ADDITIONS START -->

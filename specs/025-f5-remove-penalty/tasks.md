@@ -1,11 +1,11 @@
-# Tasks: F5 Week 9 — Remove Interior Penalty
+# Tasks: F5 Week 9 — Kernel, Standardize & Raw Samples
 
-**Input**: Design documents from `/specs/025-f5-remove-penalty/`
-**Prerequisites**: plan.md ✅, spec.md ✅, research.md ✅, data-model.md ✅, quickstart.md ✅
+**Input**: Design documents from `/specs/025-f5-remove-penalty/` (Clarifications session)
+**Prerequisites**: plan.md ✅, spec.md ✅ (FR-012/013/014), research.md ✅, data-model.md ✅, quickstart.md ✅
 
 **Tests**: Not requested — no test tasks included (Constitution Principle I: Simplicity).
 
-**Organization**: Tasks grouped by user story. All edits target a single file: `functions/f5/f5 - week 9.ipynb`.
+**Organization**: Tasks grouped by user story. All edits target a single file: `functions/f5/f5 - week 9.ipynb` (23 cells).
 
 ## Format: `[ID] [P?] [Story] Description`
 
@@ -17,69 +17,70 @@
 
 ## Phase 1: Setup
 
-**Purpose**: Verify branch and prerequisites before making changes
+**Purpose**: Create branch and verify prerequisites
 
-- [X] T001 Verify active branch is `025-f5-remove-penalty` and notebook `functions/f5/f5 - week 9.ipynb` exists
+- [X] T001 Create branch `026-f5-kernel-standardize` from `025-f5-remove-penalty` and verify notebook `functions/f5/f5 - week 9.ipynb` has 23 cells
 - [X] T002 Verify week 9 data files exist: `data/f5/updated_inputs - Week 9.npy` and `data/f5/updated_outputs - Week 9.npy`
 
 ---
 
-## Phase 2: User Story 1 — Remove Interior Penalty from Acquisition (Priority: P1) 🎯 MVP
+## Phase 2: User Story 1 — Core Pipeline Changes (Priority: P1) 🎯 MVP
 
-**Goal**: Remove all penalty code so the notebook uses plain qLogNEI acquisition without the interior penalty wrapper
+**Goal**: Apply Matérn-1.5 kernel, BoTorch Standardize(m=1), and raw_samples=5000 to the GP training and acquisition cells
 
-**Independent Test**: Run the acquisition cell — `optimize_acqf` passes `nei` directly as `acq_function`. No `STEEPNESS`, `FLOOR`, `EPS_BOUND`, `PenalisedAcquisition`, `penalised_nei`, or `BOUNDS_IP` variables exist in the notebook.
+**Independent Test**: Run cells 2→4→8→10 — GP trains with `nu=1.5` and `outcome_transform=Standardize(m=1)`, acquisition uses `raw_samples=5000`, no `y_mean`/`y_std_val`/`y_std` variables exist, inverse transform is `expm1(posterior.mean)`.
 
 ### Implementation for User Story 1
 
-- [X] T003 [P] [US1] Remove constants `STEEPNESS`, `FLOOR`, `EPS_BOUND` from the hyperparameters code cell (cell 4) in `functions/f5/f5 - week 9.ipynb`
-- [X] T004 [P] [US1] Remove Step 4 interior penalty explanation markdown cell entirely (cell 11) from `functions/f5/f5 - week 9.ipynb`
-- [X] T005 [P] [US1] Remove Step 4 interior penalty code cell entirely (cell 12) — contains `PenalisedAcquisition` class, `penalised_nei`, `BOUNDS_IP`, and penalised `optimize_acqf` call — from `functions/f5/f5 - week 9.ipynb`
+- [X] T003 [P] [US1] Add `from botorch.models.transforms.outcome import Standardize` to imports in cell 2 of `functions/f5/f5 - week 9.ipynb`
+- [X] T004 [P] [US1] Simplify transform code in cell 4 of `functions/f5/f5 - week 9.ipynb`: remove manual z-score computation (`y_mean`, `y_std_val`, `y_std`), set `Y_train = torch.tensor(y_log, ...).unsqueeze(-1)` directly from `y_log`
+- [X] T005 [US1] Update GP training in cell 8 of `functions/f5/f5 - week 9.ipynb`: change `MaternKernel(nu=2.5, ...)` to `MaternKernel(nu=1.5, ...)`, change `outcome_transform=None` to `outcome_transform=Standardize(m=1)`, update print statements to reflect new kernel/transform
+- [X] T006 [US1] Update acquisition in cell 10 of `functions/f5/f5 - week 9.ipynb`: change `raw_samples=3000` to `raw_samples=5000`, simplify inverse transform from `expm1(pred * y_std_val + y_mean)` to `expm1(posterior.mean)`
 
-**Checkpoint**: All penalty acquisition code removed. Base NEI (Step 3) is now the only acquisition path.
+**Checkpoint**: Core pipeline changed — GP uses Matérn-1.5 + Standardize(m=1), acquisition uses 5000 raw samples. MVP complete.
 
 ---
 
-## Phase 3: User Story 2 — Remove Penalty Visualisation (Priority: P1)
+## Phase 3: User Story 2 — Downstream Cell Updates (Priority: P1)
 
-**Goal**: Remove penalty-specific visualisation cells and update surrogate plot to use base NEI selected point
+**Goal**: Update visualisation, submission, and LOO cells to match the new pipeline (simplified inverse, new kernel name)
 
-**Independent Test**: No penalty contour panels exist. Step 5 surrogate viz uses `best_point` (base NEI). Step 6 section is gone entirely.
+**Independent Test**: Run cells 12, 16, 22 — viz uses `expm1(grid_mu)` inverse and suptitle says "Matérn-1.5", submission prints "Standardize(m=1)", LOO uses `nu=1.5` with `Standardize(m=1)` and simplified inverse per fold.
 
 ### Implementation for User Story 2
 
-- [X] T006 [P] [US2] Remove Step 6 penalty visualisation markdown header cell entirely (cell 15) from `functions/f5/f5 - week 9.ipynb`
-- [X] T007 [P] [US2] Remove Step 6 penalty visualisation code cell entirely (cell 16) from `functions/f5/f5 - week 9.ipynb`
-- [X] T008 [P] [US2] Update Step 5 surrogate visualisation code cell (cell 14) in `functions/f5/f5 - week 9.ipynb`: replace `next_x_ip` with `best_point` in scatter calls, remove `+ IP` from suptitle
+- [X] T007 [P] [US2] Update visualisation in cell 12 of `functions/f5/f5 - week 9.ipynb`: simplify grid inverse transform (remove manual z-score inverse), update suptitle from "Matérn-5/2" to "Matérn-1.5"
+- [X] T008 [P] [US2] Update submission print in cell 16 of `functions/f5/f5 - week 9.ipynb`: change surrogate description from "GP Matérn-5/2 ARD (outcome_transform=None)" to "GP Matérn-1.5 ARD (outcome_transform=Standardize(m=1))"
+- [X] T009 [US2] Update LOO cross-validation in cell 22 of `functions/f5/f5 - week 9.ipynb`: change `nu=2.5` to `nu=1.5`, add `outcome_transform=Standardize(m=1)` to each fold GP, remove manual z-score per fold, simplify inverse from `expm1(pred * std + mean)` to `expm1(pred)`
 
-**Checkpoint**: All penalty visualisation removed. Surrogate plots reference base NEI point only.
+**Checkpoint**: All downstream cells consistent with new pipeline. No manual z-score inverse remains.
 
 ---
 
-## Phase 4: User Story 3 — Update Documentation and Submission (Priority: P2)
+## Phase 4: User Story 3 — Documentation Updates (Priority: P2)
 
-**Goal**: Update title, hyperparameter table, submission cell, and strategy to remove all penalty references
+**Goal**: Update title, hyperparameters table, and strategy markdown cells to reflect kernel/transform/raw_samples changes
 
-**Independent Test**: Title says "GP Matérn-5/2 + qLogNEI (4D)" without "Interior Penalty". Hyperparameter table has no IP rows. Submission shows only base NEI. Strategy notes penalty was removed.
+**Independent Test**: Title says "Matérn-1.5", hyperparams table shows `nu=1.5`, `raw_samples=5000`, `Standardize(m=1)`, strategy documents the changes made.
 
 ### Implementation for User Story 3
 
-- [X] T009 [P] [US3] Update title markdown cell (cell 1) in `functions/f5/f5 - week 9.ipynb`: remove "Interior Penalty" from heading and description
-- [X] T010 [P] [US3] Update hyperparameters markdown table cell (cell 3) in `functions/f5/f5 - week 9.ipynb`: remove rows 16 (IP STEEPNESS) and 17 (IP FLOOR)
-- [X] T011 [P] [US3] Update Step 8 submission code cell (cell 20) in `functions/f5/f5 - week 9.ipynb`: remove IP submission block and penalty parameter print statements
-- [X] T012 [P] [US3] Update strategy markdown cell (cell 27) in `functions/f5/f5 - week 9.ipynb`: note penalty was evaluated and removed, remove STEEPNESS recommendations
+- [X] T010 [P] [US3] Update title markdown in cell 1 of `functions/f5/f5 - week 9.ipynb`: change "Matérn-5/2" to "Matérn-1.5"
+- [X] T011 [P] [US3] Update hyperparameters table in cell 3 of `functions/f5/f5 - week 9.ipynb`: change kernel nu from 2.5 to 1.5, raw_samples from 3000 to 5000, outcome_transform from None to Standardize(m=1)
+- [X] T012 [P] [US3] Update strategy markdown in cell 23 of `functions/f5/f5 - week 9.ipynb`: document that Matérn-1.5, Standardize(m=1), and raw_samples=5000 have been applied; update recommendations for future iterations
 
-**Checkpoint**: All documentation consistent — no penalty references remain anywhere in the notebook.
+**Checkpoint**: All documentation consistent with new pipeline configuration.
 
 ---
 
 ## Phase 5: Polish & Validation
 
-**Purpose**: End-to-end execution and final verification
+**Purpose**: End-to-end execution, verification, and results review
 
-- [X] T013 Execute all cells in `functions/f5/f5 - week 9.ipynb` end-to-end and confirm no errors
-- [X] T014 Validate against quickstart.md 12-item verification checklist (data loads, GP trains, NEI runs, submission format, visualisations render, no penalty references)
-- [X] T015 Search entire notebook for zero remaining references to `PenalisedAcquisition`, `penalised_nei`, `STEEPNESS`, `FLOOR`, `EPS_BOUND`, `BOUNDS_IP`, or `next_x_ip`
+- [X] T013 Execute all 23 cells in `functions/f5/f5 - week 9.ipynb` end-to-end and confirm no errors
+- [X] T014 Validate against quickstart.md 14-item verification checklist (branch, cell count, imports, no z-score vars, kernel nu, Standardize, raw_samples, inverse transforms, execution, submission format, LOO, suptitle/prints, zero z-score refs, results review)
+- [X] T015 Search entire notebook for zero remaining references to manual z-score variables (`y_mean`, `y_std_val`, `y_std`), `nu=2.5`, `outcome_transform=None`, and `raw_samples=3000`
+- [X] T016 Review results: examine proposed candidates for boundary-sticking, compare LOO MAE, and suggest further improvements
 
 ---
 
@@ -88,16 +89,51 @@
 ### Phase Dependencies
 
 - **Setup (Phase 1)**: No dependencies — start immediately
-- **US1 (Phase 2)**: Depends on Setup — removes penalty acquisition code
-- **US2 (Phase 3)**: Depends on Setup — removes penalty visualisation (independent of US1)
-- **US3 (Phase 4)**: Depends on Setup — updates documentation (independent of US1 and US2)
+- **US1 (Phase 2)**: Depends on Setup — applies core kernel/transform/acquisition changes
+- **US2 (Phase 3)**: Depends on US1 — downstream cells must match the new pipeline from Phase 2
+- **US3 (Phase 4)**: Depends on Setup — documentation updates (independent of US1 and US2, operates on markdown cells)
 - **Polish (Phase 5)**: Depends on ALL user stories being complete
 
 ### User Story Dependencies
 
 - **US1 (P1)**: Can start after Setup — no dependencies on other stories
-- **US2 (P1)**: Can start after Setup — no dependencies on US1 (operates on different cells)
-- **US3 (P2)**: Can start after Setup — no dependencies on US1 or US2 (operates on different cells)
+- **US2 (P1)**: Depends on US1 — viz/submission/LOO inverse transforms must match the pipeline changes in US1
+- **US3 (P2)**: Can start after Setup — operates on markdown-only cells, independent of US1 and US2
+
+### Within Each User Story
+
+- US1: Import (T003) and transform (T004) can run in parallel [P]; GP training (T005) depends on both; acquisition (T006) depends on T005
+- US2: Viz (T007) and submission (T008) can run in parallel [P]; LOO (T009) is independent but complex
+- US3: All tasks can run in parallel [P] (different markdown cells)
+
+### Parallel Opportunities
+
+```text
+Phase 1:  T001 ─── T002                              (sequential)
+Phase 2:  T003 ─┬─ T005 ─── T006                     (T003+T004 parallel, then sequential)
+          T004 ─┘
+Phase 3:  T007 ─┬─ (all parallel, after Phase 2)
+          T008 ─┤
+          T009 ─┘
+Phase 4:  T010 ─┬─ (all parallel, after Phase 1)
+          T011 ─┤
+          T012 ─┘
+Phase 5:  T013 ─── T014 ─── T015 ─── T016            (sequential, after all phases)
+```
+
+---
+
+## Implementation Strategy
+
+**MVP**: Phase 1 + Phase 2 (Setup + Core Pipeline Changes) — the GP trains with the new kernel/transform and acquisition runs with more raw samples. This alone addresses the boundary-stuck issue.
+
+**Incremental Delivery**:
+1. Setup → Core changes (MVP)
+2. Downstream updates (viz, submission, LOO consistent)
+3. Documentation (markdown cells)
+4. Validation & results review
+
+**Total Tasks**: 16 (2 setup, 4 core, 3 downstream, 3 documentation, 4 validation)
 
 ### Within Each User Story
 

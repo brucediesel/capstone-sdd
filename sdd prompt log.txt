@@ -356,3 +356,16 @@ Provide the next query for each function in this format
 
 /clarify
 - for F3 - after evaluation, interior penalty appears to be swamping acq results, let's remove it
+
+/specify
+- create a new branch for F5 this week
+- remove interior penalty form week 9 notebooks
+- don't make any other changes
+
+/clarify
+- next point prediction is right on the boundary.  This is clearly invalid.  Apply the following recommendations:
+1. **Increase raw_samples 3000 → 5000** — better initial coverage for acquisition optimisation in 4D
+2. **Try Matérn-1.5 kernel** — smoother landscapes may benefit from rougher kernel assumptions, especially if lengthscales are collapsing
+3. **Consider BoTorch Standardize(m=1)** — replace manual z-score to simplify the pipeline
+- recreate F5 notebook for week 9 with these recommendations.
+- on completion of the run, review the results and suggest further improvements.

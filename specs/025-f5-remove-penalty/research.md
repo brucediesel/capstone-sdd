@@ -1,69 +1,95 @@
-# Research: F5 Week 9 — Remove Interior Penalty
+# Research: F5 Week 9 — Kernel, Standardize & Raw Samples
 
-**Feature**: 025-f5-remove-penalty  
-**Date**: 2026-03-09
+**Branch**: `026-f5-kernel-standardize` | **Date**: 2026-03-09
 
-## Research Summary
+## R1 — Matérn-1.5 vs Matérn-5/2 Kernel
 
-This is a narrowly scoped deletion feature with no technology choices or unknowns to resolve. All research items below confirm decisions already made in the specification.
+**Decision**: Replace Matérn-5/2 (`nu=2.5`) with Matérn-1.5 (`nu=1.5`)
 
-## R1: Interior Penalty Removal Impact
+**Rationale**: The current GP with Matérn-5/2 produces boundary-stuck candidates (all coords near 0.999999). Matérn-5/2 assumes 2× differentiable (smooth) sample paths, which with only 29 data points in 4D can lead to oversmoothing — the surrogate underestimates local roughness and overconfidently assigns high acquisition values near boundaries. Matérn-1.5 (1× differentiable, rougher) better handles the small-data regime and heterogeneous lengthscales.
 
-**Decision**: Remove all interior penalty code from F5 week 9 notebook  
-**Rationale**: The interior penalty was added to suppress boundary-hugging candidates (spec 015-f5-interior-penalty). After evaluation across multiple weeks, the penalty has shown mixed results — in F3 it was found to "swamp acq results" and was removed (spec 024). The user has now requested the same removal for F5. The base NEI with distance-based selection already produces valid candidates.  
-**Alternatives considered**:
-- Reduce STEEPNESS (e.g., 1.0 → 0.3) — rejected because user explicitly requested full removal
-- Keep penalty but reduce FLOOR — rejected for same reason
+**API**: `MaternKernel(nu=1.5, ard_num_dims=4)` — single parameter change, no other code modifications.
 
-## R2: Base NEI Candidate Selection Behaviour
+**Alternatives Considered**:
+| Approach | Status | Why |
+|----------|--------|-----|
+| Keep Matérn-5/2 + tighter bounds | Rejected | Band-aid, doesn't address oversmoothing root cause |
+| RBF kernel | Rejected | Infinite smoothness; worse for rough landscapes |
+| Matérn-0.5 | Rejected | Too rough/discontinuous; overkill for this problem |
+| Interior penalty wrapper | Rejected | Already tried and removed (spec 025) — suppresses boundaries artificially |
 
-**Decision**: Use existing Step 3 distance-based selection logic unchanged  
-**Rationale**: Step 3 already implements a complete acquisition pipeline: qLogNEI with q=4, 50 restarts, 3000 raw samples, followed by distance-based selection (above-median posterior mean, farthest from training data). This produces valid candidates without the penalty wrapper. The penalty was added as an enhancement on top of this working pipeline, so removing it simply reverts to the base behaviour.  
-**Alternatives considered**: None — the user explicitly said "don't make any other changes"
+## R2 — BoTorch Standardize(m=1) Replacing Manual Z-Score
 
-## R3: Cells to Remove vs Edit
+**Decision**: Replace manual z-score with `Standardize(m=1)` as `outcome_transform`; keep manual `log1p`.
 
-**Decision**: Remove 4 cells entirely (Step 4 markdown, Step 4 code, Step 6 markdown, Step 6 code); edit 6 cells (title, hyperparameters table, constants code, Step 5 viz, Step 8 submission, strategy); leave all other cells unchanged  
-**Rationale**: 
-- Step 4 (penalty explanation + penalty code): These cells define and execute the `PenalisedAcquisition` wrapper. Without the penalty, they serve no purpose and would error on missing variables.
-- Step 6 (penalty visualisation): Renders penalty weight surface and penalised mean — meaningless without penalty code.
-- Title cell: References "Interior Penalty" — must be updated for accuracy.
-- Hyperparameters table cell: Contains IP STEEPNESS and IP FLOOR rows — must be removed.
-- Constants code cell: Contains `STEEPNESS`, `FLOOR`, `EPS_BOUND` — must be removed.
-- Step 5 viz: References `next_x_ip` (penalty-selected point) — must change to `best_point` (base NEI selected).
-- Step 8 submission: Shows both base and IP submissions — must show only base.
-- Strategy cell: Contains penalty recommendations — must note penalty was removed.
-- Steps 1-3, 7, 9-13: No penalty references, remain unchanged.  
-**Alternatives considered**: None required — this is a mechanical mapping from spec requirements to notebook cells
+**Rationale**: The current pipeline applies `log1p` then manual z-score, requiring manual inverse transforms (`expm1(pred * std + mean)`) in every downstream cell. `Standardize(m=1)` handles z-scoring internally and auto-applies the inverse when calling `model.posterior()`, simplifying downstream code. This also eliminates the need for manual z-score recomputation per LOO fold.
 
-## R4: Notebook Structure After Removal
+**Import**: `from botorch.models.transforms.outcome import Standardize`
 
-**Decision**: Notebook will have ~23 cells (down from ~27) after removing 4 penalty cells  
-**Rationale**: Current structure:
-1. Title (md) — EDIT
-2. Imports (code) — unchanged
-3. Hyperparameters (md) — EDIT
-4. Constants (code) — EDIT (remove STEEPNESS, FLOOR, EPS_BOUND)
-5. Step 1 header (md) — unchanged
-6. Step 1 data (code) — unchanged
-7. Step 2 header (md) — unchanged
-8. Step 2 GP training (code) — unchanged
-9. Step 3 header (md) — unchanged
-10. Step 3 base NEI (code) — unchanged
-11. Step 4 explanation (md) — REMOVE
-12. Step 4 penalty code (code) — REMOVE
-13. Step 5 header (md) — unchanged
-14. Step 5 viz (code) — EDIT (next_x_ip → best_point, remove "IP" from title)
-15. Step 6 header (md) — REMOVE
-16. Step 6 penalty viz (code) — REMOVE
-17. Step 7 header (md) — unchanged
-18. Step 7 convergence (code) — unchanged
-19. Step 8 header (md) — unchanged
-20. Step 8 submission (code) — EDIT (remove IP submission, penalty params)
-21. Performance header (md) — unchanged
-22. Convergence metrics (code) — unchanged
-23. Exploration spread header (md) — unchanged
-24. Exploration spread (code) — unchanged
-25. LOO header (md) — unchanged
-26. LOO (code) — unchanged
-27. Strategy (md) — EDIT (remove penalty recommendations)
+**Pipeline change**:
+- **Before**: `y_raw → log1p → manual z-score → Y_train` | `outcome_transform=None` | inverse: `expm1(pred * y_std_val + y_mean)`
+- **After**: `y_raw → log1p → Y_train` | `outcome_transform=Standardize(m=1)` | inverse: `expm1(posterior.mean)`
+
+**Impact on cells**:
+
+| Cell # | Current | After Standardize |
+|--------|---------|-------------------|
+| 4 (constants) | Computes `y_mean`, `y_std_val`, applies z-score | Applies `log1p` only; remove z-score code |
+| 8 (GP training) | `outcome_transform=None` | `outcome_transform=Standardize(m=1)` |
+| 10 (acquisition) | Inverse: `expm1(pred * y_std_val + y_mean)` | Inverse: `expm1(posterior.mean)` |
+| 12 (viz) | Inverse: `expm1(grid_mu * y_std_val + y_mean)` | Inverse: `expm1(grid_mu)` for mean; sigma simplified |
+| 16 (submission) | References `outcome_transform=None` | References `outcome_transform=Standardize(m=1)` |
+| 22 (LOO) | Manual z-score per fold, manual inverse | Each fold GP auto-standardizes; inverse: `expm1(pred)` |
+
+**Alternatives Considered**:
+| Approach | Status | Why |
+|----------|--------|-----|
+| Keep manual z-score | Rejected | More code, error-prone per-fold recomputation, no API benefit |
+| Drop log1p too, use only Standardize | Rejected | log1p compresses heavy-tailed F5 outputs (range 0–3400); Standardize alone would struggle with skew |
+
+## R3 — Increase raw_samples 3000 → 5000
+
+**Decision**: Increase `raw_samples` from 3000 to 5000 in `optimize_acqf`
+
+**Rationale**: In 4D space, Sobol quasi-random initial coverage with 3000 raw samples provides limited density. Increasing to 5000 gives ~67% better initial coverage, improving the chance of finding good starting points for L-BFGS-B restarts, especially in areas away from boundaries.
+
+**Code change**: Single parameter: `raw_samples=3000` → `raw_samples=5000`
+
+**Alternatives Considered**:
+| Approach | Status | Why |
+|----------|--------|-----|
+| 3000 (unchanged) | Rejected | Boundary-stuck results suggest inadequate initial coverage |
+| 10000 | Rejected | Diminishing returns; 5000 is a reasonable step up without excessive compute |
+| Increase num_restarts instead | Rejected | num_restarts=50 already high; raw_samples is the bottleneck |
+
+## R4 — Complete Cell Action Map (23 cells)
+
+The notebook currently has 23 cells after penalty removal. The 3 changes affect:
+
+| Cell # | Type | Action | Change Description |
+|--------|------|--------|--------------------|
+| 1 | md | EDIT | Update title: "Matérn-1.5" instead of "Matérn-5/2" |
+| 2 | code | EDIT | Add `Standardize` import |
+| 3 | md | EDIT | Update hyperparams table: kernel nu, raw_samples, outcome_transform |
+| 4 | code | EDIT | Remove z-score code, pass `y_log` directly as Y_train |
+| 5 | md | — | Unchanged |
+| 6 | code | — | Unchanged (data loading) |
+| 7 | md | — | Unchanged |
+| 8 | code | EDIT | `nu=1.5`, `outcome_transform=Standardize(m=1)`, update prints |
+| 9 | md | — | Unchanged |
+| 10 | code | EDIT | `raw_samples=5000`, simplify inverse transform |
+| 11 | md | — | Unchanged |
+| 12 | code | EDIT | Simplify inverse for grid, update suptitle |
+| 13 | md | — | Unchanged |
+| 14 | code | — | Unchanged (convergence plot) |
+| 15 | md | — | Unchanged |
+| 16 | code | EDIT | Update surrogate description in print |
+| 17 | md | — | Unchanged |
+| 18 | code | — | Unchanged (convergence metrics) |
+| 19 | md | — | Unchanged |
+| 20 | code | — | Unchanged (exploration spread) |
+| 21 | md | — | Unchanged |
+| 22 | code | EDIT | LOO: `nu=1.5`, `Standardize(m=1)`, simplified inverse |
+| 23 | md | EDIT | Update strategy: document kernel/transform changes |
+
+**Summary**: 10 cells EDIT, 13 cells unchanged.

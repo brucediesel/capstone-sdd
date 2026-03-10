@@ -1,131 +1,79 @@
-# Quickstart: F5 Week 9 — Remove Interior Penalty
+# Quickstart: F5 Week 9 — Kernel, Standardize & Raw Samples
 
-**Date**: 2026-03-09  
-**Feature**: 025-f5-remove-penalty
+**Branch**: `026-f5-kernel-standardize` | **Date**: 2026-03-09
 
 ## Prerequisites
 
-1. Week 9 data files must exist:
-   - `./data/f5/updated_inputs - Week 9.npy`
-   - `./data/f5/updated_outputs - Week 9.npy`
+- Branch `025-f5-remove-penalty` merged or available as base
+- Python 3.14 (pyenv `sdd-dev`)
+- BoTorch, GPyTorch, PyTorch, NumPy, Matplotlib installed
+- Data files present: `data/f5/updated_inputs - Week 9.npy`, `data/f5/updated_outputs - Week 9.npy`, `data/f5/initial_inputs.npy`, `data/f5/initial_outputs.npy`
 
-2. Python environment with:
-   - numpy, torch, copy, warnings
-   - botorch (SingleTaskGP, qLogNoisyExpectedImprovement, optimize_acqf, SobolQMCNormalSampler)
-   - gpytorch (MaternKernel, ScaleKernel, GaussianLikelihood, ExactMarginalLogLikelihood, GreaterThan)
-   - matplotlib, scipy
+## Setup
+
+```bash
+cd /Users/brucediesel/Development/capstone-sdd
+git checkout 025-f5-remove-penalty
+git checkout -b 026-f5-kernel-standardize
+```
 
 ## Implementation Steps
 
-### Step 1: Remove penalty constants from hyperparameters cell
+### 1. Add Standardize import (cell 2)
+Add `from botorch.models.transforms.outcome import Standardize` to import block.
 
-In the constants cell (cell 4), **remove** these three lines:
-```python
-# REMOVE:
-STEEPNESS = 1.0
-FLOOR = 0.01
-EPS_BOUND = 0.005  # tighten [0, 1] → [ε, 1-ε] during penalised optimisation
-```
+### 2. Update hyperparameter table (cell 3)
+- Change kernel row: `nu=2.5` → `nu=1.5`
+- Change raw_samples row: `3000` → `5000`  
+- Change outcome_transform row: `None` → `Standardize(m=1)`
 
-Keep all other constants (`N_INITIAL`, `N_TOTAL`, `N_DIMS`, `N_SUBMISSIONS`, `STALLING_WINDOW`, `STALLING_REL_THRESHOLD`, `N_RESTARTS`, `DIM`).
+### 3. Simplify transform code (cell 4)
+- Remove manual z-score computation (`y_mean`, `y_std_val`, `y_std`)
+- Pass `y_log` directly: `Y_train = torch.tensor(y_log, ...).unsqueeze(-1)`
 
-### Step 2: Remove Step 4 cells entirely
+### 4. Update GP training (cell 8)
+- Change `MaternKernel(nu=2.5, ...)` → `MaternKernel(nu=1.5, ...)`
+- Change `outcome_transform=None` → `outcome_transform=Standardize(m=1)`
+- Update print statements to reflect new kernel/transform
 
-Delete both cells that make up Step 4:
-- The **markdown cell** explaining the in-loop interior penalty (contains the mathematical explanation of 4x(1-x), gradient comparison table, etc.)
-- The **code cell** containing the `PenalisedAcquisition` class definition, `penalised_nei` wrapping, `BOUNDS_IP` tightened bounds, and the penalised `optimize_acqf` call with diagnostic output
+### 5. Update acquisition (cell 10)
+- Change `raw_samples=3000` → `raw_samples=5000`
+- Simplify inverse transform: `np.expm1(posterior.mean.cpu().numpy())` (no manual z-score inverse)
 
-### Step 3: Remove Step 6 penalty visualisation cells
+### 6. Update visualisation (cell 12)
+- Simplify inverse for grid mean/sigma
+- Update suptitle: "Matérn-1.5" instead of "Matérn-5/2"
 
-Delete both cells that make up Step 6:
-- The **markdown cell** with header "Step 6: Three-Colour Interior Penalty Visualisation (3-Panel)"
-- The **code cell** rendering the 3-panel penalty contour plots (GP Mean, 4x(1-x) Penalty, Penalised Mean)
+### 7. Update submission print (cell 16)
+- Change surrogate description to reflect Matérn-1.5 and Standardize
 
-### Step 4: Update Step 5 surrogate visualisation
+### 8. Update LOO (cell 22)
+- Change `MaternKernel(nu=2.5, ...)` → `MaternKernel(nu=1.5, ...)`
+- Add `outcome_transform=Standardize(m=1)` to each LOO fold GP
+- Remove manual z-score per fold
+- Simplify inverse: `np.expm1(pred)`
 
-In the Step 5 visualisation code cell, replace all references to `next_x_ip` with `best_point`:
+### 9. Update title (cell 1)
+- "Matérn-5/2" → "Matérn-1.5"
 
-```python
-# BEFORE:
-axes[0].scatter(next_x_ip[top2[0]], next_x_ip[top2[1]], ...)
-axes[1].scatter(next_x_ip[top2[0]], next_x_ip[top2[1]], ...)
+### 10. Update strategy (cell 23)
+- Document the kernel change, Standardize adoption, and raw_samples increase
 
-# AFTER:
-axes[0].scatter(best_point[top2[0]], best_point[top2[1]], ...)
-axes[1].scatter(best_point[top2[0]], best_point[top2[1]], ...)
-```
+## Verification Checklist
 
-Update the suptitle to remove "IP":
-```python
-# BEFORE:
-plt.suptitle("F5 — GP Matérn-5/2 ARD Surrogate (Week 9, NEI q=4 + IP)", fontsize=14)
-
-# AFTER:
-plt.suptitle("F5 — GP Matérn-5/2 ARD Surrogate (Week 9, NEI q=4)", fontsize=14)
-```
-
-### Step 5: Update Step 8 submission cell
-
-Simplify the submission cell to show only the base NEI submission. Remove the IP submission block and penalty parameter diagnostics:
-
-```python
-# REMOVE the entire IP submission block:
-# ── In-Loop Interior Penalty Submission ──
-submission_ip = np.clip(next_x_ip, 0.0, 0.999999)
-query_ip = "-".join(f"{v:.6f}" for v in submission_ip)
-# ... all IP print statements ...
-
-# REMOVE penalty parameter output:
-print(f"Interior Penalty: STEEPNESS={STEEPNESS}, FLOOR={FLOOR}, bounds=[{EPS_BOUND}, {1-EPS_BOUND}]")
-
-# KEEP the base NEI submission and format validation
-```
-
-### Step 6: Update title and hyperparameter table
-
-Update the title markdown cell:
-```markdown
-<!-- BEFORE: -->
-## Week 9 — GP Matérn-5/2 + qLogNEI + Interior Penalty (4D)
-
-<!-- AFTER: -->
-## Week 9 — GP Matérn-5/2 + qLogNEI (4D)
-```
-
-Remove "Interior Penalty" from the description paragraph and delete rows 16-17 from the hyperparameter table:
-```markdown
-<!-- REMOVE these rows: -->
-| 16 | IP STEEPNESS | 1.0 | Boundary suppression |
-| 17 | IP FLOOR | 0.01 | Minimum penalty at boundary |
-```
-
-### Step 7: Update strategy recommendations
-
-Update the strategy markdown cell at the end of the notebook to note that interior penalty was evaluated and removed. Remove any recommendations about adjusting STEEPNESS.
-
-### Step 8: Verify and run
-
-Execute all cells. Confirm:
-- [ ] Data loads successfully (29 samples, 4D)
-- [ ] GP trains with 15-restart MLL (log1p → z-score, outcome_transform=None)
-- [ ] Base NEI acquisition runs with q=4, 50 restarts, 3000 raw samples
-- [ ] Distance-based selection produces a candidate
-- [ ] Submission query formatted as `0.xxxxxx-0.xxxxxx-0.xxxxxx-0.xxxxxx`
-- [ ] All values clipped to [0.0, 0.999999]
-- [ ] Surrogate visualisation renders 3-panel plot without penalty reference
-- [ ] No penalty visualisation panel exists
-- [ ] Convergence plot renders correctly
-- [ ] Convergence metrics and exploration spread cells execute unchanged
-- [ ] LOO cross-validation completes without errors
-- [ ] No references to `PenalisedAcquisition`, `penalised_nei`, `STEEPNESS`, `FLOOR`, `EPS_BOUND`, or `BOUNDS_IP` remain
-
-## Key Differences from Previous Strategy
-
-| Aspect | Before | After |
-|--------|--------|-------|
-| Acquisition wrapper | PenalisedAcquisition (additive log-space 4x(1-x)) | Plain qLogNEI (no wrapper) |
-| Acquisition bounds | Tightened [0.005, 0.995] | Standard [0, 1] |
-| Candidate selection | Penalty-weighted distance selection | Base NEI distance selection |
-| Penalty constants | STEEPNESS=1.0, FLOOR=0.01, EPS_BOUND=0.005 | Removed |
-| Visualisation | 3-panel surrogate + 3-panel penalty | 3-panel surrogate only |
-| Submission | Dual (base + IP) | Single (base NEI only) |
+| # | Check | Pass? |
+|---|-------|-------|
+| 1 | Branch `026-f5-kernel-standardize` created from `025-f5-remove-penalty` | |
+| 2 | Notebook has 23 cells (unchanged count) | |
+| 3 | `Standardize` import present in cell 2 | |
+| 4 | No `y_mean`, `y_std_val`, `y_std` variables in cell 4 | |
+| 5 | `MaternKernel(nu=1.5, ...)` in cells 8 and 22 | |
+| 6 | `outcome_transform=Standardize(m=1)` in cells 8 and 22 | |
+| 7 | `raw_samples=5000` in cell 10 | |
+| 8 | All inverse transforms use `expm1(posterior.mean)` (no manual z-score inverse) | |
+| 9 | All code cells execute without errors | |
+| 10 | Submission query format: `0.xxxxxx-0.xxxxxx-0.xxxxxx-0.xxxxxx` with all values in [0, 0.999999] | |
+| 11 | LOO MAE produces valid result | |
+| 12 | Suptitle and prints reference "Matérn-1.5" and "Standardize(m=1)" | |
+| 13 | Zero references to manual z-score variables (`y_mean`, `y_std_val`, `y_std`) except in `y_std` as LOO internal | |
+| 14 | Results reviewed and further improvements suggested | |

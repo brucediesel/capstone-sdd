@@ -55,10 +55,10 @@ As a student, I need an evaluation of each function's optimisation trajectory so
 - **FR-004**: Each notebook MUST display a convergence plot showing the running best (maximum) objective value over all iterations, with initial samples visually distinguished from weekly submissions (blue for initial, orange for submissions).
 - **FR-005**: For F1 specifically, the convergence plot MUST use a logarithmic y-axis scale. Negative output values MUST be set to zero before computing the log. symlog MUST NOT be used.
 - **FR-006**: Each notebook MUST display 2D scatter plots of outputs versus each unique pair of input dimensions, producing $\binom{d}{2}$ subplots where $d$ is the input dimensionality.
-- **FR-007**: In the 2D pair plots, each sample point MUST be annotated with its sampling order number (1, 2, 3, ... N).
-- **FR-008**: Initial sample points MUST be displayed in a distinct colour (blue) from submission points (orange) in all 2D pair plots.
-- **FR-009**: Each notebook MUST contain a markdown section evaluating the optimisation performance, including: best value found, number of improvements observed, whether the optimisation is stalling (no new best in 3+ consecutive submissions), and the spatial spread of sample points.
-- **FR-010**: Each notebook MUST contain a markdown section proposing specific strategy improvements based on the performance evaluation. Suggestions must be specific and actionable (e.g., "switch kernel from Matérn-2.5 to Matérn-1.5" rather than "try a different kernel").
+- **FR-007**: In the 2D pair plots, submission sample points MUST be annotated with their submission week number (3, 4, 5, ..., 10). Initial sample points are not numbered.
+- **FR-008**: Initial sample points MUST be displayed in blue, submission points in orange. No output value encoding via colour — the pair plots show spatial coverage only.
+- **FR-009**: Each notebook MUST contain a markdown section that first summarises the current (week 9) surrogate model and acquisition function used for that function, then evaluates the optimisation performance including: best value found, number of improvements observed, whether the optimisation is stalling (no new best in 3+ consecutive submissions), and the spatial spread of sample points.
+- **FR-010**: Each notebook MUST contain a markdown section proposing specific strategy improvements relative to the current surrogate and acquisition function. Suggestions must name the current configuration and propose concrete changes (e.g., "Current SFGP with Matérn-1.5 is stalling; switch to Matérn-2.5 for smoother interpolation" rather than "try a different kernel").
 - **FR-011**: Notebooks MUST NOT propose a next sample point or run any optimisation loop — they stop after proposing improvements. Strategy changes will be specified in a follow-up after review.
 
 ### Function Data Summary
@@ -78,7 +78,14 @@ As a student, I need an evaluation of each function's optimisation trajectory so
 
 - **Function Data**: Input/output numpy arrays for each of the 8 functions, loaded from `./data/fX/` folders. Inputs are in range [0, 1], outputs are 1-dimensional real values.
 - **Convergence Plot**: Line chart of running best (maximum) objective value. X-axis = sample number, Y-axis = best-so-far value. Vertical line or colour change at the boundary between initial and submission samples.
-- **2D Pair Plots**: Scatter plots where each subplot shows two input dimensions on the axes, with output value encoded as marker colour. Points annotated with their sample index number. Initial points in blue, submissions in orange.
+- **2D Pair Plots**: Scatter plots where each subplot shows two input dimensions on the axes. Colour distinguishes initial (blue) from submission (orange) points — no output value encoding. Submission points annotated with their week number (3–10); initial points unmarked.
+
+## Clarifications
+
+### Session 2026-03-11
+
+- Q: How should output value be represented in the 2D pair plots (colour conflicts between initial/submission distinction and output encoding)? → A: Colour = initial (blue) vs submission (orange) only; no output value encoding; submission points numbered by week.
+- Q: Should each notebook reference its prior week's strategy when evaluating and suggesting improvements? → A: Yes — each notebook summarises the current (week 9) surrogate & acquisition function, then proposes improvements relative to that strategy.
 
 ## Assumptions
 

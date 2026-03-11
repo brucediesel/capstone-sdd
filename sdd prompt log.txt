@@ -369,3 +369,13 @@ Provide the next query for each function in this format
 3. **Consider BoTorch Standardize(m=1)** — replace manual z-score to simplify the pipeline
 - recreate F5 notebook for week 9 with these recommendations.
 - on completion of the run, review the results and suggest further improvements.
+
+/specify
+- create new branch for f7
+- change f7 - week 9.ipynb to prioritise exploitation
+
+/specify
+- change the "process_results.ipynb" notebook to present the covergence plot of F1 in log scale to better see outputs.
+
+/clarify
+- use a log scale for F1, but set any negative outputs to zero so log can be calculated.  Do not use symlog

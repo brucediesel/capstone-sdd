@@ -49,6 +49,10 @@ Auto-generated from all feature plans. Last updated: 2026-02-17
 - Python 3.14 (pyenv `sdd-dev`) + BoTorch, GPyTorch, PyTorch, NumPy, Matplotlib (025-f5-remove-penalty)
 - `.npy` files in `./data/f5/` (025-f5-remove-penalty)
 - Python 3.14 (pyenv `sdd-dev`) + PyTorch, NumPy, Matplotlib, SciPy (027-f7-exploitation)
+- Python 3.14 (pyenv `sdd-dev`) + matplotlib (already imported in notebook), numpy (028-f1-log-convergence)
+- N/A (notebook visualization change only) (028-f1-log-convergence)
+- Python 3.14 (pyenv `sdd-dev`) + matplotlib (plotting), numpy (data manipulation) — both already imported in notebook (028-f1-log-convergence)
+- `.npy` files in `./data/f1/` through `./data/f8/` (028-f1-log-convergence)
 
 - Python 3.14.2 (pyenv sdd-dev) + numpy, matplotlib, scikit-learn (Ridge, RF, GBT), PyTorch (NN), scipy (f1 only) (003-week6-focus-on-exploitation)
 
@@ -68,9 +72,9 @@ cd src [ONLY COMMANDS FOR ACTIVE TECHNOLOGIES][ONLY COMMANDS FOR ACTIVE TECHNOLO
 Python 3.14.2 (pyenv sdd-dev): Follow standard conventions
 
 ## Recent Changes
+- 028-f1-log-convergence: Added Python 3.14 (pyenv `sdd-dev`) + matplotlib (plotting), numpy (data manipulation) — both already imported in notebook
+- 028-f1-log-convergence: Added Python 3.14 (pyenv `sdd-dev`) + matplotlib (already imported in notebook), numpy
 - 027-f7-exploitation: Added Python 3.14 (pyenv `sdd-dev`) + PyTorch, NumPy, Matplotlib, SciPy
-- 025-f5-remove-penalty: Added Python 3.14 (pyenv `sdd-dev`) + BoTorch, GPyTorch, PyTorch, NumPy, Matplotlib
-- 025-f5-remove-penalty: Added Python 3.14 (pyenv `sdd-dev` environment) + BoTorch (SingleTaskGP, qLogNoisyExpectedImprovement, optimize_acqf), GPyTorch (MaternKernel, ScaleKernel, GaussianLikelihood, ExactMarginalLogLikelihood), NumPy, Matplotlib, SciPy
 
 
 <!-- MANUAL ADDITIONS START -->

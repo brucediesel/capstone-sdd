@@ -19,7 +19,7 @@
 
 **Purpose**: Verify data availability and confirm branch is ready
 
-- [ ] T001 Verify Week 10 data files exist in ./data/f1/ through ./data/f8/ (updated_inputs - Week 10.npy & updated_outputs - Week 10.npy)
+- [X] T001 Verify Week 10 data files exist in ./data/f1/ through ./data/f8/ (updated_inputs - Week 10.npy & updated_outputs - Week 10.npy)
 
 ---
 
@@ -29,7 +29,7 @@
 
 **⚠️ CRITICAL**: T002 establishes the pattern. All subsequent [P] notebooks in Phases 3–4 follow this pattern with function-specific constants and strategy text.
 
-- [ ] T002 [US1] Create reference notebook functions/f1/f1 - week 10.ipynb with all cells: imports (numpy, matplotlib, itertools), FunctionConfig constants (FUNC_NUM=1, N_DIMS=2, N_INITIAL=10, USE_LOG_SCALE=True, DATA_DIR), data loading from ../../data/f1/updated_inputs - Week 10.npy and updated_outputs - Week 10.npy, data summary display, convergence plot with log y-axis (np.maximum(outputs, 1e-300) before log to avoid -inf, blue initial / orange submissions, vertical dashed line at sample 10), single 2D pair plot (only 1 pair for 2D) with blue initial unmarked / orange submissions numbered by week (3–10), performance evaluation markdown summarising week 9 Hurdle Model + Weighted UCB strategy and evaluating 0/9 improvements as stalling, and improvement suggestions markdown proposing specific changes to the F1 strategy
+- [X] T002 [US1] Create reference notebook functions/f1/f1 - week 10.ipynb with all cells: imports (numpy, matplotlib, itertools), FunctionConfig constants (FUNC_NUM=1, N_DIMS=2, N_INITIAL=10, USE_LOG_SCALE=True, DATA_DIR), data loading from ../../data/f1/updated_inputs - Week 10.npy and updated_outputs - Week 10.npy, data summary display, convergence plot with log y-axis (np.maximum(outputs, 1e-300) before log to avoid -inf, blue initial / orange submissions, vertical dashed line at sample 10), single 2D pair plot (only 1 pair for 2D) with blue initial unmarked / orange submissions numbered by week (3–10), performance evaluation markdown summarising week 9 Hurdle Model + Weighted UCB strategy and evaluating 0/9 improvements as stalling, and improvement suggestions markdown proposing specific changes to the F1 strategy
 
 **Checkpoint**: F1 notebook is complete and serves as the template for F2–F8
 
@@ -43,13 +43,13 @@
 
 ### Implementation for User Story 1
 
-- [ ] T003 [P] [US1] Create notebook functions/f2/f2 - week 10.ipynb — adapt from F1 pattern: FUNC_NUM=2, N_DIMS=2, N_INITIAL=10, USE_LOG_SCALE=False, DATA_DIR=../../data/f2/, linear y-axis convergence plot, 1 pair plot subplot
-- [ ] T004 [P] [US1] Create notebook functions/f3/f3 - week 10.ipynb — FUNC_NUM=3, N_DIMS=3, N_INITIAL=15, USE_LOG_SCALE=False, DATA_DIR=../../data/f3/, linear convergence plot, 3 pair plot subplots in 1×3 grid
-- [ ] T005 [P] [US1] Create notebook functions/f4/f4 - week 10.ipynb — FUNC_NUM=4, N_DIMS=4, N_INITIAL=30, USE_LOG_SCALE=False, DATA_DIR=../../data/f4/, linear convergence plot, 6 pair plot subplots in 2×3 grid
-- [ ] T006 [P] [US1] Create notebook functions/f5/f5 - week 10.ipynb — FUNC_NUM=5, N_DIMS=4, N_INITIAL=20, USE_LOG_SCALE=False, DATA_DIR=../../data/f5/, linear convergence plot, 6 pair plot subplots in 2×3 grid
-- [ ] T007 [P] [US1] Create notebook functions/f6/f6 - week 10.ipynb — FUNC_NUM=6, N_DIMS=5, N_INITIAL=20, USE_LOG_SCALE=False, DATA_DIR=../../data/f6/, linear convergence plot, 10 pair plot subplots in 2×5 grid
-- [ ] T008 [P] [US1] Create notebook functions/f7/f7 - week 10.ipynb — FUNC_NUM=7, N_DIMS=6, N_INITIAL=30, USE_LOG_SCALE=False, DATA_DIR=../../data/f7/, linear convergence plot, 15 pair plot subplots in 3×5 grid
-- [ ] T009 [P] [US1] Create notebook functions/f8/f8 - week 10.ipynb — FUNC_NUM=8, N_DIMS=8, N_INITIAL=40, USE_LOG_SCALE=False, DATA_DIR=../../data/f8/, linear convergence plot, 28 pair plot subplots in 4×7 grid
+- [X] T003 [P] [US1] Create notebook functions/f2/f2 - week 10.ipynb — adapt from F1 pattern: FUNC_NUM=2, N_DIMS=2, N_INITIAL=10, USE_LOG_SCALE=False, DATA_DIR=../../data/f2/, linear y-axis convergence plot, 1 pair plot subplot
+- [X] T004 [P] [US1] Create notebook functions/f3/f3 - week 10.ipynb — FUNC_NUM=3, N_DIMS=3, N_INITIAL=15, USE_LOG_SCALE=False, DATA_DIR=../../data/f3/, linear convergence plot, 3 pair plot subplots in 1×3 grid
+- [X] T005 [P] [US1] Create notebook functions/f4/f4 - week 10.ipynb — FUNC_NUM=4, N_DIMS=4, N_INITIAL=30, USE_LOG_SCALE=False, DATA_DIR=../../data/f4/, linear convergence plot, 6 pair plot subplots in 2×3 grid
+- [X] T006 [P] [US1] Create notebook functions/f5/f5 - week 10.ipynb — FUNC_NUM=5, N_DIMS=4, N_INITIAL=20, USE_LOG_SCALE=False, DATA_DIR=../../data/f5/, linear convergence plot, 6 pair plot subplots in 2×3 grid
+- [X] T007 [P] [US1] Create notebook functions/f6/f6 - week 10.ipynb — FUNC_NUM=6, N_DIMS=5, N_INITIAL=20, USE_LOG_SCALE=False, DATA_DIR=../../data/f6/, linear convergence plot, 10 pair plot subplots in 2×5 grid
+- [X] T008 [P] [US1] Create notebook functions/f7/f7 - week 10.ipynb — FUNC_NUM=7, N_DIMS=6, N_INITIAL=30, USE_LOG_SCALE=False, DATA_DIR=../../data/f7/, linear convergence plot, 15 pair plot subplots in 3×5 grid
+- [X] T009 [P] [US1] Create notebook functions/f8/f8 - week 10.ipynb — FUNC_NUM=8, N_DIMS=8, N_INITIAL=40, USE_LOG_SCALE=False, DATA_DIR=../../data/f8/, linear convergence plot, 28 pair plot subplots in 4×7 grid
 
 **Checkpoint**: All 8 notebooks load data and display convergence + pair plots correctly
 
@@ -65,20 +65,20 @@
 
 > Note: T002 (F1) already includes both US1 and US2 content. The tasks below add the US2 markdown content to F2–F8.
 
-- [ ] T010 [P] [US2] Add performance evaluation markdown to functions/f2/f2 - week 10.ipynb — summarise week 9 strategy (SFGP Matérn-1.5 ARD, qLogNEI q=4), evaluate 1/9 improvements, flag stalling and local-optimum trapping
-- [ ] T011 [P] [US2] Add improvement suggestions markdown to functions/f2/f2 - week 10.ipynb — propose specific changes relative to SFGP Matérn-1.5 (e.g., increase exploration, change kernel, add restart mechanism)
-- [ ] T012 [P] [US2] Add performance evaluation markdown to functions/f3/f3 - week 10.ipynb — summarise week 9 strategy (SFGP Matérn-2.5 ARD, qLogNEI q=1), evaluate 2/9 improvements, note slow but steady progress
-- [ ] T013 [P] [US2] Add improvement suggestions markdown to functions/f3/f3 - week 10.ipynb — propose specific changes relative to SFGP Matérn-2.5 (e.g., increase q, adjust restarts, consider different acquisition)
-- [ ] T014 [P] [US2] Add performance evaluation markdown to functions/f4/f4 - week 10.ipynb — summarise week 9 strategy (MFGP Matérn-2.5 + LinearTruncated, MF-qNEI q=4), evaluate 5/9 improvements but recent stalling, flag MFGP on single-fidelity data concern
-- [ ] T015 [P] [US2] Add improvement suggestions markdown to functions/f4/f4 - week 10.ipynb — propose specific changes relative to MFGP (e.g., switch to SFGP since only single-fidelity data available, adjust noise bounds)
-- [ ] T016 [P] [US2] Add performance evaluation markdown to functions/f5/f5 - week 10.ipynb — summarise week 9 strategy (GP Matérn-1.5 ARD, qLogNEI q=4, log1p + Standardize), evaluate 9/9 improvements, note strong performance
-- [ ] T017 [P] [US2] Add improvement suggestions markdown to functions/f5/f5 - week 10.ipynb — propose specific refinements for continued improvement (e.g., fine-tune exploration/exploitation balance, review distance-based candidate selection)
-- [ ] T018 [P] [US2] Add performance evaluation markdown to functions/f6/f6 - week 10.ipynb — summarise week 9 strategy (SFGP Matérn-1.5 ARD, qLogNEI q=4, rank-based IP), evaluate 9/9 improvements, note all-negative but trending towards zero
-- [ ] T019 [P] [US2] Add improvement suggestions markdown to functions/f6/f6 - week 10.ipynb — propose specific refinements (e.g., adjust milk constraint, review IP steepness, consider output transformation)
-- [ ] T020 [P] [US2] Add performance evaluation markdown to functions/f7/f7 - week 10.ipynb — summarise week 9 strategy (NN 6→5→5→1, 70% mean + 30% EI, interior penalty), evaluate 4/9 improvements, flag stalling in recent weeks
-- [ ] T021 [P] [US2] Add improvement suggestions markdown to functions/f7/f7 - week 10.ipynb — propose specific changes relative to NN surrogate (e.g., increase exploration weight, change network architecture, consider switch to GP-based surrogate)
-- [ ] T022 [P] [US2] Add performance evaluation markdown to functions/f8/f8 - week 10.ipynb — summarise week 9 strategy (SFGP Matérn-2.5 ARD, qEI XI=0.01), evaluate 8/9 near-continuous improvement, note positive trajectory
-- [ ] T023 [P] [US2] Add improvement suggestions markdown to functions/f8/f8 - week 10.ipynb — propose specific refinements for final rounds (e.g., fine-tune XI, increase MC samples if stable, review noise floor)
+- [X] T010 [P] [US2] Add performance evaluation markdown to functions/f2/f2 - week 10.ipynb — summarise week 9 strategy (SFGP Matérn-1.5 ARD, qLogNEI q=4), evaluate 1/9 improvements, flag stalling and local-optimum trapping
+- [X] T011 [P] [US2] Add improvement suggestions markdown to functions/f2/f2 - week 10.ipynb — propose specific changes relative to SFGP Matérn-1.5 (e.g., increase exploration, change kernel, add restart mechanism)
+- [X] T012 [P] [US2] Add performance evaluation markdown to functions/f3/f3 - week 10.ipynb — summarise week 9 strategy (SFGP Matérn-2.5 ARD, qLogNEI q=1), evaluate 2/9 improvements, note slow but steady progress
+- [X] T013 [P] [US2] Add improvement suggestions markdown to functions/f3/f3 - week 10.ipynb — propose specific changes relative to SFGP Matérn-2.5 (e.g., increase q, adjust restarts, consider different acquisition)
+- [X] T014 [P] [US2] Add performance evaluation markdown to functions/f4/f4 - week 10.ipynb — summarise week 9 strategy (MFGP Matérn-2.5 + LinearTruncated, MF-qNEI q=4), evaluate 5/9 improvements but recent stalling, flag MFGP on single-fidelity data concern
+- [X] T015 [P] [US2] Add improvement suggestions markdown to functions/f4/f4 - week 10.ipynb — propose specific changes relative to MFGP (e.g., switch to SFGP since only single-fidelity data available, adjust noise bounds)
+- [X] T016 [P] [US2] Add performance evaluation markdown to functions/f5/f5 - week 10.ipynb — summarise week 9 strategy (GP Matérn-1.5 ARD, qLogNEI q=4, log1p + Standardize), evaluate 9/9 improvements, note strong performance
+- [X] T017 [P] [US2] Add improvement suggestions markdown to functions/f5/f5 - week 10.ipynb — propose specific refinements for continued improvement (e.g., fine-tune exploration/exploitation balance, review distance-based candidate selection)
+- [X] T018 [P] [US2] Add performance evaluation markdown to functions/f6/f6 - week 10.ipynb — summarise week 9 strategy (SFGP Matérn-1.5 ARD, qLogNEI q=4, rank-based IP), evaluate 9/9 improvements, note all-negative but trending towards zero
+- [X] T019 [P] [US2] Add improvement suggestions markdown to functions/f6/f6 - week 10.ipynb — propose specific refinements (e.g., adjust milk constraint, review IP steepness, consider output transformation)
+- [X] T020 [P] [US2] Add performance evaluation markdown to functions/f7/f7 - week 10.ipynb — summarise week 9 strategy (NN 6→5→5→1, 70% mean + 30% EI, interior penalty), evaluate 4/9 improvements, flag stalling in recent weeks
+- [X] T021 [P] [US2] Add improvement suggestions markdown to functions/f7/f7 - week 10.ipynb — propose specific changes relative to NN surrogate (e.g., increase exploration weight, change network architecture, consider switch to GP-based surrogate)
+- [X] T022 [P] [US2] Add performance evaluation markdown to functions/f8/f8 - week 10.ipynb — summarise week 9 strategy (SFGP Matérn-2.5 ARD, qEI XI=0.01), evaluate 8/9 near-continuous improvement, note positive trajectory
+- [X] T023 [P] [US2] Add improvement suggestions markdown to functions/f8/f8 - week 10.ipynb — propose specific refinements for final rounds (e.g., fine-tune XI, increase MC samples if stable, review noise floor)
 
 **Checkpoint**: All 8 notebooks have performance evaluation and improvement suggestion markdown sections
 
@@ -88,10 +88,10 @@
 
 **Purpose**: Final validation across all notebooks
 
-- [ ] T024 Run all 8 notebooks top-to-bottom and verify no execution errors
-- [ ] T025 Verify convergence plot styling consistency across all notebooks (blue/orange colours, dashed separator line, axis labels)
-- [ ] T026 Verify pair plot week numbering is correct (3–10) across all notebooks and initial points are unmarked
-- [ ] T027 Commit all 8 notebooks to branch 029-f1-f8-week10-review
+- [X] T024 Run all 8 notebooks top-to-bottom and verify no execution errors
+- [X] T025 Verify convergence plot styling consistency across all notebooks (blue/orange colours, dashed separator line, axis labels)
+- [X] T026 Verify pair plot week numbering is correct (3–10) across all notebooks and initial points are unmarked
+- [X] T027 Commit all 8 notebooks to branch 029-f1-f8-week10-review
 
 ---
 

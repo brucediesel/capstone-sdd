@@ -379,3 +379,13 @@ Provide the next query for each function in this format
 
 /clarify
 - use a log scale for F1, but set any negative outputs to zero so log can be calculated.  Do not use symlog
+
+/specify
+- create new branch for week 10
+- create new notebooks for F1-F8 in their appropriate folders
+- First, we need to visulise the performance of the last submission output before deciding a strategy for next submission
+- In each notebook, provide the following vislualisations:
+    1. covergence plot (using log scale for F1, but zero the output for negative results (don't calculate log))
+    2. 2D plots of the outputs vs pairs of inputs, numbering the output points in the order in which they were sampled, with initial values in a different colour
+- Evaluate the performance of the optimisation process, and suggest how they can be improved - document these suggestions in markdown
+- sopt after proposing improvements, after review, we will specify changes to strategy for next sample point.

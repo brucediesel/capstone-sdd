@@ -79,3 +79,107 @@
 - All figures use `fig.tight_layout()` for clean spacing
 
 **Alternatives considered**: Plotly (interactive) — rejected for simplicity per constitution; seaborn — unnecessary dependency.
+
+---
+
+## F1 Optimisation Run — Research (Phase 0)
+
+**Spec**: [spec-f1-optimisation.md](spec-f1-optimisation.md)  
+**Date**: 2026-03-11
+
+### R6: Matérn-2.5 vs Matérn-1.5 for F1
+
+**Decision**: Use Matérn-2.5 (nu=2.5) for F1.
+
+- F1 outputs span ~230 orders of magnitude — the posterior surface benefits from the twice-differentiability of Matérn-2.5 for smoother interpolation between sparse positive observations
+- Project precedent: F3, F4 (MFGP), and F8 all use Matérn-2.5 successfully; F2, F5, F6 use Matérn-1.5
+- Prequential evaluation on F8 showed nu=2.5 outperformed nu=1.5 in grid search
+- For 2D functions with very sparse data (20 points), the smoother kernel provides better extrapolation
+
+**Alternatives considered**: Matérn-1.5 (used by F2) — rejected because F1's extremely sparse near-zero observations need smoother interpolation; RBF (too smooth, may underfit noise).
+
+**Rationale**: The smoothness assumption of Matérn-2.5 is appropriate because F1 outputs suggest a continuous underlying function with steep but smooth gradients near the optimum.
+
+### R7: Log-transform implementation for F1
+
+**Decision**: Use `y_log = torch.log(torch.clamp(y, min=1e-300))` as manual transform before GP fitting.
+
+- F1 week 9 already uses `np.log(y_pos)` for the RF regressor — same principle, different framework
+- F5 uses `log1p` — rejected for F1 because outputs are < 1e-15, making log1p(y) ≈ y (no compression)
+- BoTorch's `Standardize(m=1)` can be applied AFTER the manual log transform for additional normalisation
+- Expected range after log: approximately [-690, -35] from the current 20 data points
+- No BoTorch output transform needed — manual log is applied once to the tensor before constructing the GP
+
+**Alternatives considered**:
+- BoTorch `Log` outcome transform — exists but applies inverse transform on predictions, adding complexity
+- `log1p` — produces near-zero values for F1's tiny outputs; insufficient dynamic range
+- No transform — GP fitting on raw values spanning 230 orders of magnitude fails numerically
+
+**Rationale**: Manual log before GP fitting is the simplest approach (per constitution Principle I) and matches the F1 week 9 pattern.
+
+### R8: Sobol seeding with 10,000 points — performance impact
+
+**Decision**: Use `raw_samples=10000` for optimize_acqf.
+
+- Project precedent: F1 week 9 uses 20,000 random candidates for acquisition search (even heavier)
+- F2 uses raw_samples=1024 (2D); F5 uses 5000 (4D); F8 uses 4096 (8D)
+- For 2D, 10,000 Sobol points provide dense coverage of [0,1]² (100×100 equivalent)
+- BoTorch's optimize_acqf generates Sobol points internally — no custom code needed
+- Performance: 10k Sobol in 2D is fast (<1s); the q=4 L-BFGS optimisation from 20 restarts is the bottleneck
+
+**Alternatives considered**: raw_samples=1024 (F2 default) — rejected because F1 has 0/10 improvements, indicating the acquisition landscape needs denser initial coverage; raw_samples=20000 — unnecessary given BoTorch's optimiser uses L-BFGS from best Sobol points.
+
+**Rationale**: 10,000 provides good coverage without computational overhead. Matches the user's explicit request.
+
+### R9: Distance-based candidate selection from q=4
+
+**Decision**: Reuse the F2 week 9 two-stage selection pattern verbatim.
+
+**Pattern** (from F2 week 9):
+1. Get posterior means for all q=4 candidates
+2. Quality gate: keep candidates with mean ≥ median of the batch
+3. Exploration bonus: from qualified set, select the one with maximum minimum-distance to all training points
+
+- This pattern is proven in F2 and balances quality (promising predictions) with exploration (spatial diversity)
+- For F1 with 20 training points in 2D, the distance computation is trivial
+- Uses `torch.cdist` for efficient Euclidean distance calculation
+
+**Alternatives considered**: Pure exploitation (pick highest mean) — rejected because F1 needs exploration; pure exploration (pick farthest from data) — rejected because it ignores model predictions entirely.
+
+**Rationale**: Two-stage filter ensures the proposed point is both promising AND spatially diverse.
+
+### R10: GP hyperparameter bounds and constraints
+
+**Decision**: Use the following constraints for F1's SFGP:
+
+| Parameter | Constraint | Justification |
+|-----------|-----------|---------------|
+| Lengthscale (per dim) | Interval(0.01, 2.0) | Prevents collapse to zero or infinity; matches F2 pattern |
+| Noise variance | GreaterThan(1e-4) | F1 log-outputs are noisy; 1e-4 prevents numerical issues |
+| Outputscale | Default (unconstrained) | Let MLL determine appropriate scale for log-transformed data |
+| MLL restarts | 15 | Matches F2; sufficient to avoid degenerate solutions for 2D |
+
+- F2 uses noise_lb=1e-3, but F1's log-transformed outputs may have less observation noise → use 1e-4
+- Lengthscale bounds [0.01, 2.0] prevent degenerate fits: too small = overfitting, too large = constant model
+- Each restart uses a different `torch.manual_seed(seed)` for reproducible but diverse initialisation
+
+**Alternatives considered**: noise_lb=1e-3 (F2 value) — potentially too aggressive for log-space where values span [-690, -35]; Unconstrained lengthscales — risk of degenerate solutions with only 20 points.
+
+### R11: Existing notebook variables in scope
+
+**Decision**: The new cells can reuse variables from the existing 12 cells.
+
+Variables available after running existing cells 1–12:
+- `inputs` (ndarray, shape [20, 2]) — all input data
+- `outputs` (ndarray, shape [20]) — all output data
+- `N_INITIAL` = 10
+- `FUNC_NUM` = 1
+- `DATA_DIR` = '../../data/f1/'
+- `USE_LOG_SCALE` = True
+- `WEEK` = 10
+- `N_DIMS` = 2
+- `n_total` = 20
+- `n_submissions` = 10
+- `running_best` (ndarray from `np.maximum.accumulate(outputs)`)
+
+New cells will import BoTorch/GPyTorch, convert data to tensors, and proceed with the GP pipeline. No re-loading of data is needed.

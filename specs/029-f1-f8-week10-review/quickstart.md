@@ -59,3 +59,53 @@ After running a notebook, verify:
 - Pair plot point numbers match expected week range (3–10)
 - Performance evaluation markdown is populated with specific metrics
 - Improvement suggestions reference the current strategy by name
+
+---
+
+## F1 Optimisation Run — Quickstart
+
+**Spec**: [spec-f1-optimisation.md](spec-f1-optimisation.md)
+
+### Prerequisites
+
+- All review notebook prerequisites (above)
+- BoTorch and GPyTorch installed in the `sdd-dev` environment
+- Week 10 data present: `data/f1/updated_inputs - Week 10.npy`, `data/f1/updated_outputs - Week 10.npy`
+
+### Running the F1 Optimisation
+
+```bash
+# From repository root
+cd functions/f1
+jupyter notebook "f1 - week 10.ipynb"
+# Run All Cells (Kernel > Restart & Run All)
+```
+
+The notebook has two sections:
+1. **Cells 1–12**: Review & evaluation (existing) — loads data, plots convergence, pair plots, evaluates performance, suggests improvements
+2. **Cells 13–19**: Optimisation run (new) — fits SFGP, runs qLogNEI, selects candidate, visualises surrogate, shows updated convergence
+
+### Expected Output from Optimisation Cells
+
+1. **Configuration** — Prints all hyperparameter values
+2. **Data Preparation** — Prints tensor shapes and log-transformed output range
+3. **GP Fitting** — Prints fitted hyperparameters after 15 MLL restarts:
+   - Lengthscales (2 values, one per dimension)
+   - Noise variance
+   - Output scale
+   - Best MLL loss
+4. **Acquisition** — Prints all 4 candidates, selection rationale, and formatted submission:
+   ```
+   >>> SUBMISSION: 0.xxxxxx-0.yyyyyy
+   ```
+5. **Surrogate Visualisation** — 3-panel contour: mean, uncertainty, acquisition surface
+6. **Convergence Plot** — Running best with proposed point marked
+
+### Verification Checklist
+
+- [ ] All cells execute without errors
+- [ ] GP hyperparameters are reasonable (lengthscales 0.01–2.0, noise > 0)
+- [ ] Submission point is in valid range [0.0, 0.999999] for both dimensions
+- [ ] No duplicate warning printed
+- [ ] 3-panel contour renders with correct colour overlays
+- [ ] Convergence plot shows proposed point in green

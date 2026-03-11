@@ -55,6 +55,7 @@ Auto-generated from all feature plans. Last updated: 2026-02-17
 - `.npy` files in `./data/f1/` through `./data/f8/` (028-f1-log-convergence)
 - Python 3.x (Jupyter notebooks) + numpy, matplotlib, itertools (standard library) (029-f1-f8-week10-review)
 - `.npy` files in `./data/fX/` folders (029-f1-f8-week10-review)
+- Python 3.14.2 (pyenv `sdd-dev` environment) + BoTorch, GPyTorch, PyTorch, NumPy, Matplotlib (029-f1-f8-week10-review)
 
 - Python 3.14.2 (pyenv sdd-dev) + numpy, matplotlib, scikit-learn (Ridge, RF, GBT), PyTorch (NN), scipy (f1 only) (003-week6-focus-on-exploitation)
 
@@ -74,9 +75,9 @@ cd src [ONLY COMMANDS FOR ACTIVE TECHNOLOGIES][ONLY COMMANDS FOR ACTIVE TECHNOLO
 Python 3.14.2 (pyenv sdd-dev): Follow standard conventions
 
 ## Recent Changes
+- 029-f1-f8-week10-review: Added Python 3.14.2 (pyenv `sdd-dev` environment) + BoTorch, GPyTorch, PyTorch, NumPy, Matplotlib
 - 029-f1-f8-week10-review: Added Python 3.x (Jupyter notebooks) + numpy, matplotlib, itertools (standard library)
 - 028-f1-log-convergence: Added Python 3.14 (pyenv `sdd-dev`) + matplotlib (plotting), numpy (data manipulation) — both already imported in notebook
-- 028-f1-log-convergence: Added Python 3.14 (pyenv `sdd-dev`) + matplotlib (already imported in notebook), numpy
 
 
 <!-- MANUAL ADDITIONS START -->

@@ -15,7 +15,7 @@
 | F2 | SFGP Matérn-1.5 ARD | qLogNEI q=4 with distance selection | noise_lb=1e-3, LS bounds [0.01, 2.0], 15 MLL restarts |
 | F3 | SFGP Matérn-2.5 ARD, Standardize(m=1) | qLogNEI q=1 | 20 restarts, 512 raw samples, noise_lb=1e-6 |
 | F4 | MFGP Matérn-2.5 + LinearTruncatedFidelityKernel | MF-qNEI q=4, 64 fantasies | noise_lb=1e-4, fidelity fixed at 1.0 |
-| F5 | GP Matérn-1.5 ARD, log1p + Standardize(m=1) | qLogNEI q=4, distance-based | 50 restarts, 5000 raw samples, interior penalty S=1.0/F=0.01 |
+| F5 | GP Matérn-1.5 ARD, log1p + Standardize(m=1) | qLogNEI q=4, distance-based | 50 restarts, 5000 raw samples |
 | F6 | SFGP Matérn-1.5 ARD, noise_lb=1e-2 | qLogNEI q=4, rank-based interior penalty | 50 restarts, 3000 raw samples, milk ≥ 0.10 constraint |
 | F7 | Neural Network (6→5→5→1, dropout=0.05) | 70% mean + 30% EI blend, interior penalty | lr=0.005, 200 epochs, 20k candidates, STEEPNESS=0.05 |
 | F8 | SFGP Matérn-2.5 ARD, Standardize(m=1) | qEI, XI=0.01 | noise_lb=1e-7, 30 restarts, 4096 raw samples, 256 MC |

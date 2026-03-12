@@ -389,3 +389,74 @@ Provide the next query for each function in this format
     2. 2D plots of the outputs vs pairs of inputs, numbering the output points in the order in which they were sampled, with initial values in a different colour
 - Evaluate the performance of the optimisation process, and suggest how they can be improved - document these suggestions in markdown
 - sopt after proposing improvements, after review, we will specify changes to strategy for next sample point.
+
+/specify
+- this specification applies only to F1
+- add to the current week 10 notebook
+- change optimisation run to take in following:
+Given the persistent stalling of the current Hurdle Model + Weighted UCB (κ=0.5) approach, the following changes are recommended:
+1. **Switch surrogate from Hurdle Model to SFGP with Matérn-2.5 ARD** — The Hurdle Model with RF regressor may lack the smoothness assumptions needed to interpolate between the sparse near-zero observations. A GP can provide uncertainty estimates that directly drive exploration via the acquisition function.
+2. **Use qLogNEI instead of Weighted UCB** — The current UCB with κ=0.5 is in exploitation mode, but there is nothing to exploit (best is ~1e-16). Switch to Noisy Expected Improvement which naturally balances exploration and exploitation based on posterior uncertainty.
+3. **Increase exploration aggressiveness** — Set q=4 to propose multiple candidates per round, using distance-based selection to ensure spatial diversity. The function clearly has extremely localised optima that require broader coverage.
+4. **Apply log transform to outputs** — Since F1 outputs span many orders of magnitude, fitting the GP on log(max(y, ε)) will provide a better-conditioned posterior and more meaningful uncertainty estimates.
+5. **Adopt Latin Hypercube restart** — After 10 failed submissions, it is worth seeding the acquisition optimisation with a space-filling design (10,000 Sobol points) to ensure the entire [0,1]² domain is considered.
+
+/specify
+- This specification applies only to F2
+- add this to the current F2 Week 10 notebook
+1. **Increase kernel flexibility** — Switch from Matérn-1.5 to Matérn-2.5 kernel to allow smoother interpolation. The current kernel may be creating a rough posterior that traps the acquisition in local modes.
+2. **Add output standardisation** — Apply Standardize(m=1) to the output transform to improve GP conditioning. This helps when the output range is narrow.
+3. **Increase MLL restarts from 15 to 30+** — More restarts during hyperparameter optimisation will reduce the chance of the GP fitting degenerate hyperparameters (a known issue from week 8).
+4. **Widen lengthscale bounds** — The current [0.01, 2.0] bounds may be too restrictive. Change to [0.005, 10.0] to allow the GP to capture both fine and coarse-scale structure.
+5. **Add a multi-start acquisition strategy** — Use 1,000+ Sobol seed points for the acquisition optimiser to escape the local optimum region the current approach is stuck in.
+- provide surrogate visualisation presenting the all the sampled points in a different colour and new poroposed point.
+
+/specify
+- This specification only applies to F3
+- add this to the current F3 workbook
+1. **Increase batch size from q=1 to q=3** — With only 1 candidate per round, the chance of finding an improving point is low. Increasing q provides more evaluations per round and better covers the 3D space.
+2. **Increase raw samples from 512 to 2048** — The acquisition optimiser uses relatively few seed points. More raw samples improve the chance of finding the global acquisition optimum.
+3. **Review noise floor** — The noise_lb=1e-6 may be too tight for the negative-valued outputs, causing the GP to overfit individual observations rather than learning smooth trends.
+4. **Change output transform** — Change Standardize(m=1) to a shift transform (y - y_min) that maps outputs to positive territory before GP fitting.
+5. **Increase MLL restarts from 20 to 40** — In 3D with negative outputs, the GP likelihood surface may have multiple modes. More restarts reduce the risk of poor hyperparameters.
+
+/specify
+- This specification applies to F4 to F8
+
+- For F4 - add to the existing week 10 notebook, applying the following change in strategy from week 9
+1. **Switch from MFGP to standard SFGP** — The MFGP with LinearTruncatedFidelityKernel is designed for multi-fidelity data, but F4 only has single-fidelity observations. The fidelity kernel adds unnecessary parameters and complexity without benefit. A standard SFGP with Matérn-2.5 ARD will be simpler and likely model the data better.
+2. **Replace MF-qNEI with qLogNEI** — The multi-fidelity acquisition function is inappropriate for single-fidelity data. Standard qLogNEI with q=4 is the correct choice.
+3. **Add output standardisation** — Apply Standardize(m=1) to handle the wide output range (from -4.03 to 0.53). This improves GP conditioning significantly.
+4. **Increase noise lower bound** — With 30 initial + 10 submission = 40 samples in 4D, the GP may be overfitting. A noise_lb=1e-3 provides regularisation.
+5. **Increase MLL restarts to 30+** — The 4D space with 40 observations needs thorough hyperparameter optimisation to avoid degenerate lengthscales.
+
+- For F5 - add to the existing week 10 notebook, applying the following change in strategy from week 9
+1. **Fine-tune exploration/exploitation balance** — The current approach finds large improvements when it does improve. Increase raw_samples from 5000 to 8000 to improve acquisition optimisation in the 4D space.
+2. **Review distance-based selection threshold** — The distance criterion for selecting among q=4 candidates may be too aggressive, causing some candidates to be placed in suboptimal locations just for diversity. Consider relaxing the minimum distance.
+3. **Increase MLL restarts from 50 to 60** — The log1p transform creates a compressed output space where GP hyperparameter sensitivity is higher. More restarts help.
+4. **Switch from log1p to log transform** — Since outputs are large positive values (>1000), log1p ≈ log for these magnitudes. A pure log transform with the GP might be simpler and equally effective.
+5. **Evaluate the Standardize(m=1) interaction with log1p** — Double-transforming (log1p then standardise) may be creating artifacts. Test with just one transform to see if it simplifies the posterior.
+
+- For F6 - add to the existing week 10 notebook, applying the following change in strategy from week 9
+1. **Maintain current approach** — The SFGP Matérn-1.5 ARD with rank-based interior penalty is working well. Major changes could disrupt the positive trajectory.
+2. **Tighten the milk constraint** — If feasibility is well-established, the milk ≥ 0.10 threshold could be increased slightly (e.g., 0.12) to focus on higher-quality feasible regions.
+3. **Reduce noise_lb from 1e-2 to 1e-3** — The relatively high noise floor may be smoothing out the posterior too much, preventing fine-grained local improvement near the current best.
+4. **Increase raw samples to 5000** — With 5D input space and 30 total samples, the acquisition surface is complex. More seed points help find better candidates.
+
+- For F7 - add to the existing week 10 notebook, applying the following change in strategy from week 9
+1. **keeping NN: increase EI weight from 30% to 50%** — The current 70% mean + 30% EI blend is too exploitative. The mean component drives the search to the predicted best, which after 6 consecutive failures is clearly a local optimum.
+2. **Review interior penalty parameters** — The STEEPNESS=0.05 may be too aggressive, excluding potentially interesting boundary regions. Consider reducing to 0.02 or using a softer penalty function.
+3. **Increase candidate pool from 20k to 50k** — In 6D, 20k random candidates provide sparse coverage. More candidates increase the chance of finding promising unexplored regions.
+4. **Add ensemble or dropout-based uncertainty** — If keeping the NN, use MC dropout (multiple forward passes with dropout=0.05 enabled) to generate uncertainty estimates rather than relying on the deterministic variance proxy.
+
+- For F8 - add to the existing week 10 notebook, applying the following change in strategy from week 9
+1. **Increase XI from 0.01 to 0.05** — The current expected improvement exploration parameter is very small, making qEI nearly greedy. A larger XI encourages more exploration of uncertain regions in this high-dimensional space.
+2. **Increase MC samples from 256 to 512** — The qEI acquisition function estimate improves with more MC samples, reducing the variance of the acquisition value estimate in 8D.
+3. **Lower noise floor** — The noise_lb=1e-7 is already very low. Verify this isn't causing numerical issues in the Cholesky decomposition. If stable, this is fine.
+4. **Increase raw samples from 4096 to 8192** — The 8D space is vast. More raw candidate points for the acquisition optimiser improve coverage of the search space.
+5. **Switch to qLogNEI** — The log-transformed EI (qLogNEI) is more numerically stable than qEI for large output ranges and high dimensions. This could improve acquisition optimisation quality.
+
+/specify
+- Stay on the same code branch
+- implement an interior penalty for F1, F2 and F5
+- Steepness should be very shallow for the penalty

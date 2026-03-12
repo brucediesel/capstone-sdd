@@ -183,3 +183,73 @@ Variables available after running existing cells 1–12:
 - `running_best` (ndarray from `np.maximum.accumulate(outputs)`)
 
 New cells will import BoTorch/GPyTorch, convert data to tensors, and proceed with the GP pipeline. No re-loading of data is needed.
+
+---
+
+## F2 Optimisation Run — Research (Phase 0)
+
+**Spec**: [spec-f2-optimisation.md](spec-f2-optimisation.md)  
+**Date**: 2026-03-11
+
+### R12: Matérn-2.5 vs Matérn-1.5 for F2
+
+**Decision**: Switch to Matérn-2.5 (nu=2.5) for F2.
+
+- F2 outputs are in [0.25, 0.67] — narrow range where Matérn-1.5's rougher (C¹) posterior creates multiple local modes trapping the acquisition function
+- Project precedent: F3 (3D, narrow output range) and F8 (8D) both use Matérn-2.5 + Standardize(m=1) and are NOT stalling
+- Matérn-2.5 (C²) produces smoother posteriors enabling qLogNEI to find better optima
+- F2 week 10 review itself identifies the Matérn-1.5 kernel as creating "a rough posterior that traps the acquisition in local modes"
+
+**Alternatives considered**: Keep Matérn-1.5 + increase restarts only — addresses symptoms not root cause; RBF — too smooth, less standard in BO practice.
+
+**Rationale**: The twice-differentiability of Matérn-2.5 is appropriate for F2's narrow-range function where smoother interpolation between 20 samples will improve acquisition landscape quality.
+
+### R13: Standardize(m=1) interaction with GP fitting
+
+**Decision**: Add Standardize(m=1) as outcome_transform in SingleTaskGP.
+
+- Applied as `SingleTaskGP(..., outcome_transform=Standardize(m=1))` — transforms during construction, before MLL fitting
+- Rescales outputs to zero-mean, unit-variance internally; model.posterior() auto-untransforms predictions
+- Noise constraint (NOISE_LB=1e-4) operates in standardised space — becomes slightly looser relative to data scale, reducing overfitting risk
+- Improves MLL numerical stability for F2's narrow output range (~0.42 span)
+- Proven pattern: F3 and F8 both use Standardize(m=1) successfully
+
+**Alternatives considered**: Manual z-score — adds complexity, error-prone; No standardisation — risks ill-conditioned MLL with narrow output range.
+
+**Rationale**: BoTorch's built-in Standardize is simpler (constitution Principle I) and numerically superior to both manual z-score and no standardisation.
+
+### R14: Lengthscale bounds [0.005, 10.0] — impact with 20 samples in 2D
+
+**Decision**: Approve widened bounds [0.005, 10.0].
+
+- LS=0.005 captures structure on ~0.5% of input range (fine-grained)
+- LS=10.0 is effectively a flat prior over [0,1]² (coarse baseline) — MLL will avoid this if data has structure
+- With 20 points, average spacing ≈ √(1/20) ≈ 0.224; useful LS range is roughly [0.05, 5.0]
+- The wider bounds [0.005, 10.0] contain this range plus margin for MLL to explore
+- Week 9's [0.01, 2.0] may force MLL into degenerate local optima; wider bounds allow escape
+- F3 and F8 use effectively wide bounds and are non-stalling
+
+**Alternatives considered**: Keep [0.01, 2.0] — perpetuates stalling; [0.001, 100.0] — overly permissive for 2D.
+
+**Rationale**: [0.005, 10.0] is a practical middle ground giving MLL freedom to find the optimal lengthscale without extreme values.
+
+### R15: Existing F2 week 10 notebook variables in scope
+
+**Decision**: Reuse existing variables from cells 1–12 directly.
+
+Variables available after running existing cells:
+- `inputs` (ndarray, shape [20, 2]) — all input data
+- `outputs` (ndarray, shape [20]) — all output data
+- `N_INITIAL` = 10
+- `FUNC_NUM` = 2
+- `DATA_DIR` = '../../data/f2/'
+- `USE_LOG_SCALE` = False
+- `WEEK` = 10
+- `N_DIMS` = 2
+- `n_total` = 20
+- `n_submissions` = 10
+- `running_best` (ndarray from `np.maximum.accumulate(outputs)`)
+- `init_best` (numpy.float64, ~0.6112) — best from initial samples
+- `stalling` = True — confirmed by evaluation cell
+
+New cells will import BoTorch/GPyTorch, convert data to tensors, and proceed with the GP pipeline. No re-loading of data is needed. No log transform required — Standardize(m=1) handles output conditioning.

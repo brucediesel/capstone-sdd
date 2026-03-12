@@ -109,3 +109,63 @@ The notebook has two sections:
 - [ ] No duplicate warning printed
 - [ ] 3-panel contour renders with correct colour overlays
 - [ ] Convergence plot shows proposed point in green
+
+---
+
+## F2 Optimisation Run — Quickstart
+
+**Spec**: [spec-f2-optimisation.md](spec-f2-optimisation.md)
+
+### Prerequisites
+
+- All review notebook prerequisites (above)
+- BoTorch and GPyTorch installed in the `sdd-dev` environment
+- Week 10 data present: `data/f2/updated_inputs - Week 10.npy`, `data/f2/updated_outputs - Week 10.npy`
+
+### Running the F2 Optimisation
+
+```bash
+# From repository root
+cd functions/f2
+jupyter notebook "f2 - week 10.ipynb"
+# Run All Cells (Kernel > Restart & Run All)
+```
+
+The notebook has two sections:
+1. **Cells 1–12**: Review & evaluation (existing) — loads data, plots convergence, pair plots, evaluates performance, suggests improvements
+2. **Cells 13–19**: Optimisation run (new) — fits SFGP with Standardize(m=1), runs qLogNEI, selects candidate, visualises surrogate, shows updated convergence
+
+### Key Differences from F1
+
+- **No log transform** — F2 outputs are in [0.25, 0.67], no extreme scale
+- **Standardize(m=1)** — BoTorch outcome transform handles conditioning internally
+- **Matérn-2.5** — smoother kernel to avoid rough posterior trapping
+- **50 MLL restarts** — aggressive hyperparameter search
+- **LS bounds [0.005, 10.0]** — wider to avoid degenerate local optima
+- **4096 RAW_SAMPLES** — aggressive acquisition exploration
+- **Linear y-axis** on convergence plot (not log)
+
+### Expected Output from Optimisation Cells
+
+1. **Configuration** — Prints all hyperparameter values (no LOG_EPSILON)
+2. **Data Preparation** — Prints tensor shapes and raw output range [0.25, 0.67]
+3. **GP Fitting** — Prints fitted hyperparameters after 50 MLL restarts:
+   - Lengthscales (2 values, one per dimension)
+   - Noise variance (in standardised space)
+   - Output scale
+   - Best MLL loss
+4. **Acquisition** — Prints all 4 candidates, selection rationale, and formatted submission:
+   ```
+   >>> SUBMISSION: 0.xxxxxx-0.yyyyyy
+   ```
+5. **Surrogate Visualisation** — 3-panel contour: mean, uncertainty, acquisition surface
+6. **Convergence Plot** — Running best with proposed point marked (linear y-axis)
+
+### Verification Checklist
+
+- [ ] All cells execute without errors
+- [ ] GP hyperparameters are reasonable (lengthscales 0.005–10.0, noise ≥ 1e-4)
+- [ ] Submission point is in valid range [0.0, 0.999999] for both dimensions
+- [ ] No duplicate warning printed
+- [ ] 3-panel contour renders with correct colour overlays
+- [ ] Convergence plot shows proposed point in green (linear y-axis)

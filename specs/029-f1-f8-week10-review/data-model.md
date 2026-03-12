@@ -162,3 +162,84 @@ AcquisitionCandidates ──selects──> SubmissionPoint (distance-based → s
 [Data Loaded] → [Log Transform Applied] → [GP Fitted (15 restarts)]
   → [qLogNEI Optimised] → [Distance Selection] → [Submission Formatted]
 ```
+
+---
+
+## F2 Optimisation Run — Additional Entities
+
+**Spec**: [spec-f2-optimisation.md](spec-f2-optimisation.md)
+
+### F2OptimisationConfig
+
+Hyperparameter constants for the F2 SFGP + qLogNEI optimisation run. Declared as named constants in a dedicated configuration cell. Differences from F1: no log transform, Standardize(m=1) used, wider LS bounds, lower noise floor, more MLL restarts.
+
+| Field | Type | Default | Description |
+|-------|------|---------|-------------|
+| KERNEL_NU | float | 2.5 | Matérn kernel smoothness parameter |
+| ARD_NUM_DIMS | int | 2 | Number of ARD lengthscales (= N_DIMS) |
+| LS_LOWER | float | 0.005 | Lower bound on lengthscale constraint |
+| LS_UPPER | float | 10.0 | Upper bound on lengthscale constraint |
+| NOISE_LB | float | 1e-4 | Noise variance lower bound |
+| N_MLL_RESTARTS | int | 50 | Number of MLL fitting restarts |
+| MC_SAMPLES | int | 512 | Monte Carlo samples for qLogNEI sampler |
+| Q_BATCH | int | 4 | Number of candidates per acquisition batch |
+| NUM_RESTARTS | int | 20 | L-BFGS restarts for acquisition optimisation |
+| RAW_SAMPLES | int | 4096 | Sobol seed points for acquisition optimisation |
+| GRID_RES | int | 50 | Resolution of visualisation grid (50×50) |
+
+**Note**: No LOG_EPSILON — F2 uses raw outputs with Standardize(m=1) instead of log transform.
+
+### StandardizedOutputs
+
+Conceptual entity representing the outcome transform applied by Standardize(m=1). Unlike F1's explicit log transform, this is handled internally by BoTorch.
+
+| Field | Type | Description |
+|-------|------|-------------|
+| y_raw | Tensor (N×1) | Original output values, range approx [0.25, 0.67] |
+| y_std | Tensor (N×1) | Zero-mean, unit-variance (computed internally by Standardize) |
+| mean | float | Mean of y_raw (computed by Standardize) |
+| std | float | Std dev of y_raw (computed by Standardize) |
+
+**Validation rules**:
+- y_raw contains no NaN or Inf values
+- All y_raw values are positive (F2 outputs > 0)
+
+### F2SFGPModel
+
+Fitted Gaussian Process surrogate with Standardize outcome transform.
+
+| Field | Type | Description |
+|-------|------|-------------|
+| model | SingleTaskGP | BoTorch GP with Matérn-2.5 ARD + Standardize(m=1) |
+| train_X | Tensor (N×2) | Normalised input data |
+| train_Y | Tensor (N×1) | Raw output data (Standardize applied internally) |
+| outcome_transform | Standardize | BoTorch Standardize(m=1) |
+| best_loss | float | Lowest negative MLL across all restarts |
+| lengthscales | Tensor (2,) | Fitted ARD lengthscales per dimension |
+| noise | float | Fitted noise variance (in standardised space) |
+| outputscale | float | Fitted output scale |
+
+**Validation rules**:
+- lengthscales in [LS_LOWER, LS_UPPER]
+- noise ≥ NOISE_LB
+- outputscale > 0
+
+### F2 Reuses: AcquisitionCandidates, SubmissionPoint
+
+These entities are structurally identical to F1 — same fields, same validation. See F1 definitions above.
+
+## F2 Optimisation Relationships
+
+```
+FunctionData ──converts──> StandardizedOutputs (y_raw → Tensor, Standardize applied internally)
+StandardizedOutputs ──trains──> F2SFGPModel (GP fitted on raw targets with Standardize(m=1))
+F2SFGPModel ──drives──> AcquisitionCandidates (qLogNEI proposes q=4 points)
+AcquisitionCandidates ──selects──> SubmissionPoint (distance-based → single point)
+```
+
+## F2 Optimisation State Transitions
+
+```
+[Data Loaded] → [Tensor Conversion] → [GP Fitted (50 restarts, Standardize(m=1))]
+  → [qLogNEI Optimised (4096 raw samples)] → [Distance Selection] → [Submission Formatted]
+```

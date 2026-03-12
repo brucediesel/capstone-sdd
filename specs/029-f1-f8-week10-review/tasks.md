@@ -240,7 +240,7 @@ Given that each notebook is self-contained and the content for US1 and US2 is ti
 - [X] T044 Verify submission point is in valid range [0.0, 0.999999] for both dimensions and is not flagged as duplicate
 - [X] T045 Verify 3-panel contour renders with correct colormaps and all three point types visible
 - [X] T046 Verify convergence plot shows proposed point in green and uses log y-axis
-- [ ] T047 Commit updated notebook to branch 029-f1-f8-week10-review
+- [X] T047 Commit updated notebook to branch 029-f1-f8-week10-review
 
 ---
 

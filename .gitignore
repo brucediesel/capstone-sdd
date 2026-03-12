@@ -9,6 +9,9 @@ __pycache__/
 venv/
 *.egg-info/
 
+# Jupyter
+.ipynb_checkpoints/
+
 # IDE
 .vscode/
 .idea/

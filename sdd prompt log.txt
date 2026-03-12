@@ -460,3 +460,7 @@ Given the persistent stalling of the current Hurdle Model + Weighted UCB (κ=0.5
 - Stay on the same code branch
 - implement an interior penalty for F1, F2 and F5
 - Steepness should be very shallow for the penalty
+
+/specify
+- stay on same branch
+- for F1, F2, and F5 - implement aggressive exploitation of acquisition

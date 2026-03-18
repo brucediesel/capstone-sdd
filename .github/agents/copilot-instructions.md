@@ -58,6 +58,13 @@ Auto-generated from all feature plans. Last updated: 2026-02-17
 - Python 3.14.2 (pyenv `sdd-dev` environment) + BoTorch, GPyTorch, PyTorch, NumPy, Matplotlib (029-f1-f8-week10-review)
 - NumPy `.npy` files in `./data/f3/` (030-f3-optimisation-tuning)
 - Python 3.14.2 (pyenv `sdd-dev`) + BoTorch, GPyTorch, PyTorch, NumPy, Matplotlib (031-f4-f8-week10-optimisation)
+- Python 3.14.2 (conda `sdd-dev` environment) + NumPy, Matplotlib (033-week11-feedback)
+- NumPy `.npy` files in `./data/fX/` (033-week11-feedback)
+- Python 3.14.2 (pyenv `sdd-dev`) + NumPy 2.4.1, Matplotlib 3.10.8 (033-week11-feedback)
+- Python 3.14.2 (pyenv `sdd-dev`) + numpy 2.4.1, matplotlib 3.10.8 (033-week11-feedback)
+- NumPy `.npy` files in `./data/fX/` folders (033-week11-feedback)
+- Python 3.14.2 (pyenv `sdd-dev`) + BoTorch (SingleTaskGP, fit_gpytorch_mll), GPyTorch (ScaleKernel, MaternKernel, GaussianLikelihood, ExactMarginalLogLikelihood), PyTorch (tensors), NumPy, Matplotlib (034-ard-relevance-visualisation)
+- .npy files in `./data/fX/` — read-only for this feature (034-ard-relevance-visualisation)
 
 - Python 3.14.2 (pyenv sdd-dev) + numpy, matplotlib, scikit-learn (Ridge, RF, GBT), PyTorch (NN), scipy (f1 only) (003-week6-focus-on-exploitation)
 
@@ -77,9 +84,9 @@ cd src [ONLY COMMANDS FOR ACTIVE TECHNOLOGIES][ONLY COMMANDS FOR ACTIVE TECHNOLO
 Python 3.14.2 (pyenv sdd-dev): Follow standard conventions
 
 ## Recent Changes
-- 031-f4-f8-week10-optimisation: Added Python 3.14.2 (pyenv `sdd-dev`) + BoTorch, GPyTorch, PyTorch, NumPy, Matplotlib
-- 031-f4-f8-week10-optimisation: Added Python 3.14.2 (pyenv `sdd-dev` environment) + BoTorch, GPyTorch, PyTorch, NumPy, Matplotlib
-- 030-f3-optimisation-tuning: Added Python 3.14.2 (pyenv `sdd-dev` environment) + BoTorch, GPyTorch, PyTorch, NumPy, Matplotlib
+- 034-ard-relevance-visualisation: Added Python 3.14.2 (pyenv `sdd-dev`) + BoTorch (SingleTaskGP, fit_gpytorch_mll), GPyTorch (ScaleKernel, MaternKernel, GaussianLikelihood, ExactMarginalLogLikelihood), PyTorch (tensors), NumPy, Matplotlib
+- 033-week11-feedback: Added Python 3.14.2 (pyenv `sdd-dev`) + numpy 2.4.1, matplotlib 3.10.8
+- 033-week11-feedback: Added Python 3.14.2 (pyenv `sdd-dev`) + NumPy 2.4.1, Matplotlib 3.10.8
 
 
 <!-- MANUAL ADDITIONS START -->

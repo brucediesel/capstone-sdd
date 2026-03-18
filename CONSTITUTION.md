@@ -48,7 +48,7 @@ This is a capstone project as part of a certificate course in AI and ML, focused
 - New iteration notebooks are stored in the same folder as the original function notebook (`./functions/fX/`)
 - The original `fX.ipynb` notebook contains all historical weekly sections up to the point this convention was adopted and MUST NOT be modified further
 - Each iteration notebook MUST be self-contained: imports, data loading, surrogate fitting, acquisition, visualisation, and submission query
-- **Existing notebooks MUST NOT be modified** — previous work is preserved as-is
+- **Existing notebooks from previous iterations MUST NOT be modified** — previous work is preserved as-is. The current iteration's notebook may be updated until finalised.
 
 ## Documentation Requirements
 

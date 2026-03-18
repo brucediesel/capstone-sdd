@@ -37,7 +37,9 @@ original `fX.ipynb` contains all historical weekly sections up to the
 point this convention was adopted and MUST NOT be modified further.
 Each iteration notebook MUST be self-contained: imports, data loading,
 surrogate fitting, acquisition, visualisation, and submission query.
-Existing notebooks MUST NOT be modified.
+Existing notebooks from previous iterations MUST NOT be modified —
+previous work is preserved as-is. The current iteration's notebook
+may be updated until finalised.
 
 ### IV. Data Organisation
 Data for each problem is stored in `./data/fX/`. Initial data uses

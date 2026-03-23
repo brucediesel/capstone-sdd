@@ -482,4 +482,9 @@ Given the persistent stalling of the current Hurdle Model + Weighted UCB (κ=0.5
 - implement a new bayesian optimisation loop for F1 to F8 using the same strategy as week 11 - providing the same performance visualizations as last week
 
 / specify
-- 
+- do not create a new branch - remain on "Week 13"
+- this is the last sample in the budget
+- implement new bayesian optimisation loop for F1 to F8 using same models as week 11 but set hyperparamters to aggressive exploitation to exploit best known sample over previous weeks
+
+/clarify
+- for F1 do not use aggressive exploitation, since there has been no progress - focus on exploration in F1

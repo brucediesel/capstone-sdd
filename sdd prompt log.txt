@@ -464,3 +464,22 @@ Given the persistent stalling of the current Hurdle Model + Weighted UCB (κ=0.5
 /specify
 - stay on same branch
 - for F1, F2, and F5 - implement aggressive exploitation of acquisition
+
+/specify
+- Start a new code branch for week 11
+- Create new notebooks for F1 to F8
+- Review the outputs from the week 11 sample and provide feedback in each of the notebooks - showing convergence graph and proposals for next sample strategy
+
+/clarify
+- For F1 to F8 - show the location of the best output on the 2D plots to visualise location
+
+/specify
+- continue on the same code branch
+- for F1-F8 calculate and visualise the ARD individual relevance parameters for each of the features.
+- add these to each of the existing week 11 notebooks
+
+/specify
+- implement a new bayesian optimisation loop for F1 to F8 using the same strategy as week 11 - providing the same performance visualizations as last week
+
+/ specify
+- 

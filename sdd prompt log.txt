@@ -488,3 +488,13 @@ Given the persistent stalling of the current Hurdle Model + Weighted UCB (κ=0.5
 
 /clarify
 - for F1 do not use aggressive exploitation, since there has been no progress - focus on exploration in F1
+
+/specify
+- generate a readme.md file for the project, stored in the root folder
+- provide a summary of the strategy adopted for each function
+- provide the results of the optimisation process for each function - using the convergence plots in the "process_results.ipynb" notebook
+- provide a critical evaluation of the success of each strategy
+- provide a section on lessons learnt
+
+/clarify
+- update datasheet and modelcard to reflect latest data and models

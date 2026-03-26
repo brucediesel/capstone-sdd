@@ -67,6 +67,8 @@ Auto-generated from all feature plans. Last updated: 2026-02-17
 - .npy files in `./data/fX/` — read-only for this feature (034-ard-relevance-visualisation)
 - Python 3.14.2 (pyenv `sdd-dev`) + BoTorch 0.16.1, GPyTorch 1.15.1, PyTorch 2.10.0, NumPy 2.4.1, Matplotlib 3.10.8, scikit-learn (F7 only — not used for GP functions) (035-f1-f8-week12-optimisation)
 - NumPy `.npy` files in `./data/fX/` directories (035-f1-f8-week12-optimisation)
+- Markdown (no code execution) + None — documentation-only deliverable (037-project-readme)
+- Three Markdown files in project root: README.md (new), modelcards.md (update), datasheets.md (update) (037-project-readme)
 
 - Python 3.14.2 (pyenv sdd-dev) + numpy, matplotlib, scikit-learn (Ridge, RF, GBT), PyTorch (NN), scipy (f1 only) (003-week6-focus-on-exploitation)
 
@@ -86,9 +88,9 @@ cd src [ONLY COMMANDS FOR ACTIVE TECHNOLOGIES][ONLY COMMANDS FOR ACTIVE TECHNOLO
 Python 3.14.2 (pyenv sdd-dev): Follow standard conventions
 
 ## Recent Changes
+- 037-project-readme: Added Markdown (no code execution) + None — documentation-only deliverable
 - 035-f1-f8-week12-optimisation: Added Python 3.14.2 (pyenv `sdd-dev`) + BoTorch 0.16.1, GPyTorch 1.15.1, PyTorch 2.10.0, NumPy 2.4.1, Matplotlib 3.10.8, scikit-learn (F7 only — not used for GP functions)
 - 034-ard-relevance-visualisation: Added Python 3.14.2 (pyenv `sdd-dev`) + BoTorch (SingleTaskGP, fit_gpytorch_mll), GPyTorch (ScaleKernel, MaternKernel, GaussianLikelihood, ExactMarginalLogLikelihood), PyTorch (tensors), NumPy, Matplotlib
-- 033-week11-feedback: Added Python 3.14.2 (pyenv `sdd-dev`) + numpy 2.4.1, matplotlib 3.10.8
 
 
 <!-- MANUAL ADDITIONS START -->

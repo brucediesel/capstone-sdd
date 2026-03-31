@@ -178,6 +178,8 @@ F6 has an all-negative output domain representing quality deductions from an ide
 
 The best output improved from −0.714 to −0.111, representing approximately 85% improvement (closer to zero is better). The rank-based interior penalty was the key innovation, solving the sign-inversion problem that would have rendered standard boundary-suppression techniques ineffective for this all-negative function.
 
+![alt text](images/Results.png "Final Results")
+
 ---
 
 ## F7 — ML Hyperparameter Tuning
